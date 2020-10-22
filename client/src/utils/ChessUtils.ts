@@ -5,6 +5,8 @@ import {
   ChessCell,
   PieceType,
 } from '../_types/global/GlobalTypes';
+import { address, emptyAddress } from './CheckedTypeUtils';
+import { SIZE } from './constants';
 
 export const compareLoc = (
   a: BoardLocation | null,
@@ -42,25 +44,25 @@ export const getCanMove = (
 };
 
 export const boardFromGame = (game: ChessGame): ChessBoard => {
-  const allPieces = game.player1pieces.concat(game.player2pieces);
-  const { size, player1ghost } = game;
+  const allPieces = game.myPieces.concat(game.theirPieces);
+  const { myGhost } = game;
 
-  const tempBoard: (ChessCell | null)[][] = Array(size)
+  const tempBoard: (ChessCell | null)[][] = Array(SIZE)
     .fill(null)
-    .map(() => Array(size).fill(null));
+    .map(() => Array(SIZE).fill(null));
 
   for (const piece of allPieces) {
     const loc = piece.location;
     tempBoard[loc[0]][loc[1]] = { piece };
   }
 
-  if (player1ghost) {
-    const loc = player1ghost.location;
+  if (myGhost) {
+    const loc = myGhost.location;
     const temp = tempBoard[loc[0]][loc[1]];
     if (temp) {
-      temp.ghost = player1ghost;
+      temp.ghost = myGhost;
     } else {
-      tempBoard[loc[0]][loc[1]] = { ghost: player1ghost };
+      tempBoard[loc[0]][loc[1]] = { ghost: myGhost };
     }
   }
 
@@ -74,51 +76,12 @@ export const boardFromGame = (game: ChessGame): ChessBoard => {
 };
 
 export const sampleGame: ChessGame = {
-  player1pieces: [
-    {
-      pieceType: PieceType.King,
-      location: [0, 0],
-    },
-    {
-      pieceType: PieceType.King,
-      location: [0, 1],
-    },
-    {
-      pieceType: PieceType.King,
-      location: [0, 3],
-    },
-    {
-      pieceType: PieceType.King,
-      location: [0, 5],
-    },
-    {
-      pieceType: PieceType.King,
-      location: [0, 6],
-    },
-  ],
-  player1ghost: { location: [6, 3] },
-  player2pieces: [
-    {
-      pieceType: PieceType.King,
-      location: [6, 0],
-    },
-    {
-      pieceType: PieceType.King,
-      location: [6, 1],
-    },
-    {
-      pieceType: PieceType.King,
-      location: [6, 3],
-    },
-    {
-      pieceType: PieceType.King,
-      location: [6, 5],
-    },
-    {
-      pieceType: PieceType.King,
-      location: [6, 6],
-    },
-  ],
-  player2ghost: { location: [2, 2] },
-  size: 7,
+  myAddress: emptyAddress,
+  player1: { address: emptyAddress, twitter: 'bgu33' },
+  player2: { address: address('0000000000000000000000000000000000000001') },
+  turnNumber: 0,
+  myPieces: [],
+  theirPieces: [],
+  myGhost: { location: [6, 3], id: 0, owner: null },
+  objectives: []
 };

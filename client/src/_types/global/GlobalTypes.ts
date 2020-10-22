@@ -22,34 +22,41 @@ declare global {
 export type SetFn<S> = Dispatch<SetStateAction<S>>;
 export type Hook<S> = [S, SetFn<S>];
 
-export type HashedLocation = string;
-
 export enum PieceType {
-  Empty,
   King,
-  Pawn,
-  Queen,
   Knight,
 }
 
 export type BoardLocation = [number, number];
 
-export type Piece = {
-  pieceType: PieceType;
+export type GameObject = {
+  id: number;
+  owner: EthAddress | null;
   location: BoardLocation;
+}
+
+export type Piece = GameObject & {
+  pieceType: PieceType;
+  captured: boolean;
 };
 
-export type Ghost = {
-  location: BoardLocation;
-  hashedLocation?: HashedLocation;
+export type Ghost = GameObject & {
 };
+
+export type Objective = GameObject & {
+  value: number;
+}
 
 export type ChessGame = {
-  player1pieces: Piece[];
-  player1ghost: Ghost;
-  player2pieces: Piece[];
-  player2ghost: Ghost;
-  size: number;
+  myAddress: EthAddress;
+  player1: Player;
+  player2: Player;
+  turnNumber: number;
+  
+  myPieces: Piece[];
+  theirPieces: Piece[];
+  myGhost: Ghost;
+  objectives: Objective[];
 };
 
 export type ChessCell = {
