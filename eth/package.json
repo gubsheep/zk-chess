@@ -1,0 +1,23 @@
+{
+  "name": "eth",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "deploy:dev": "NODE_ENV=development ts-node src/deploy.ts"
+  },
+  "devDependencies": {
+    "@nomiclabs/buidler": "^1.4.8",
+    "@types/node": "^14.14.2",
+    "@types/readline-sync": "^1.4.3",
+    "buidler-contract-sizer": "^1.0.2",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.3"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-ethereum-package": "^3.0.0",
+    "@truffle/hdwallet-provider": "^1.1.1",
+    "dotenv": "^8.2.0",
+    "readline-sync": "^1.4.10"
+  }
+}
