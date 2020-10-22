@@ -1,6 +1,0 @@
-src/base/elf_mem_image.lo: src/base/elf_mem_image.cc \
- src/base/elf_mem_image.h src/config.h
-
-src/base/elf_mem_image.h:
-
-src/config.h:
