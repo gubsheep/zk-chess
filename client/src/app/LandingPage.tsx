@@ -1,10 +1,11 @@
-import React, {useEffect} from 'react';
-import {useState} from 'react';
+import React, { useEffect } from 'react';
+import { useState } from 'react';
 import EthereumAccountManager from '../api/EthereumAccountManager';
+import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
-import {EthAddress} from '../_types/global/GlobalTypes';
+import { EthAddress } from '../_types/global/GlobalTypes';
 import GameUIManager from './board/GameUIManager';
-import {Game} from './Game';
+import { Game } from './Game';
 
 enum InitState {
   NONE,
@@ -18,6 +19,8 @@ enum InitState {
   TERMINATED,
 }
 
+const MOCK_GAME = true;
+
 export function LandingPage() {
   const [uiManager, setUIManager] = useState<GameUIManager | null>(null);
   const [initialized, setInitialized] = useState<boolean>(false);
@@ -25,6 +28,13 @@ export function LandingPage() {
   const [initState, setInitState] = useState<InitState>(InitState.NONE);
 
   const startGame = async () => {
+    if (MOCK_GAME) {
+      const newGameManager = await FakeGameManager.create();
+      const newGameUIManager = await GameUIManager.create(newGameManager);
+      setUIManager(newGameUIManager);
+      return;
+    }
+
     setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
     // const newGameManager = await GameManager.create();
     // const newGameUIManager = await GameUIManager.create(newGameManager);
@@ -49,7 +59,7 @@ export function LandingPage() {
   // sync dependencies to initialized
   useEffect(() => {
     if (!uiManager) return;
-    else setInitialized(false);
+    else setInitialized(true);
   }, [uiManager]);
 
   if (initState === InitState.NONE) {

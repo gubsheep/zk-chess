@@ -1,8 +1,8 @@
-import React from "react";
-import { useLayoutEffect } from "react";
-import { useEffect } from "react";
-import { useState } from "react";
-import styled from "styled-components";
+import React from 'react';
+import { useLayoutEffect } from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
+import styled from 'styled-components';
 import {
   boardFromGame,
   compareLoc,
@@ -10,7 +10,7 @@ import {
   hasLoc,
   sampleGame,
   transpose,
-} from "../utils/ChessUtils";
+} from '../utils/ChessUtils';
 import {
   BoardLocation,
   ChessCell,
@@ -19,11 +19,11 @@ import {
   Piece,
   PieceType,
   SetFn,
-} from "../_types/global/GlobalTypes";
-import GameUIManager from "./board/GameUIManager";
-import { ChessPiece, Ghost } from "./ChessPiece";
+} from '../_types/global/GlobalTypes';
+import GameUIManager, { GameUIManagerEvent } from './board/GameUIManager';
+import { ChessPiece, Ghost } from './ChessPiece';
 
-const borderColor = "black";
+const borderColor = 'black';
 const StyledGameBoard = styled.table`
   & tr:last-child td {
     border-bottom: 1px solid ${borderColor};
@@ -51,7 +51,7 @@ const StyledGameCell = styled.div<{ selected: boolean; canMove: boolean }>`
   margin: 0;
 
   background: ${(props) =>
-    props.selected ? "#d8d8d8" : props.canMove ? "#f2f2f2" : "none"};
+    props.selected ? '#d8d8d8' : props.canMove ? '#f2f2f2' : 'none'};
 `;
 
 function GameCell({
@@ -109,7 +109,18 @@ export function Game({ uiManager }: { uiManager: GameUIManager }) {
 
   const [hovering, setHovering] = useState<BoardLocation | null>(null);
 
-  useEffect(() => {});
+  // attach event listeners
+  useEffect(() => {
+    const doUpdate = () => {
+      setTurnState(TurnState.Moving);
+    };
+
+    uiManager.addListener(GameUIManagerEvent.OpponentMoved, doUpdate);
+
+    return () => {
+      uiManager.removeAllListeners(GameUIManagerEvent.OpponentMoved);
+    };
+  });
 
   // clicking should be managed at this level
   const doClick = (_e: React.MouseEvent) => {
@@ -185,7 +196,7 @@ export function Game({ uiManager }: { uiManager: GameUIManager }) {
         )}
         {turnState === TurnState.Staging && (
           <span>
-            your turn! move a piece...{" "}
+            your turn! move a piece...{' '}
             <u onClick={() => setTurnState(TurnState.Submitting)}>
               click to confirm
             </u>

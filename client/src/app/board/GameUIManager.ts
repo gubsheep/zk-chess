@@ -1,11 +1,11 @@
 import autoBind from 'auto-bind';
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 import AbstractUIManager from './AbstractUIManager';
 import AbstractGameManager from '../../api/AbstractGameManager';
-import {GameManagerEvent} from '../../api/GameManager';
+import { GameManagerEvent } from '../../api/GameManager';
 
 export enum GameUIManagerEvent {
-  BoardUpdate = 'BoardUpdate',
+  OpponentMoved = 'OpponentMoved',
 }
 
 class GameUIManager extends EventEmitter implements AbstractUIManager {
@@ -33,7 +33,7 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
   }
 
   private pieceMoved() {
-    this.emit(GameUIManagerEvent.BoardUpdate);
+    this.emit(GameUIManagerEvent.OpponentMoved);
     console.log('piece moved!');
   }
 }
