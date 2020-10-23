@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useState } from 'react';
+import React, {useEffect, MouseEvent} from 'react';
+import {useState} from 'react';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
@@ -28,21 +28,24 @@ export function LandingPage() {
   const [initState, setInitState] = useState<InitState>(InitState.NONE);
 
   const startGame = async () => {
+    setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
+    // const newGameManager = await GameManager.create();
+    // const newGameUIManager = await GameUIManager.create(newGameManager);
+    // setUIManager(newGameUIManager);
+    /*
     if (MOCK_GAME) {
       const newGameManager = await FakeGameManager.create();
       const newGameUIManager = await GameUIManager.create(newGameManager);
       setUIManager(newGameUIManager);
       return;
     }
-
-    setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
-    // const newGameManager = await GameManager.create();
-    // const newGameUIManager = await GameUIManager.create(newGameManager);
-    // setUIManager(newGameUIManager);
+    */
   };
 
-  const displayAccounts = async () => {
+  const displayAccounts = () => {
     const ethConnection = EthereumAccountManager.getInstance();
+    const knownAccounts = ethConnection.getKnownAccounts();
+    if ()
     ethConnection.addAccount(
       '0x044C7963E9A89D4F8B64AB23E02E97B2E00DD57FCB60F316AC69B77135003AEF'
     );
@@ -54,6 +57,10 @@ export function LandingPage() {
     );
     setKnownAddrs(ethConnection.getKnownAccounts());
     setInitState(InitState.DISPLAY_ACCOUNTS);
+  };
+
+  const selectAccount = (id: string) => (e: MouseEvent) => {
+    console.log(e);
   };
 
   // sync dependencies to initialized
@@ -82,7 +89,9 @@ export function LandingPage() {
     return (
       <div>
         {knownAddrs.map((addr) => (
-          <p key={addr}>{addr}</p>
+          <p key={addr} onClick={selectAccount(addr)}>
+            {addr}
+          </p>
         ))}
       </div>
     );
