@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -9,11 +9,11 @@ import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
+import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 
-import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
-import { emptyAddress } from '../utils/CheckedTypeUtils';
-import { sampleGame } from '../utils/ChessUtils';
+import {ContractsAPIEvent} from '../_types/darkforest/api/ContractsAPITypes';
+import {emptyAddress} from '../utils/CheckedTypeUtils';
+import {sampleGame} from '../utils/ChessUtils';
 
 class FakeGameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -80,7 +80,10 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
   confirmMove(): void {
     console.log('gm confirm move');
-    this.emit(GameManagerEvent.GameUpdate);
+    this.emit(GameManagerEvent.MoveAccepted);
+    setTimeout(() => {
+      this.emit(GameManagerEvent.MoveConfirmed);
+    }, Math.random() * 5000);
   }
 }
 

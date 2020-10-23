@@ -8,7 +8,8 @@ import {
 export enum GameManagerEvent {
   JoinedGame = 'JoinedGame', // args: ()
   GameStart = 'GameStart', // args: ()
-  GameUpdate = 'GameUpdate', // args: ()
+  MoveAccepted = 'MoveAccepted', // args: ()
+  MoveConfirmed = 'MoveConfirmed', // args: ()
 }
 
 export default interface AbstractGameManager extends EventEmitter {
@@ -18,7 +19,7 @@ export default interface AbstractGameManager extends EventEmitter {
   getGameState(): ChessGame;
 
   joinGame(): Promise<void>;
-  movePiece(pieceId: number, to: BoardLocation): Promise<void>;
-  moveGhost(ghostId: number, to: BoardLocation): Promise<void>;
-  ghostAttack(): Promise<void>;
+  movePiece(pieceId: number, to: BoardLocation): void;
+  moveGhost(ghostId: number, to: BoardLocation): void;
+  ghostAttack(): void;
 }

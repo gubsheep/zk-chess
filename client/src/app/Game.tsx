@@ -21,8 +21,8 @@ import {
   PieceType,
   SetFn,
 } from '../_types/global/GlobalTypes';
-import AbstractUIManager from './board/AbstractUIManager';
-import GameUIManager, {GameUIManagerEvent} from './board/GameUIManager';
+import AbstractUIManager, {GameUIManagerEvent} from './board/AbstractUIManager';
+import GameUIManager from './board/GameUIManager';
 import {ChessPiece, Ghost} from './ChessPiece';
 
 const borderColor = 'black';
@@ -121,10 +121,10 @@ export function Game({uiManager}: {uiManager: AbstractUIManager}) {
       setTurnState(TurnState.Moving);
     };
 
-    uiManager.addListener(GameUIManagerEvent.GameUpdate, doUpdate);
+    uiManager.addListener(GameUIManagerEvent.MoveConfirmed, doUpdate);
 
     return () => {
-      uiManager.removeAllListeners(GameUIManagerEvent.GameUpdate);
+      uiManager.removeAllListeners(GameUIManagerEvent.MoveConfirmed);
     };
   });
 

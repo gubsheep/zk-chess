@@ -1,13 +1,9 @@
 import autoBind from 'auto-bind';
-import { EventEmitter } from 'events';
-import AbstractUIManager from './AbstractUIManager';
+import {EventEmitter} from 'events';
+import AbstractUIManager, {GameUIManagerEvent} from './AbstractUIManager';
 import AbstractGameManager from '../../api/AbstractGameManager';
-import { GameManagerEvent } from '../../api/AbstractGameManager';
-import { BoardLocation, ChessGame } from '../../_types/global/GlobalTypes';
-
-export enum GameUIManagerEvent {
-  GameUpdate = 'OpponentMoved',
-}
+import {GameManagerEvent} from '../../api/AbstractGameManager';
+import {BoardLocation, ChessGame} from '../../_types/global/GlobalTypes';
 
 class GameUIManager extends EventEmitter implements AbstractUIManager {
   private gameManager: AbstractGameManager;
@@ -23,14 +19,17 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
   static create(gameManager: AbstractGameManager) {
     const uiManager = new GameUIManager(gameManager);
 
-    uiManager.addListener(GameManagerEvent.GameUpdate, uiManager.gameUpdate);
+    uiManager.addListener(
+      GameManagerEvent.MoveConfirmed,
+      uiManager.onMoveConfirmed
+    );
 
     return uiManager;
   }
 
   destroy(): void {
     this.gameManager.destroy();
-    this.removeAllListeners(GameManagerEvent.GameUpdate);
+    this.removeAllListeners(GameManagerEvent.MoveConfirmed);
   }
 
   getGameState(): ChessGame {
@@ -54,8 +53,8 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
     return this.gameManager.joinGame();
   }
 
-  private gameUpdate() {
-    this.emit(GameUIManagerEvent.GameUpdate);
+  private onMoveConfirmed() {
+    this.emit(GameUIManagerEvent.MoveConfirmed);
     console.log('update game');
   }
 }
