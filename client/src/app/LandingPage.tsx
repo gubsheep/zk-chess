@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
-import { useState } from 'react';
+import React, {useEffect} from 'react';
+import {useState} from 'react';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
-import { EthAddress } from '../_types/global/GlobalTypes';
+import {EthAddress} from '../_types/global/GlobalTypes';
 import GameUIManager from './board/GameUIManager';
-import { Game } from './Game';
+import {Game} from './Game';
 
 enum InitState {
   NONE,
@@ -20,12 +20,12 @@ enum InitState {
 
 export function LandingPage() {
   const [uiManager, setUIManager] = useState<GameUIManager | null>(null);
-  const [initialized, setInitialized] = useState<boolean>(true);
+  const [initialized, setInitialized] = useState<boolean>(false);
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
-  let initState = InitState.NONE;
+  const [initState, setInitState] = useState<InitState>(InitState.NONE);
 
   const startGame = async () => {
-    initState = InitState.DISPLAY_LOGIN_OPTIONS;
+    setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
     // const newGameManager = await GameManager.create();
     // const newGameUIManager = await GameUIManager.create(newGameManager);
     // setUIManager(newGameUIManager);
@@ -43,13 +43,13 @@ export function LandingPage() {
       '0x67195c963ff445314e667112ab22f4a7404bad7f9746564eb409b9bb8c6aed32'
     );
     setKnownAddrs(ethConnection.getKnownAccounts());
-    initState = InitState.DISPLAY_ACCOUNTS;
+    setInitState(InitState.DISPLAY_ACCOUNTS);
   };
 
   // sync dependencies to initialized
   useEffect(() => {
     if (!uiManager) return;
-    else setInitialized(true);
+    else setInitialized(false);
   }, [uiManager]);
 
   if (initState === InitState.NONE) {
@@ -68,7 +68,7 @@ export function LandingPage() {
         <p onClick={displayAccounts}>display accounts</p>
       </div>
     );
-  } else if ((initState = InitState.DISPLAY_ACCOUNTS)) {
+  } else if (initState === InitState.DISPLAY_ACCOUNTS) {
     return (
       <div>
         {knownAddrs.map((addr) => (
