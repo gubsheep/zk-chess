@@ -16,12 +16,20 @@ export enum GameManagerEvent {
 }
 import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
 import { emptyAddress } from '../utils/CheckedTypeUtils';
+import { sampleGame } from '../utils/ChessUtils';
 
 class FakeGameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
 
   private readonly contractsAPI: ContractsAPI;
   private readonly snarkHelper: SnarkHelper;
+
+  private gameState: ChessGame;
+  private constructor() {
+    super();
+
+    this.gameState = _.cloneDeep(sampleGame);
+  }
 
   public destroy(): void {
     // removes singletons of ContractsAPI, LocalStorageManager, MinerManager
@@ -36,6 +44,9 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     // initialize dependencies according to a DAG
     const gameManager = new FakeGameManager();
 
+    // @ts-ignore
+    window['gm'] = gameManager;
+
     return gameManager;
   }
 
@@ -44,16 +55,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
   }
 
   getGameState(): ChessGame {
-    return {
-      myAddress: emptyAddress,
-      player1: { address: emptyAddress },
-      player2: { address: emptyAddress },
-      turnNumber: 0,
-      myPieces: [],
-      theirPieces: [],
-      myGhost: { id: 0, owner: emptyAddress, location: [0, 0] },
-      objectives: [],
-    };
+    return this.gameState;
   }
 
   joinGame(gameAddr: EthAddress): Promise<void> {
@@ -61,6 +63,13 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
   }
 
   movePiece(pieceId: number, to: BoardLocation): Promise<void> {
+    for (const piece of this.gameState.myPieces) {
+      if (piece.id === pieceId) {
+        console.log('found a piece!');
+        piece.location = to;
+      }
+    }
+    console.log(this.gameState);
     return Promise.resolve();
   }
 

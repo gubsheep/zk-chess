@@ -5,9 +5,9 @@ import {
   ChessCell,
   PieceType,
   Color,
-} from "../_types/global/GlobalTypes";
-import { address, almostEmptyAddress, emptyAddress } from "./CheckedTypeUtils";
-import { SIZE } from "./constants";
+} from '../_types/global/GlobalTypes';
+import { address, almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
+import { SIZE } from './constants';
 
 export const transpose = (board: ChessBoard): ChessBoard => {
   return board.map((_, colIndex) => board.map((row) => row[colIndex]));
@@ -97,7 +97,7 @@ const makePiece = (
   color: Color = Color.WHITE,
   type: PieceType = PieceType.King
 ) => ({
-  id: 0,
+  id: Math.random(),
   owner: emptyAddress,
   location: loc,
   pieceType: type,
@@ -111,14 +111,14 @@ export const sampleGame: ChessGame = {
   player2: { address: almostEmptyAddress },
   turnNumber: 0,
   myPieces: [
-    makePiece([1, 0], Color.BLACK),
-    makePiece([3, 0], Color.BLACK, PieceType.Knight),
-    makePiece([5, 0], Color.BLACK),
-  ],
-  theirPieces: [
     makePiece([1, 6], Color.WHITE),
     makePiece([3, 6], Color.WHITE, PieceType.Knight),
     makePiece([5, 6], Color.WHITE),
+  ],
+  theirPieces: [
+    makePiece([1, 0], Color.BLACK),
+    makePiece([3, 0], Color.BLACK, PieceType.Knight),
+    makePiece([5, 0], Color.BLACK),
   ],
   myGhost: { location: [6, 3], id: 0, owner: null },
   objectives: [],

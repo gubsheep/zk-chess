@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 import { useLayoutEffect } from 'react';
 import { useEffect } from 'react';
@@ -101,7 +102,10 @@ const StyledGame = styled.div`
 export function Game({ uiManager }: { uiManager: GameUIManager }) {
   const [turnState, setTurnState] = useState<TurnState>(TurnState.Moving);
 
-  const board = boardFromGame(sampleGame);
+  const [gameState, setGameState] = useState<ChessGame>(
+    _.cloneDeep(uiManager.getGameState())
+  );
+  const board = boardFromGame(gameState);
 
   const [selected, setSelected] = useState<BoardLocation | null>(null);
   const [canMove, setCanMove] = useState<BoardLocation[]>([]);
@@ -112,15 +116,28 @@ export function Game({ uiManager }: { uiManager: GameUIManager }) {
   // attach event listeners
   useEffect(() => {
     const doUpdate = () => {
+      setGameState(_.cloneDeep(uiManager.getGameState()));
       setTurnState(TurnState.Moving);
     };
 
-    uiManager.addListener(GameUIManagerEvent.OpponentMoved, doUpdate);
+    uiManager.addListener(GameUIManagerEvent.GameUpdate, doUpdate);
 
     return () => {
-      uiManager.removeAllListeners(GameUIManagerEvent.OpponentMoved);
+      uiManager.removeAllListeners(GameUIManagerEvent.GameUpdate);
     };
   });
+
+  const submitMove = () => {
+    if (!selected) return;
+
+    const selectedPiece = board[selected[0]][selected[1]].piece;
+
+    if (selectedPiece && staged) {
+      console.log(selectedPiece);
+      uiManager.movePiece(selectedPiece?.id, staged[0]);
+      setTurnState(TurnState.Submitting);
+    }
+  };
 
   // clicking should be managed at this level
   const doClick = (_e: React.MouseEvent) => {
@@ -197,9 +214,7 @@ export function Game({ uiManager }: { uiManager: GameUIManager }) {
         {turnState === TurnState.Staging && (
           <span>
             your turn! move a piece...{' '}
-            <u onClick={() => setTurnState(TurnState.Submitting)}>
-              click to confirm
-            </u>
+            <u onClick={submitMove}>click to confirm</u>
           </span>
         )}
         {turnState === TurnState.Submitting && <span>submitting move...</span>}

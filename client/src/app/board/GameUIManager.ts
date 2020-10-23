@@ -3,9 +3,10 @@ import { EventEmitter } from 'events';
 import AbstractUIManager from './AbstractUIManager';
 import AbstractGameManager from '../../api/AbstractGameManager';
 import { GameManagerEvent } from '../../api/GameManager';
+import { BoardLocation, ChessGame } from '../../_types/global/GlobalTypes';
 
 export enum GameUIManagerEvent {
-  OpponentMoved = 'OpponentMoved',
+  GameUpdate = 'OpponentMoved',
 }
 
 class GameUIManager extends EventEmitter implements AbstractUIManager {
@@ -32,8 +33,25 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
     this.removeAllListeners(GameManagerEvent.PieceMoved);
   }
 
+  getGameState(): ChessGame {
+    return this.gameManager.getGameState();
+  }
+
+  movePiece(pieceId: number, to: BoardLocation): void {
+    console.log('moved piece!');
+    this.gameManager.movePiece(pieceId, to);
+  }
+
+  moveGhost(ghostId: number, to: BoardLocation): void {
+    this.gameManager.movePiece(ghostId, to);
+  }
+
+  ghostAttack(): void {
+    this.gameManager.ghostAttack();
+  }
+
   private pieceMoved() {
-    this.emit(GameUIManagerEvent.OpponentMoved);
+    this.emit(GameUIManagerEvent.GameUpdate);
     console.log('piece moved!');
   }
 }
