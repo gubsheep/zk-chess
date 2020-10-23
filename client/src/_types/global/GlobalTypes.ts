@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
-import { Dispatch } from 'react';
-import { SetStateAction } from 'react';
+import {EventEmitter} from 'events';
+import {Dispatch} from 'react';
+import {SetStateAction} from 'react';
 
 interface WindowEthereumObject extends EventEmitter {
   enable: () => void;
@@ -33,7 +33,7 @@ export type GameObject = {
   id: number;
   owner: EthAddress | null;
   location: BoardLocation;
-}
+};
 
 export enum Color {
   BLACK,
@@ -53,14 +53,14 @@ export type Ghost = GameObject & {
 
 export type Objective = GameObject & {
   value: number;
-}
+};
 
 export type ChessGame = {
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
   turnNumber: number;
-  
+
   myPieces: Piece[];
   theirPieces: Piece[];
   myGhost: Ghost;
@@ -76,7 +76,7 @@ export type ChessBoard = ChessCell[][];
 
 export type DisplayedCell = ChessCell & {
   canMove?: boolean;
-}
+};
 
 export type DisplayedBoard = DisplayedCell[][];
 

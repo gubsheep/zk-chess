@@ -75,7 +75,7 @@ contract ZKChessCore is Initializable, ZKChessStorage {
         uint256[2] memory _a,
         uint256[2][2] memory _b,
         uint256[2] memory _c,
-        uint256[3] memory _input
+        uint256[1] memory _input
     ) public notPaused returns (bool) {
         if (!DISABLE_ZK_CHECK) {
             require(
