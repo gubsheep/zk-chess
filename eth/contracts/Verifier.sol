@@ -336,7 +336,7 @@ library Verifier {
         uint256[2] memory a,
         uint256[2][2] memory b,
         uint256[2] memory c,
-        uint256[3] memory input
+        uint256[1] memory input
     ) public view returns (bool) {
         uint256[] memory inputValues = new uint256[](input.length);
         for (uint256 i = 0; i < input.length; i++) {

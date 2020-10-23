@@ -1,4 +1,5 @@
-import { BigNumber as EthersBN } from 'ethers';
+import {BigNumber as EthersBN} from 'ethers';
+import {BoardLocation} from '../../global/GlobalTypes';
 
 // TODO write these types
 export type ContractCallArgs = Array<unknown>;
@@ -10,10 +11,8 @@ export enum ZKArgIdx {
   DATA,
 }
 
-export enum InitArgIdxs {
-  LOCATION_ID,
-  PERLIN,
-  RADIUS,
+export enum ProveArgIdx {
+  OUTPUT,
 }
 
 export enum MoveArgIdxs {
@@ -26,16 +25,8 @@ export enum MoveArgIdxs {
   SILVER_SENT,
 }
 
-export enum UpgradeArgIdxs {
-  LOCATION_ID,
-  UPGRADE_BRANCH,
-}
-
 export enum ContractEvent {
-  PlayerInitialized = 'PlayerInitialized',
-  ArrivalQueued = 'ArrivalQueued',
-  PlanetUpgraded = 'PlanetUpgraded',
-  BoughtHat = 'BoughtHat',
+  ProofVerified = 'ProofVerified',
 }
 
 export enum ContractsAPIEvent {
@@ -48,20 +39,6 @@ export enum ContractsAPIEvent {
   RadiusUpdated = 'RadiusUpdated',
 }
 
-export type InitializePlayerArgs = [
-  [string, string], // proofA
-  [
-    // proofB
-    [string, string],
-    [string, string]
-  ],
-  [string, string], // proofC
-  [string, string, string] // locationId (BigInt), perlin, radius
-];
-
-// planet locationID(BigInt), branch number
-export type UpgradeArgs = [string, string];
-
 export type MoveSnarkArgs = [
   [string, string], // proofA
   [
@@ -71,11 +48,7 @@ export type MoveSnarkArgs = [
   ],
   [string, string], // proofC
   [
-    string, // from locationID (BigInt)
-    string, // to locationID (BigInt)
-    string, // perlin at to
-    string, // radius at to
-    string // distMax
+    string // hash
   ]
 ];
 
@@ -98,82 +71,6 @@ export type MoveArgs = [
   ]
 ];
 
-export interface ContractConstants {
-  TIME_FACTOR_HUNDREDTHS: number;
-  PERLIN_THRESHOLD_1: number;
-  PERLIN_THRESHOLD_2: number;
-  PLANET_RARITY: number;
-
-  SILVER_RARITY_1: number;
-  SILVER_RARITY_2: number;
-  SILVER_RARITY_3: number;
-
-  defaultPopulationCap: number[];
-  defaultPopulationGrowth: number[];
-
-  defaultSilverCap: number[];
-  defaultSilverGrowth: number[];
-
-  defaultRange: number[];
-  defaultSpeed: number[];
-  defaultDefense: number[];
-  defaultBarbarianPercentage: number[];
-
-  planetLevelThresholds: number[];
-  planetCumulativeRarities: number[];
-}
-
-export type ClientMockchainData =
-  | null
-  | undefined
-  | number
-  | string
-  | boolean
-  | EthersBN
-  | ClientMockchainData[]
-  | {
-      [key in string | number]: ClientMockchainData;
-    };
-
-/*
-export interface RawArrivalData {
-  // note that from actual blockchain, this will be an array
-  // not an object; this fields will be keyed by numerica index, not string
-  arrivalId: string;
-  departureTime: BigNumber;
-  arrivalTime: BigNumber;
-  player: string;
-  oldLoc: BigNumber;
-  newLoc: BigNumber;
-  maxDist: BigNumber;
-  shipsMoved: BigNumber;
-  silverMoved: BigNumber;
-}
-*/
-/*
-export type RawQueuedArrival = {
-  eventId: string;
-  player: string;
-  fromPlanet: BigNumber;
-  toPlanet: BigNumber;
-  popArriving: BigNumber;
-  silverMoved: BigNumber;
-
-  timeTrigger: BigNumber;
-  timeAdded: BigNumber;
-}
-*/
-export enum PlanetEventType {
-  ARRIVAL,
-}
-
-export type RawPlanetEventMetadata = {
-  id: string;
-  eventType: EthersBN;
-  timeTrigger: EthersBN;
-  timeAdded: EthersBN;
-};
-
 export type RawUpgrade = {
   0: EthersBN;
   popCapMultiplier?: EthersBN;
@@ -191,145 +88,9 @@ export type RawUpgrade = {
   defMultiplier?: EthersBN;
 };
 
-export type RawUpgradesInfo = [
-  [RawUpgrade, RawUpgrade, RawUpgrade, RawUpgrade],
-  [RawUpgrade, RawUpgrade, RawUpgrade, RawUpgrade],
-  [RawUpgrade, RawUpgrade, RawUpgrade, RawUpgrade]
-];
-
-export type RawArrivalData = {
-  0: EthersBN;
-  id?: EthersBN;
-
-  1: string;
-  player?: string;
-
-  2: EthersBN;
-  fromPlanet?: EthersBN;
-
-  3: EthersBN;
-  toPlanet?: EthersBN;
-
-  4: EthersBN;
-  popArriving?: EthersBN;
-
-  5: EthersBN;
-  silverMoved?: EthersBN;
-
-  6: EthersBN;
-  departureTime?: EthersBN;
-
-  7: EthersBN;
-  arrivalTime?: EthersBN;
-};
-
-export type RawDefaults = {
-  0: string;
-  label?: string;
-
-  1: EthersBN;
-  populationCap?: EthersBN;
-
-  2: EthersBN;
-  populationGrowth?: EthersBN;
-
-  3: EthersBN;
-  range?: EthersBN;
-
-  4: EthersBN;
-  speed?: EthersBN;
-
-  5: EthersBN;
-  defense?: EthersBN;
-
-  6: EthersBN;
-  silverGrowth?: EthersBN;
-
-  7: EthersBN;
-  silverCap?: EthersBN;
-
-  8: EthersBN;
-  barbarianPercentage?: EthersBN;
-}[];
-
-export interface RawPlanetData {
-  // note that from actual blockchain, this will be an array
-  // not an object; this fields will be keyed by numerical index, not string
-  0: string;
-  owner?: string;
-
-  1: EthersBN;
-  range?: EthersBN;
-
-  2: EthersBN;
-  speed?: EthersBN;
-
-  3: EthersBN;
-  defense?: EthersBN;
-
-  4: EthersBN;
-  population?: EthersBN;
-
-  5: EthersBN;
-  populationCap?: EthersBN;
-
-  6: EthersBN;
-  populationGrowth?: EthersBN;
-
-  7: number;
-  planetResource?: number;
-
-  8: EthersBN;
-  silverCap?: EthersBN;
-
-  9: EthersBN;
-  silverGrowth?: EthersBN;
-
-  10: EthersBN;
-  silver?: EthersBN;
-
-  11: EthersBN;
-  planetLevel?: EthersBN;
-}
-
-export interface RawPlanetExtendedInfo {
-  // note that from actual blockchain, this will be an array
-  // not an object; this fields will be keyed by numerical index, not string
-  0: boolean;
-  isInitialized?: boolean;
-
-  1: EthersBN;
-  createdAt?: EthersBN;
-
-  2: EthersBN;
-  lastUpdated?: EthersBN;
-
-  3: EthersBN;
-  perlin?: EthersBN;
-
-  4: number;
-  spaceType?: number;
-
-  5: EthersBN;
-  upgradeState0?: EthersBN;
-
-  6: EthersBN;
-  upgradeState1?: EthersBN;
-
-  7: EthersBN;
-  upgradeState2?: EthersBN;
-
-  8: EthersBN;
-  hatLevel?: EthersBN;
-
-  // 9 is delegatedPlayers, but we don't get this array
-}
-
 export enum EthTxType {
-  INIT = 'INIT',
+  PROVE = 'PROVE',
   MOVE = 'MOVE',
-  UPGRADE = 'UPGRADE',
-  BUY_HAT = 'BUY_HAT',
 }
 
 export enum EthTxStatus {
@@ -351,34 +112,17 @@ export type SubmittedTx = UnconfirmedTx & {
   sentAtTimestamp: number;
 };
 
-export type UnconfirmedInit = UnconfirmedTx & {
-  type: EthTxType.INIT;
-  // locationId: LocationId;
+export type UnconfirmedProve = UnconfirmedTx & {
+  output: string;
 };
 
-export type SubmittedInit = UnconfirmedInit & SubmittedTx;
+export type SubmittedProve = UnconfirmedProve & SubmittedTx;
 
 export type UnconfirmedMove = UnconfirmedTx & {
   type: EthTxType.MOVE;
-  // from: LocationId;
-  // to: LocationId;
-  forces: number;
-  silver: number;
+  from: BoardLocation;
+  to: BoardLocation;
+  pieceId: number;
 };
 
 export type SubmittedMove = UnconfirmedMove & SubmittedTx;
-
-export type UnconfirmedUpgrade = UnconfirmedTx & {
-  type: EthTxType.UPGRADE;
-  // locationId: LocationId;
-  upgradeBranch: number; // 0, 1, or 2
-};
-
-export type SubmittedUpgrade = UnconfirmedUpgrade & SubmittedTx;
-
-export type UnconfirmedBuyHat = UnconfirmedTx & {
-  type: EthTxType.BUY_HAT;
-  // locationId: LocationId;
-};
-
-export type SubmittedBuyHat = UnconfirmedBuyHat & SubmittedTx;

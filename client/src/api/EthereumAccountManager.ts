@@ -156,7 +156,7 @@ class EthereumAccountManager extends EventEmitter {
   }
 
   public async waitForTransaction(txHash: string): Promise<TransactionReceipt> {
-    return this.provider.waitForTransaction(txHash);
+    return this.provider.waitForTransaction(txHash, 1);
   }
 }
 

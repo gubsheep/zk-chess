@@ -1,44 +1,25 @@
 //import * as EventEmitter from 'events';
-import { EventEmitter } from 'events';
-import { EthAddress } from '../_types/global/GlobalTypes';
+import {EventEmitter} from 'events';
+import {EthAddress} from '../_types/global/GlobalTypes';
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
 // in particular, the below is bad!
 // import {TransactionReceipt, Provider, TransactionResponse, Web3Provider} from "ethers/providers";
-import { Contract, providers } from 'ethers';
+import {Contract, providers} from 'ethers';
 import _ from 'lodash';
 
-import { address } from '../utils/CheckedTypeUtils';
+import {address} from '../utils/CheckedTypeUtils';
 import {
   UnconfirmedTx,
-  UnconfirmedInit,
-  EthTxType,
-  UnconfirmedMove,
   ContractsAPIEvent,
-  UnconfirmedUpgrade,
   SubmittedTx,
-  UnconfirmedBuyHat,
+  ContractEvent,
+  MoveSnarkArgs,
+  EthTxType,
+  SubmittedProve,
+  ZKArgIdx,
+  ProveArgIdx,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
-
-export function isUnconfirmedInit(tx: UnconfirmedTx): tx is UnconfirmedInit {
-  return tx.type === EthTxType.INIT;
-}
-
-export function isUnconfirmedMove(tx: UnconfirmedTx): tx is UnconfirmedMove {
-  return tx.type === EthTxType.MOVE;
-}
-
-export function isUnconfirmedUpgrade(
-  tx: UnconfirmedTx
-): tx is UnconfirmedUpgrade {
-  return tx.type === EthTxType.UPGRADE;
-}
-
-export function isUnconfirmedBuyHat(
-  tx: UnconfirmedTx
-): tx is UnconfirmedBuyHat {
-  return tx.type === EthTxType.BUY_HAT;
-}
 
 export const contractPrecision = 1000;
 
@@ -137,6 +118,7 @@ class ContractsAPI extends EventEmitter {
   readonly account: EthAddress;
   private coreContract: Contract;
   private readonly txRequestExecutor: TxExecutor;
+  private unminedTxs: Map<string, UnconfirmedTx>;
 
   private constructor(
     account: EthAddress,
@@ -147,6 +129,7 @@ class ContractsAPI extends EventEmitter {
     this.account = account;
     this.coreContract = coreContract;
     this.txRequestExecutor = new TxExecutor(nonce);
+    this.unminedTxs = new Map<string, UnconfirmedTx>();
   }
 
   static async create(): Promise<ContractsAPI> {
@@ -161,7 +144,10 @@ class ContractsAPI extends EventEmitter {
       contract,
       nonce
     );
-    contractsAPI.setupEventListeners();
+    ethConnection.on('ChangedRPCEndpoint', async () => {
+      contractsAPI.coreContract = await ethConnection.loadCoreContract();
+    });
+    contractsAPI.setupContractEventListeners();
 
     return contractsAPI;
   }
@@ -170,21 +156,17 @@ class ContractsAPI extends EventEmitter {
     this.removeEventListeners();
   }
 
-  private setupEventListeners(): void {
-    // TODO replace these with block polling
-    // this.coreContract
-    //   .on(ContractEvent.PlayerInitialized, async (player, locRaw, _: Event) => {
-    //   });
-
-    const ethConnection = EthereumAccountManager.getInstance();
-
-    ethConnection.on('ChangedRPCEndpoint', async () => {
-      this.coreContract = await ethConnection.loadCoreContract();
-    });
+  private setupContractEventListeners(): void {
+    this.coreContract.on(
+      ContractEvent.ProofVerified,
+      async (pfsVerified, _: Event) => {
+        console.log(pfsVerified);
+      }
+    );
   }
 
   removeEventListeners(): void {
-    // this.coreContract.removeAllListeners(ContractEvent.PlayerInitialized);
+    this.coreContract.removeAllListeners(ContractEvent.ProofVerified);
   }
 
   public getContractAddress(): EthAddress {
@@ -192,11 +174,13 @@ class ContractsAPI extends EventEmitter {
   }
 
   public onTxInit(unminedTx: UnconfirmedTx): void {
+    this.unminedTxs.set(unminedTx.actionId, unminedTx);
     this.emit(ContractsAPIEvent.TxInitialized, unminedTx);
   }
 
   public onTxSubmit(unminedTx: SubmittedTx): void {
     // TODO encapsulate this into terminalemitter
+    this.unminedTxs.set(unminedTx.actionId, unminedTx);
     this.emit(ContractsAPIEvent.TxSubmitted, unminedTx);
     EthereumAccountManager.getInstance()
       .waitForTransaction(unminedTx.txHash)
@@ -206,12 +190,41 @@ class ContractsAPI extends EventEmitter {
   }
 
   private onTxConfirmation(unminedTx: SubmittedTx, success: boolean) {
-    if (success) {
-      console.log('success');
-    } else {
-      console.log('fail');
-    }
+    this.unminedTxs.delete(unminedTx.actionId);
+    if (!success) console.error(`tx ${unminedTx.txHash} reverted`);
     this.emit(ContractsAPIEvent.TxConfirmed, unminedTx);
+  }
+
+  public async submitProof(
+    snarkArgs: MoveSnarkArgs,
+    actionId: string
+  ): Promise<providers.TransactionReceipt> {
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        actionId,
+        contract: this.coreContract,
+        method: 'checkProof',
+        args: snarkArgs,
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      const unminedProveTx: SubmittedProve = {
+        actionId,
+        type: EthTxType.PROVE,
+        txHash: tx.hash,
+        sentAtTimestamp: Math.floor(Date.now() / 1000),
+        output: snarkArgs[ZKArgIdx.DATA][ProveArgIdx.OUTPUT],
+      };
+      this.onTxSubmit(unminedProveTx);
+    }
+    return tx.wait();
   }
 }
 
