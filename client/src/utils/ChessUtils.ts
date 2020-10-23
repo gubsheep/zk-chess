@@ -4,9 +4,14 @@ import {
   BoardLocation,
   ChessCell,
   PieceType,
-} from '../_types/global/GlobalTypes';
-import { address, emptyAddress } from './CheckedTypeUtils';
-import { SIZE } from './constants';
+  Color,
+} from "../_types/global/GlobalTypes";
+import { address, almostEmptyAddress, emptyAddress } from "./CheckedTypeUtils";
+import { SIZE } from "./constants";
+
+export const transpose = (board: ChessBoard): ChessBoard => {
+  return board.map((_, colIndex) => board.map((row) => row[colIndex]));
+};
 
 export const compareLoc = (
   a: BoardLocation | null,
@@ -37,6 +42,18 @@ export const getCanMove = (
       [loc[0] - 1, loc[1] - 1],
       [loc[0] + 1, loc[1] - 1],
       [loc[0] - 1, loc[1] + 1],
+    ];
+  } else if (pieceType === PieceType.Knight) {
+    return [
+      [loc[0] + 1, loc[1] + 2],
+      [loc[0] + 1, loc[1] - 2],
+      [loc[0] - 1, loc[1] + 2],
+      [loc[0] - 1, loc[1] - 2],
+
+      [loc[0] + 2, loc[1] + 1],
+      [loc[0] + 2, loc[1] - 1],
+      [loc[0] - 2, loc[1] + 1],
+      [loc[0] - 2, loc[1] - 1],
     ];
   }
 
@@ -75,13 +92,34 @@ export const boardFromGame = (game: ChessGame): ChessBoard => {
   return tempBoard as ChessBoard;
 };
 
+const makePiece = (
+  loc: BoardLocation,
+  color: Color = Color.WHITE,
+  type: PieceType = PieceType.King
+) => ({
+  id: 0,
+  owner: emptyAddress,
+  location: loc,
+  pieceType: type,
+  captured: false,
+  color,
+});
+
 export const sampleGame: ChessGame = {
   myAddress: emptyAddress,
-  player1: { address: emptyAddress, twitter: 'bgu33' },
-  player2: { address: address('0000000000000000000000000000000000000001') },
+  player1: { address: emptyAddress },
+  player2: { address: almostEmptyAddress },
   turnNumber: 0,
-  myPieces: [],
-  theirPieces: [],
+  myPieces: [
+    makePiece([1, 0], Color.BLACK),
+    makePiece([3, 0], Color.BLACK, PieceType.Knight),
+    makePiece([5, 0], Color.BLACK),
+  ],
+  theirPieces: [
+    makePiece([1, 6], Color.WHITE),
+    makePiece([3, 6], Color.WHITE, PieceType.Knight),
+    makePiece([5, 6], Color.WHITE),
+  ],
   myGhost: { location: [6, 3], id: 0, owner: null },
-  objectives: []
+  objectives: [],
 };

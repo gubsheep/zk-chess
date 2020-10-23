@@ -23,8 +23,8 @@ export type SetFn<S> = Dispatch<SetStateAction<S>>;
 export type Hook<S> = [S, SetFn<S>];
 
 export enum PieceType {
-  King,
-  Knight,
+  King = 'King',
+  Knight = 'Knight',
 }
 
 export type BoardLocation = [number, number];
@@ -35,12 +35,20 @@ export type GameObject = {
   location: BoardLocation;
 }
 
+export enum Color {
+  BLACK,
+  WHITE,
+}
+
 export type Piece = GameObject & {
   pieceType: PieceType;
   captured: boolean;
+
+  color?: Color;
 };
 
 export type Ghost = GameObject & {
+  color?: boolean;
 };
 
 export type Objective = GameObject & {
