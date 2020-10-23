@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import React from 'react';
-import {useLayoutEffect} from 'react';
-import {useEffect} from 'react';
-import {useState} from 'react';
+import { useLayoutEffect } from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import {
   boardFromGame,
@@ -21,9 +21,11 @@ import {
   PieceType,
   SetFn,
 } from '../_types/global/GlobalTypes';
-import AbstractUIManager, {GameUIManagerEvent} from './board/AbstractUIManager';
+import AbstractUIManager, {
+  GameUIManagerEvent,
+} from './board/AbstractUIManager';
 import GameUIManager from './board/GameUIManager';
-import {ChessPiece, Ghost} from './ChessPiece';
+import { ChessPiece, Ghost } from './ChessPiece';
 
 const borderColor = 'black';
 const StyledGameBoard = styled.table`
@@ -47,7 +49,7 @@ const StyledGameBoard = styled.table`
   }
 `;
 
-const StyledGameCell = styled.div<{selected: boolean; canMove: boolean}>`
+const StyledGameCell = styled.div<{ selected: boolean; canMove: boolean }>`
   width: 100%;
   height: 100%;
   margin: 0;
@@ -100,7 +102,7 @@ const StyledGame = styled.div`
   width: fit-content;
 `;
 
-export function Game({uiManager}: {uiManager: AbstractUIManager}) {
+export function Game({ uiManager }: { uiManager: AbstractUIManager }) {
   const [turnState, setTurnState] = useState<TurnState>(TurnState.Moving);
 
   const [gameState, setGameState] = useState<ChessGame>(
@@ -116,12 +118,24 @@ export function Game({uiManager}: {uiManager: AbstractUIManager}) {
 
   // attach event listeners
   useEffect(() => {
-    const doUpdate = () => {
-      setGameState(_.cloneDeep(uiManager.getGameState()));
-      setTurnState(TurnState.Moving);
+    const doAccept = () => {
+      setTurnState(TurnState.Submitting);
     };
 
-    uiManager.addListener(GameUIManagerEvent.MoveConfirmed, doUpdate);
+    uiManager.addListener(GameUIManagerEvent.MoveAccepted, doAccept);
+
+    return () => {
+      uiManager.removeListener(GameUIManagerEvent.MoveAccepted, doAccept);
+    };
+  });
+  useEffect(() => {
+    const doConfirm = () => {
+      setGameState(_.cloneDeep(uiManager.getGameState()));
+      setSelected(null);
+      setTurnState(TurnState.Waiting);
+    };
+
+    uiManager.addListener(GameUIManagerEvent.MoveConfirmed, doConfirm);
 
     return () => {
       uiManager.removeAllListeners(GameUIManagerEvent.MoveConfirmed);
