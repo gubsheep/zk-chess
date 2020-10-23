@@ -1,5 +1,9 @@
-import { EventEmitter } from "events";
-import { BoardLocation, ChessGame, EthAddress } from "../_types/global/GlobalTypes";
+import {EventEmitter} from 'events';
+import {
+  BoardLocation,
+  ChessGame,
+  EthAddress,
+} from '../_types/global/GlobalTypes';
 
 export enum GameManagerEvent {
   JoinedGame = 'JoinedGame', // args: ()
@@ -8,6 +12,8 @@ export enum GameManagerEvent {
 }
 
 export default interface AbstractGameManager extends EventEmitter {
+  destroy(): void;
+
   getGameAddr(): EthAddress | null;
   getGameState(): ChessGame;
 

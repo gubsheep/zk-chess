@@ -2,6 +2,7 @@ import React, {useEffect} from 'react';
 import {useState} from 'react';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
+import {EthAddress} from '../_types/global/GlobalTypes';
 import GameUIManager from './board/GameUIManager';
 import {Game} from './Game';
 
@@ -20,6 +21,7 @@ enum InitState {
 export function LandingPage() {
   const [uiManager, setUIManager] = useState<GameUIManager | null>(null);
   const [initialized, setInitialized] = useState<boolean>(true);
+  const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
   let initState = InitState.NONE;
 
   const startGame = async () => {
@@ -40,7 +42,8 @@ export function LandingPage() {
     ethConnection.addAccount(
       '0x67195c963ff445314e667112ab22f4a7404bad7f9746564eb409b9bb8c6aed32'
     );
-    const knownAddrs = ethConnection.getKnownAccounts();
+    setKnownAddrs(ethConnection.getKnownAccounts());
+    initState = InitState.DISPLAY_ACCOUNTS;
   };
 
   // sync dependencies to initialized
@@ -62,6 +65,13 @@ export function LandingPage() {
       </div>
     );
   } else if ((initState = InitState.DISPLAY_ACCOUNTS)) {
-    return <div></div>;
+    return (
+      <div>
+        {knownAddrs.map((addr) => (
+          <p key={addr}>{addr}</p>
+        ))}
+      </div>
+    );
   }
+  return <div></div>;
 }
