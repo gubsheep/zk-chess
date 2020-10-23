@@ -20,6 +20,7 @@ import {
   PieceType,
   SetFn,
 } from "../_types/global/GlobalTypes";
+import GameUIManager from "./board/GameUIManager";
 import { ChessPiece, Ghost } from "./ChessPiece";
 
 const borderColor = "black";
@@ -92,13 +93,12 @@ enum TurnState {
 //   Staged,
 // }
 
-
 const StyledGame = styled.div`
   margin: 4em auto;
   width: fit-content;
 `;
 
-export function Game() {
+export function Game({ uiManager }: { uiManager: GameUIManager }) {
   const [turnState, setTurnState] = useState<TurnState>(TurnState.Moving);
 
   const board = boardFromGame(sampleGame);
@@ -108,6 +108,8 @@ export function Game() {
   const [staged, setStaged] = useState<[BoardLocation, Piece] | null>(null);
 
   const [hovering, setHovering] = useState<BoardLocation | null>(null);
+
+  useEffect(() => {});
 
   // clicking should be managed at this level
   const doClick = (_e: React.MouseEvent) => {
@@ -189,8 +191,9 @@ export function Game() {
             </u>
           </span>
         )}
+        {turnState === TurnState.Submitting && <span>submitting move...</span>}
         {turnState === TurnState.Waiting && (
-          <span>awaiting other player...</span>
+          <span>move confirmed. awaiting other player...</span>
         )}
       </p>
     </StyledGame>

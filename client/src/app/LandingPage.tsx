@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
-import { useState } from 'react';
-import GameManager from '../api/GameManager';
-import GameUIManager from './board/GameUIManager';
-import { Game } from './Game';
+import React, { useEffect } from "react";
+import { useState } from "react";
+import GameManager from "../api/GameManager";
+import GameUIManager from "./board/GameUIManager";
+import { Game } from "./Game";
 
 export function LandingPage() {
   const [uiManager, setUIManager] = useState<GameUIManager | null>(null);
@@ -21,6 +21,12 @@ export function LandingPage() {
   }, [uiManager]);
 
   return (
-    <div>{initialized ? <Game /> : <p onClick={startGame}>start game!</p>}</div>
+    <div>
+      {initialized && uiManager ? (
+        <Game uiManager={uiManager} />
+      ) : (
+        <p onClick={startGame}>start game!</p>
+      )}
+    </div>
   );
 }
