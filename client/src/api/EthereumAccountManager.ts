@@ -1,10 +1,10 @@
 import * as stringify from 'json-stable-stringify';
-import { JsonRpcProvider, TransactionReceipt } from '@ethersproject/providers';
-import { providers, Contract, Wallet, utils, ContractInterface } from 'ethers';
-import { EthAddress } from '../_types/global/GlobalTypes';
-import { address } from '../utils/CheckedTypeUtils';
-import { EventEmitter } from 'events';
-import { XDAI_CHAIN_ID } from '../utils/constants';
+import {JsonRpcProvider, TransactionReceipt} from '@ethersproject/providers';
+import {providers, Contract, Wallet, utils, ContractInterface} from 'ethers';
+import {EthAddress} from '../_types/global/GlobalTypes';
+import {address} from '../utils/CheckedTypeUtils';
+import {EventEmitter} from 'events';
+import {XDAI_CHAIN_ID} from '../utils/constants';
 
 class EthereumAccountManager extends EventEmitter {
   static instance: EthereumAccountManager | null = null;
@@ -86,7 +86,7 @@ class EthereumAccountManager extends EventEmitter {
 
   public async loadCoreContract(): Promise<Contract> {
     const contractABI = (
-      await fetch('/public/contracts/DarkForestCore.json').then((x) => x.json())
+      await fetch('/public/contracts/ZKChessCore.json').then((x) => x.json())
     ).abi;
 
     const isProd = process.env.NODE_ENV === 'production';

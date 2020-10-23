@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
-import { EthAddress, PlayerMap } from '../_types/global/GlobalTypes';
+import {EventEmitter} from 'events';
+import {EthAddress, PlayerMap} from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
@@ -9,13 +9,10 @@ import AbstractGameManager from './AbstractGameManager';
 export enum GameManagerEvent {
   PieceMoved = 'PieceMoved',
 }
-import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
+import {ContractsAPIEvent} from '../_types/darkforest/api/ContractsAPITypes';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
-  private balance: number;
-  private balanceInterval: number;
-  private readonly players: PlayerMap;
 
   private readonly contractsAPI: ContractsAPI;
   private readonly snarkHelper: SnarkHelper;
