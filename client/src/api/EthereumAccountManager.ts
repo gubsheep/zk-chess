@@ -125,9 +125,11 @@ class EthereumAccountManager extends EventEmitter {
   public addAccount(skey: string): void {
     // throws if invalid secret key
     const addr = address(utils.computeAddress(skey));
-    localStorage.setItem(`skey-${addr}`, skey);
-    this.knownAddresses.push(addr);
-    localStorage.setItem('KNOWN_ADDRESSES', stringify(this.knownAddresses));
+    if (!this.knownAddresses.includes(addr)) {
+      localStorage.setItem(`skey-${addr}`, skey);
+      this.knownAddresses.push(addr);
+      localStorage.setItem('KNOWN_ADDRESSES', stringify(this.knownAddresses));
+    }
   }
 
   public getKnownAccounts(): EthAddress[] {

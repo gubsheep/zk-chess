@@ -112,7 +112,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     };
   }
 
-  joinGame(gameAddr: EthAddress): Promise<void> {
+  joinGame(): Promise<void> {
     return Promise.resolve();
   }
 

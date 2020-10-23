@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import React from 'react';
-import { useLayoutEffect } from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import {useLayoutEffect} from 'react';
+import {useEffect} from 'react';
+import {useState} from 'react';
 import styled from 'styled-components';
 import {
   boardFromGame,
@@ -21,8 +21,9 @@ import {
   PieceType,
   SetFn,
 } from '../_types/global/GlobalTypes';
-import GameUIManager, { GameUIManagerEvent } from './board/GameUIManager';
-import { ChessPiece, Ghost } from './ChessPiece';
+import AbstractUIManager from './board/AbstractUIManager';
+import GameUIManager, {GameUIManagerEvent} from './board/GameUIManager';
+import {ChessPiece, Ghost} from './ChessPiece';
 
 const borderColor = 'black';
 const StyledGameBoard = styled.table`
@@ -46,7 +47,7 @@ const StyledGameBoard = styled.table`
   }
 `;
 
-const StyledGameCell = styled.div<{ selected: boolean; canMove: boolean }>`
+const StyledGameCell = styled.div<{selected: boolean; canMove: boolean}>`
   width: 100%;
   height: 100%;
   margin: 0;
@@ -99,7 +100,7 @@ const StyledGame = styled.div`
   width: fit-content;
 `;
 
-export function Game({ uiManager }: { uiManager: GameUIManager }) {
+export function Game({uiManager}: {uiManager: AbstractUIManager}) {
   const [turnState, setTurnState] = useState<TurnState>(TurnState.Moving);
 
   const [gameState, setGameState] = useState<ChessGame>(

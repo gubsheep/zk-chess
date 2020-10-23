@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -14,9 +14,9 @@ import AbstractGameManager from './AbstractGameManager';
 export enum GameManagerEvent {
   PieceMoved = 'PieceMoved',
 }
-import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
-import { emptyAddress } from '../utils/CheckedTypeUtils';
-import { sampleGame } from '../utils/ChessUtils';
+import {ContractsAPIEvent} from '../_types/darkforest/api/ContractsAPITypes';
+import {emptyAddress} from '../utils/CheckedTypeUtils';
+import {sampleGame} from '../utils/ChessUtils';
 
 class FakeGameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -58,7 +58,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     return this.gameState;
   }
 
-  joinGame(gameAddr: EthAddress): Promise<void> {
+  joinGame(): Promise<void> {
     return Promise.resolve();
   }
 

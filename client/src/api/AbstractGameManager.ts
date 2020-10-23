@@ -17,7 +17,7 @@ export default interface AbstractGameManager extends EventEmitter {
   getGameAddr(): EthAddress | null;
   getGameState(): ChessGame;
 
-  joinGame(gameAddr: EthAddress): Promise<void>;
+  joinGame(): Promise<void>;
   movePiece(pieceId: number, to: BoardLocation): Promise<void>;
   moveGhost(ghostId: number, to: BoardLocation): Promise<void>;
   ghostAttack(): Promise<void>;
