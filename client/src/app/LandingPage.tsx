@@ -71,7 +71,11 @@ export function LandingPage() {
   };
 
   const joinGame = () => {
-    uiManager?.joinGame();
+    if (!uiManager) {
+      return;
+    }
+    uiManager.joinGame();
+    // uiManager.on(GameUIManager)
   };
 
   // sync dependencies to initialized
