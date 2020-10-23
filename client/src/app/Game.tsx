@@ -4,6 +4,9 @@ import { useLayoutEffect } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
+import AbstractGameManager, {
+  GameManagerEvent,
+} from '../api/AbstractGameManager';
 import {
   boardFromGame,
   compareLoc,
@@ -21,10 +24,6 @@ import {
   PieceType,
   SetFn,
 } from '../_types/global/GlobalTypes';
-import AbstractUIManager, {
-  GameUIManagerEvent,
-} from './board/AbstractUIManager';
-import GameUIManager from './board/GameUIManager';
 import { ChessPiece, Ghost } from './ChessPiece';
 
 const borderColor = 'black';
@@ -102,11 +101,11 @@ const StyledGame = styled.div`
   width: fit-content;
 `;
 
-export function Game({ uiManager }: { uiManager: AbstractUIManager }) {
+export function Game({ gameManager }: { gameManager: AbstractGameManager }) {
   const [turnState, setTurnState] = useState<TurnState>(TurnState.Moving);
 
   const [gameState, setGameState] = useState<ChessGame>(
-    _.cloneDeep(uiManager.getGameState())
+    _.cloneDeep(gameManager.getGameState())
   );
   const board = boardFromGame(gameState);
 
@@ -122,23 +121,23 @@ export function Game({ uiManager }: { uiManager: AbstractUIManager }) {
       setTurnState(TurnState.Submitting);
     };
 
-    uiManager.addListener(GameUIManagerEvent.MoveAccepted, doAccept);
+    gameManager.addListener(GameManagerEvent.MoveAccepted, doAccept);
 
     return () => {
-      uiManager.removeListener(GameUIManagerEvent.MoveAccepted, doAccept);
+      gameManager.removeListener(GameManagerEvent.MoveAccepted, doAccept);
     };
   });
   useEffect(() => {
     const doConfirm = () => {
-      setGameState(_.cloneDeep(uiManager.getGameState()));
+      setGameState(_.cloneDeep(gameManager.getGameState()));
       setSelected(null);
       setTurnState(TurnState.Waiting);
     };
 
-    uiManager.addListener(GameUIManagerEvent.MoveConfirmed, doConfirm);
+    gameManager.addListener(GameManagerEvent.MoveConfirmed, doConfirm);
 
     return () => {
-      uiManager.removeAllListeners(GameUIManagerEvent.MoveConfirmed);
+      gameManager.removeAllListeners(GameManagerEvent.MoveConfirmed);
     };
   });
 
@@ -149,7 +148,7 @@ export function Game({ uiManager }: { uiManager: AbstractUIManager }) {
 
     if (selectedPiece && staged) {
       console.log(selectedPiece);
-      uiManager.movePiece(selectedPiece?.id, staged[0]);
+      gameManager.movePiece(selectedPiece?.id, staged[0]);
       setTurnState(TurnState.Submitting);
     }
   };

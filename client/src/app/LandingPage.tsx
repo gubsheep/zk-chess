@@ -1,11 +1,10 @@
 import React, { useEffect, MouseEvent } from 'react';
 import { useState } from 'react';
+import AbstractGameManager from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
 import { EthAddress } from '../_types/global/GlobalTypes';
-import AbstractUIManager from './board/AbstractUIManager';
-import GameUIManager from './board/GameUIManager';
 import { Game } from './Game';
 
 enum InitState {
@@ -24,7 +23,9 @@ enum InitState {
 const MOCK_GAME = false;
 
 export function LandingPage() {
-  const [uiManager, setUIManager] = useState<AbstractUIManager | null>(null);
+  const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
+    null
+  );
   const [initialized, setInitialized] = useState<boolean>(false);
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
   const [initState, setInitState] = useState<InitState>(InitState.NONE);
@@ -33,8 +34,7 @@ export function LandingPage() {
     // setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
     if (MOCK_GAME) {
       const newGameManager = await FakeGameManager.create();
-      const newGameUIManager = await GameUIManager.create(newGameManager);
-      setUIManager(newGameUIManager);
+      setGameManager(newGameManager);
     }
   };
 
@@ -60,35 +60,33 @@ export function LandingPage() {
     setInitState(InitState.FETCHING_ETH_DATA);
     if (MOCK_GAME) {
       const newGameManager = await FakeGameManager.create();
-      const newGameUIManager = await GameUIManager.create(newGameManager);
-      setUIManager(newGameUIManager);
+      setGameManager(newGameManager);
     } else {
       const newGameManager = await GameManager.create();
-      const newGameUIManager = await GameUIManager.create(newGameManager);
-      setUIManager(newGameUIManager);
+      setGameManager(newGameManager);
     }
     setInitState(InitState.FETCHED_ETH_DATA);
   };
 
   const joinGame = () => {
-    if (!uiManager) {
+    if (!gameManager) {
       return;
     }
-    uiManager.joinGame();
+    gameManager.joinGame();
     // uiManager.on(GameUIManager)
   };
 
   // sync dependencies to initialized
   useEffect(() => {
-    if (!uiManager) return;
+    if (!gameManager) return;
     else setInitialized(true);
-  }, [uiManager]);
+  }, [gameManager]);
 
   if (initState === InitState.NONE) {
     return (
       <div>
-        {initialized && uiManager ? (
-          <Game uiManager={uiManager} />
+        {initialized && gameManager ? (
+          <Game gameManager={gameManager} />
         ) : (
           <p onClick={startGame}>start game!</p>
         )}
