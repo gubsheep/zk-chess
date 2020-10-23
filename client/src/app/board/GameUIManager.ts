@@ -1,8 +1,8 @@
 import autoBind from 'auto-bind';
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import AbstractUIManager from './AbstractUIManager';
 import AbstractGameManager from '../../api/AbstractGameManager';
-import { GameManagerEvent } from '../../api/GameManager';
+import {GameManagerEvent} from '../../api/GameManager';
 
 export enum GameUIManagerEvent {
   BoardUpdate = 'BoardUpdate',
