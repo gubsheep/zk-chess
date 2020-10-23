@@ -1,9 +1,9 @@
 import autoBind from 'auto-bind';
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 import AbstractUIManager from './AbstractUIManager';
 import AbstractGameManager from '../../api/AbstractGameManager';
-import {GameManagerEvent} from '../../api/GameManager';
-import {BoardLocation, ChessGame} from '../../_types/global/GlobalTypes';
+import { GameManagerEvent } from '../../api/AbstractGameManager';
+import { BoardLocation, ChessGame } from '../../_types/global/GlobalTypes';
 
 export enum GameUIManagerEvent {
   GameUpdate = 'OpponentMoved',
@@ -23,14 +23,14 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
   static create(gameManager: AbstractGameManager) {
     const uiManager = new GameUIManager(gameManager);
 
-    uiManager.addListener(GameManagerEvent.PieceMoved, uiManager.pieceMoved);
+    uiManager.addListener(GameManagerEvent.GameUpdate, uiManager.gameUpdate);
 
     return uiManager;
   }
 
   destroy(): void {
     this.gameManager.destroy();
-    this.removeAllListeners(GameManagerEvent.PieceMoved);
+    this.removeAllListeners(GameManagerEvent.GameUpdate);
   }
 
   getGameState(): ChessGame {
@@ -54,9 +54,9 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
     return this.gameManager.joinGame();
   }
 
-  private pieceMoved() {
+  private gameUpdate() {
     this.emit(GameUIManagerEvent.GameUpdate);
-    console.log('piece moved!');
+    console.log('update game');
   }
 }
 

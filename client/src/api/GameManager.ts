@@ -11,9 +11,6 @@ import _ from 'lodash';
 
 import AbstractGameManager from './AbstractGameManager';
 
-export enum GameManagerEvent {
-  PieceMoved = 'PieceMoved',
-}
 import {ContractsAPIEvent} from '../_types/darkforest/api/ContractsAPITypes';
 import {emptyAddress} from '../utils/CheckedTypeUtils';
 
