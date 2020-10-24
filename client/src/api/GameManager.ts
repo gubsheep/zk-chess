@@ -6,6 +6,7 @@ import {
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
+import {sampleGame} from '../utils/ChessUtils';
 import _ from 'lodash';
 
 import AbstractGameManager from './AbstractGameManager';
@@ -20,6 +21,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly contractsAPI: ContractsAPI;
   private readonly snarkHelper: SnarkHelper;
 
+  private gameState: ChessGame;
+
   private constructor(
     account: EthAddress | null,
     contractsAPI: ContractsAPI,
@@ -29,6 +32,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
     this.account = account;
 
+    this.gameState = _.cloneDeep(sampleGame);
     this.contractsAPI = contractsAPI;
     this.snarkHelper = snarkHelper;
   }
@@ -59,6 +63,9 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       console.log('proof verified');
     });
 
+    // @ts-ignore
+    window['gm'] = gameManager;
+
     return gameManager;
   }
 
@@ -67,16 +74,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   getGameState(): ChessGame {
-    return {
-      myAddress: emptyAddress,
-      player1: {address: emptyAddress},
-      player2: {address: emptyAddress},
-      turnNumber: 0,
-      myPieces: [],
-      theirPieces: [],
-      myGhost: {id: 0, owner: emptyAddress, location: [0, 0]},
-      objectives: [],
-    };
+    return this.gameState;
   }
 
   joinGame(): Promise<void> {

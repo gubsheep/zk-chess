@@ -1,11 +1,11 @@
-import React, { useEffect, MouseEvent } from 'react';
-import { useState } from 'react';
+import React, {useEffect, MouseEvent} from 'react';
+import {useState} from 'react';
 import AbstractGameManager from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
-import { EthAddress } from '../_types/global/GlobalTypes';
-import { Game } from './Game';
+import {EthAddress} from '../_types/global/GlobalTypes';
+import {Game} from './Game';
 
 enum InitState {
   NONE,
@@ -26,15 +26,15 @@ export function LandingPage() {
   const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
     null
   );
-  const [initialized, setInitialized] = useState<boolean>(false);
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
   const [initState, setInitState] = useState<InitState>(InitState.NONE);
 
   const startGame = async () => {
-    // setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
     if (MOCK_GAME) {
       const newGameManager = await FakeGameManager.create();
       setGameManager(newGameManager);
+    } else {
+      setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
     }
   };
 
@@ -68,28 +68,18 @@ export function LandingPage() {
     setInitState(InitState.FETCHED_ETH_DATA);
   };
 
-  const joinGame = () => {
+  const joinGame = async () => {
     if (!gameManager) {
       return;
     }
-    gameManager.joinGame();
-    // uiManager.on(GameUIManager)
+    await gameManager.joinGame();
+    setInitState(InitState.COMPLETE);
   };
-
-  // sync dependencies to initialized
-  useEffect(() => {
-    if (!gameManager) return;
-    else setInitialized(true);
-  }, [gameManager]);
 
   if (initState === InitState.NONE) {
     return (
       <div>
-        {initialized && gameManager ? (
-          <Game gameManager={gameManager} />
-        ) : (
-          <p onClick={startGame}>start game!</p>
-        )}
+        <p onClick={startGame}>start game!</p>
       </div>
     );
   } else if (initState === InitState.DISPLAY_LOGIN_OPTIONS) {
@@ -120,6 +110,8 @@ export function LandingPage() {
         <p onClick={joinGame}>Join Game</p>
       </div>
     );
+  } else if (initState === InitState.COMPLETE && gameManager) {
+    return <Game gameManager={gameManager} />;
   }
   return <div></div>;
 }
