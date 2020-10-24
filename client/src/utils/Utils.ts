@@ -1,5 +1,15 @@
 import _ from 'lodash';
 
+export const getRandomActionId = () => {
+  const hex = '0123456789abcdef';
+
+  let ret = '';
+  for (let i = 0; i < 10; i += 1) {
+    ret += hex[Math.floor(hex.length * Math.random())];
+  }
+  return ret;
+};
+
 export const aggregateBulkGetter = async <T>(
   total: number,
   querySize: number,

@@ -3,7 +3,6 @@ import {
   BoardLocation,
   ChessGame,
   EthAddress,
-  PlayerMap,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -13,6 +12,7 @@ import AbstractGameManager from './AbstractGameManager';
 
 import {ContractsAPIEvent} from '../_types/darkforest/api/ContractsAPITypes';
 import {emptyAddress} from '../utils/CheckedTypeUtils';
+import {getRandomActionId} from '../utils/Utils';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -20,37 +20,22 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly contractsAPI: ContractsAPI;
   private readonly snarkHelper: SnarkHelper;
 
-  /*
   private constructor(
     account: EthAddress | null,
-    balance: number,
     contractsAPI: ContractsAPI,
     snarkHelper: SnarkHelper
   ) {
     super();
 
     this.account = account;
-    this.balance = balance;
 
     this.contractsAPI = contractsAPI;
     this.snarkHelper = snarkHelper;
-
-    this.balanceInterval = setInterval(() => {
-      if (this.account) {
-        EthereumAccountManager.getInstance()
-          .getBalance(this.account)
-          .then((balance) => {
-            this.balance = balance;
-          });
-      }
-    }, 5000);
   }
-  */
 
   public destroy(): void {
-    // removes singletons of ContractsAPI, LocalStorageManager, MinerManager
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.PlayerInit);
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.PlanetUpdate);
+    // removes singletons of ContractsAPI, SnarkHelper
+    this.contractsAPI.removeAllListeners(ContractsAPIEvent.ProofVerified);
 
     this.contractsAPI.destroy();
     this.snarkHelper.destroy();
@@ -59,35 +44,20 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   static async create(): Promise<GameManager> {
     // initialize dependencies according to a DAG
 
-    const gameManager = new GameManager();
-    /*
-
     // first we initialize the ContractsAPI and get the user's eth account, and load contract constants + state
     const contractsAPI = await ContractsAPI.create();
 
     // then we initialize the local storage manager and SNARK helper
     const account = contractsAPI.account;
-    const balance = await EthereumAccountManager.getInstance().getBalance(
-      account
-    );
     const snarkHelper = SnarkHelper.create();
 
     // get data from the contract
-    const gameManager = new GameManager(
-      account,
-      balance,
-      contractsAPI,
-      snarkHelper
-    );
+    const gameManager = new GameManager(account, contractsAPI, snarkHelper);
 
     // set up listeners: whenever ContractsAPI reports some game state update, do some logic
-    gameManager.contractsAPI.on(
-      ContractsAPIEvent.PlayerInit,
-      (player: Player) => {
-        gameManager.players.set(player.address, player);
-      }
-    );
-    */
+    gameManager.contractsAPI.on(ContractsAPIEvent.ProofVerified, () => {
+      console.log('proof verified');
+    });
 
     return gameManager;
   }
@@ -123,6 +93,13 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   ghostAttack(): Promise<void> {
     return Promise.resolve();
+  }
+
+  makeProof(): GameManager {
+    this.snarkHelper.getProof(1, 1, 1).then((args) => {
+      this.contractsAPI.submitProof(args, getRandomActionId());
+    });
+    return this;
   }
 }
 

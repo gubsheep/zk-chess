@@ -13,7 +13,7 @@ import {
   ContractsAPIEvent,
   SubmittedTx,
   ContractEvent,
-  MoveSnarkArgs,
+  ProofArgs,
   EthTxType,
   SubmittedProve,
   ZKArgIdx,
@@ -161,6 +161,7 @@ class ContractsAPI extends EventEmitter {
       ContractEvent.ProofVerified,
       async (pfsVerified, _: Event) => {
         console.log(pfsVerified);
+        this.emit(ContractsAPIEvent.ProofVerified);
       }
     );
   }
@@ -196,7 +197,7 @@ class ContractsAPI extends EventEmitter {
   }
 
   public async submitProof(
-    snarkArgs: MoveSnarkArgs,
+    snarkArgs: ProofArgs,
     actionId: string
   ): Promise<providers.TransactionReceipt> {
     const overrides: providers.TransactionRequest = {

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -9,12 +9,13 @@ import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
+import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 
-import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
-import { emptyAddress } from '../utils/CheckedTypeUtils';
-import { sampleGame } from '../utils/ChessUtils';
+import {ContractsAPIEvent} from '../_types/darkforest/api/ContractsAPITypes';
+import {emptyAddress} from '../utils/CheckedTypeUtils';
+import {sampleGame} from '../utils/ChessUtils';
 import autoBind from 'auto-bind';
+import {getRandomActionId} from '../utils/Utils';
 
 class FakeGameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -32,8 +33,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
   public destroy(): void {
     // removes singletons of ContractsAPI, LocalStorageManager, MinerManager
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.PlayerInit);
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.PlanetUpdate);
+    this.contractsAPI.removeAllListeners(ContractsAPIEvent.ProofVerified);
 
     this.contractsAPI.destroy();
     this.snarkHelper.destroy();
@@ -87,6 +87,13 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
       this.emit(GameManagerEvent.MoveConfirmed);
       console.log('gm confirm move');
     }, Math.random() * 5000);
+  }
+
+  makeProof(): FakeGameManager {
+    this.snarkHelper.getProof(1, 1, 1).then((args) => {
+      this.contractsAPI.submitProof(args, getRandomActionId());
+    });
+    return this;
   }
 }
 

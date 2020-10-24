@@ -1,30 +1,18 @@
 import {
   ContractCallArgs,
-  InitializePlayerArgs,
+  ProofArgs,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import {
   SnarkJSProof,
   SnarkJSProofAndSignals,
 } from '../_types/global/GlobalTypes';
-import { BigInteger } from 'big-integer';
-import { modPBigInt, modPBigIntNative } from '../miner/mimc';
-import * as bigInt from 'big-integer';
+import {BigInteger} from 'big-integer';
+import mimcHash, {modPBigInt, modPBigIntNative} from '../miner/mimc';
 
-interface InitInfo {
+interface ProveArgs {
   x: string;
   y: string;
-  p: string;
-  r: string;
-}
-
-interface MoveInfo {
-  x1: string;
-  y1: string;
-  x2: string;
-  y2: string;
-  p2: string;
-  r: string;
-  distMax: string;
+  salt: string;
 }
 
 class SnarkArgsHelper {
@@ -41,21 +29,15 @@ class SnarkArgsHelper {
     return snarkArgsHelper;
   }
 
-  async getInitArgs(
-    x: number,
-    y: number,
-    p: number,
-    r: number
-  ): Promise<InitializePlayerArgs> {
+  async getProof(x: number, y: number, salt: number): Promise<ProofArgs> {
     try {
-      const input: InitInfo = {
+      const input: ProveArgs = {
         x: modPBigInt(x).toString(),
         y: modPBigInt(y).toString(),
-        p: modPBigInt(p).toString(),
-        r: r.toString(),
+        salt: modPBigInt(salt).toString(),
       };
 
-      const publicSignals: BigInteger[] = [bigInt(p), bigInt(p), bigInt(r)];
+      const publicSignals: BigInteger[] = [mimcHash(x, y, salt)];
       // const publicSignals: BigInteger[] = [hash, bigInt(p), bigInt(r)];
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
@@ -66,7 +48,7 @@ class SnarkArgsHelper {
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
         publicSignals.map((x) => modPBigIntNative(x))
-      ) as InitializePlayerArgs;
+      ) as ProofArgs;
 
       return ret;
     } catch (e) {

@@ -30,16 +30,14 @@ export enum ContractEvent {
 }
 
 export enum ContractsAPIEvent {
-  PlayerInit = 'PlayerInit',
-  PlanetUpdate = 'PlanetUpdate',
+  ProofVerified = 'ProofVerified',
   TxInitialized = 'TxInitialized',
   TxInitFailed = 'TxInitFailed',
   TxSubmitted = 'TxSubmitted',
   TxConfirmed = 'TxConfirmed',
-  RadiusUpdated = 'RadiusUpdated',
 }
 
-export type MoveSnarkArgs = [
+export type ProofArgs = [
   [string, string], // proofA
   [
     // proofB
