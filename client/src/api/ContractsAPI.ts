@@ -79,9 +79,11 @@ class TxExecutor extends EventEmitter {
       const balance = await ethConnection.getBalance(
         ethConnection.getAddress()
       );
+      /*
       if (balance < 0.002) {
         throw new Error('xDAI balance too low!');
       }
+      */
 
       if (Date.now() - this.nonceLastUpdated > 30000) {
         this.nonce = await EthereumAccountManager.getInstance().getNonce();

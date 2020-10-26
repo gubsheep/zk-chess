@@ -8,5 +8,5 @@ cd eth
   yarn run deploy:dev
 ) &
 
-# start up local blockchain with buidler
-npx buidler node
+# start up local blockchain with hardhat
+npx hardhat node

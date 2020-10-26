@@ -16,8 +16,6 @@ interface ProveArgs {
 }
 
 class SnarkArgsHelper {
-  private readonly useMockHash: boolean;
-
   // private constructor() {}
 
   destroy(): void {
@@ -38,20 +36,19 @@ class SnarkArgsHelper {
       };
 
       const publicSignals: BigInteger[] = [mimcHash(x, y, salt)];
-      // const publicSignals: BigInteger[] = [hash, bigInt(p), bigInt(r)];
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
-        '/public/circuits/init/circuit.wasm',
-        '/public/init.zkey'
+        '/public/circuits/move/circuit.wasm',
+        '/public/move.zkey'
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
         publicSignals.map((x) => modPBigIntNative(x))
       ) as ProofArgs;
-
       return ret;
     } catch (e) {
+      console.error(e);
       throw new Error('error calculating zkSNARK.');
     }
   }

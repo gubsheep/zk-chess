@@ -3,7 +3,7 @@ echo "clearing files to rebuild"
 rm circuit.r1cs
 rm circuit.wasm
 rm circuit.sym
-rm circuit_init.zkey
+rm circuit_move.zkey
 rm circuit.zkey
 rm verification_key.json
 rm verifier.sol
@@ -12,17 +12,17 @@ rm public.json
 echo "compiling circuit to r1cs..." &&
 date &&
 circom circuit.circom --r1cs --wasm --sym &&
-rm -rf ../../client/public/circuits/init/ &&
-mkdir -p ../../client/public/circuits/init/ &&
-cp circuit.wasm ../../client/public/circuits/init/ &&
+rm -rf ../../client/public/circuits/move/ &&
+mkdir -p ../../client/public/circuits/move/ &&
+cp circuit.wasm ../../client/public/circuits/move/ &&
 snarkjs r1cs info circuit.r1cs &&
 echo "generating prover and verification keys..." &&
 date &&
-snarkjs zkey new circuit.r1cs pot15_final.ptau circuit_init.zkey &&
-snarkjs zkey contribute circuit_init.zkey circuit.zkey -e="$(date)" &&
+snarkjs zkey new circuit.r1cs pot15_final.ptau circuit_move.zkey &&
+snarkjs zkey contribute circuit_move.zkey circuit.zkey -e="$(date)" &&
 snarkjs zkey export verificationkey circuit.zkey verification_key.json &&
 mkdir -p ../../client/public &&
-cp ./circuit.zkey ../../client/public/init.zkey &&
+cp ./circuit.zkey ../../client/public/move.zkey &&
 echo "calculating witness..." &&
 date &&
 snarkjs wtns calculate circuit.wasm input.json witness.wtns &&

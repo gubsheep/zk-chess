@@ -1,11 +1,11 @@
 import bigInt from 'big-integer';
-import { BigInteger } from 'big-integer';
+import {BigInteger} from 'big-integer';
 
 export const p = bigInt(
   '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 );
 
-const KEY = 3;
+const KEY = 0;
 
 const c = [
   '0',
