@@ -1,4 +1,4 @@
-import React, { useEffect, MouseEvent } from 'react';
+import React, { createContext } from 'react';
 import { useState } from 'react';
 import AbstractGameManager from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
@@ -21,6 +21,10 @@ enum InitState {
 }
 
 const MOCK_GAME = true;
+
+export const GameManagerContext = createContext<AbstractGameManager | null>(
+  null
+);
 
 export function LandingPage() {
   const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
@@ -114,7 +118,11 @@ export function LandingPage() {
       </div>
     );
   } else if (initState === InitState.COMPLETE && gameManager) {
-    return <Game gameManager={gameManager} />;
+    return (
+      <GameManagerContext.Provider value={gameManager}>
+        <Game />
+      </GameManagerContext.Provider>
+    );
   }
   return <div></div>;
 }

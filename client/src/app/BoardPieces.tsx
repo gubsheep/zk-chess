@@ -5,8 +5,10 @@ import {
   PieceType,
 } from '../_types/global/GlobalTypes';
 
-import React from 'react';
+import React, { useContext } from 'react';
 import styled, { css } from 'styled-components';
+import AbstractGameManager from '../api/AbstractGameManager';
+import { GameManagerContext } from './LandingPage';
 
 const ghostImgStyles = css`
   width: 60%;
@@ -58,8 +60,13 @@ export function ChessPiece({
   piece: Piece;
   staged?: boolean;
 }) {
+  const gm = useContext<AbstractGameManager | null>(GameManagerContext);
+  if (!gm) return <>error</>;
+
+  const color = gm.getColor(piece.owner);
+
   const url =
-    piece.color === Color.BLACK
+    color === Color.BLACK
       ? blackPieceUrls[piece.pieceType]
       : whitePieceUrls[piece.pieceType];
 
@@ -70,21 +77,47 @@ export function ChessPiece({
   );
 }
 
-export function Ghost() {
+export function Ghost({ color }: { color: Color }) {
+  const url =
+    color === Color.BLACK
+      ? './public/chess/black_ghost.svg'
+      : './public/chess/white_ghost.svg';
   return (
     <StyledChessPiece ghost>
-      <img src={'./public/chess/white_ghost.svg'} />
+      <img src={url} />
     </StyledChessPiece>
   );
 }
 
-const StyledObjective = styled(StyledPiece)`
+const neutralObj = css`
+  background: #aaa;
+  color: white;
+`;
+const blackObj = css`
+  background: black;
+  color: white;
+`;
+const whiteObj = css`
+  background: white;
+  border: 1px solid black;
+  color: black;
+`;
+
+const StyledObjective = styled(StyledPiece)<{
+  pieceColor: Color | null;
+}>`
   span.obj {
     display: inline-block;
     width: 32pt;
     height: 32pt;
-    background: gray;
-    color: white;
+
+    ${({ pieceColor: color }) =>
+      color === null
+        ? neutralObj
+        : color === Color.BLACK
+        ? blackObj
+        : whiteObj};
+
     border-radius: 16pt;
 
     display: flex;
@@ -95,10 +128,15 @@ const StyledObjective = styled(StyledPiece)`
 `;
 
 export function ObjectivePiece({ objective }: { objective: Objective }) {
+  const gm = useContext<AbstractGameManager | null>(GameManagerContext);
+  if (!gm) return <>error</>;
+
+  const color = gm.getColor(objective.owner);
+
   return (
-    <StyledObjective>
+    <StyledObjective pieceColor={color}>
       <span className='obj'>
-        <span>5</span>
+        <span>{objective.value}</span>
       </span>
     </StyledObjective>
   );

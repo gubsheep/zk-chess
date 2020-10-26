@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React from 'react';
+import React, { useContext } from 'react';
 import { useLayoutEffect } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
+import GameManager from '../api/GameManager';
 import {
   boardFromGame,
   compareLoc,
@@ -19,12 +20,14 @@ import {
   BoardLocation,
   ChessCell,
   ChessGame,
+  Color,
   Hook,
   Piece,
   PieceType,
   SetFn,
 } from '../_types/global/GlobalTypes';
 import { ChessPiece, Ghost, ObjectivePiece } from './BoardPieces';
+import { GameManagerContext } from './LandingPage';
 
 const borderColor = 'black';
 const StyledGameBoard = styled.table`
@@ -65,9 +68,12 @@ function GameCell({
   canMove,
   staged,
 }: {
+  // data
   cell: ChessCell;
   location: BoardLocation;
   setHovering: SetFn<BoardLocation | null>;
+
+  // for displaying
   selected: boolean;
   canMove: boolean;
   staged?: Piece;
@@ -78,7 +84,7 @@ function GameCell({
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
         {staged && <ChessPiece piece={staged} staged />}
         {cell.piece && <ChessPiece piece={cell.piece} />}
-        {cell.ghost && <Ghost />}
+        {cell.ghost && <Ghost color={Color.WHITE} />}
       </StyledGameCell>
     </td>
   );
@@ -102,11 +108,14 @@ const StyledGame = styled.div`
   width: fit-content;
 `;
 
-export function Game({ gameManager }: { gameManager: AbstractGameManager }) {
+export function Game() {
+  const gm = useContext<AbstractGameManager | null>(GameManagerContext);
+  if (!gm) return <>error initializing</>;
+
   const [turnState, setTurnState] = useState<TurnState>(TurnState.Moving);
 
   const [gameState, setGameState] = useState<ChessGame>(
-    _.cloneDeep(gameManager.getGameState())
+    _.cloneDeep(gm.getGameState())
   );
   const board = boardFromGame(gameState);
 
@@ -120,30 +129,30 @@ export function Game({ gameManager }: { gameManager: AbstractGameManager }) {
   // when a move is accepted, wait for a response
   useEffect(() => {
     const doAccept = () => setTurnState(TurnState.Submitting);
-    gameManager.addListener(GameManagerEvent.MoveAccepted, doAccept);
+    gm.addListener(GameManagerEvent.MoveAccepted, doAccept);
 
     return () => {
-      gameManager.removeAllListeners(GameManagerEvent.MoveAccepted);
+      gm.removeAllListeners(GameManagerEvent.MoveAccepted);
     };
   });
 
   // when you get a response, sync the game state
   useEffect(() => {
     const doConfirm = () => {
-      const newState = gameManager.getGameState();
+      const newState = gm.getGameState();
       setGameState(_.cloneDeep(newState));
       setSelected(null);
 
-      if (gameManager.isMyTurn()) {
+      if (gm.isMyTurn()) {
         setTurnState(TurnState.Moving);
       } else {
         setTurnState(TurnState.Waiting);
       }
     };
-    gameManager.addListener(GameManagerEvent.MoveConfirmed, doConfirm);
+    gm.addListener(GameManagerEvent.MoveConfirmed, doConfirm);
 
     return () => {
-      gameManager.removeAllListeners(GameManagerEvent.MoveConfirmed);
+      gm.removeAllListeners(GameManagerEvent.MoveConfirmed);
     };
   });
 
@@ -166,7 +175,7 @@ export function Game({ gameManager }: { gameManager: AbstractGameManager }) {
 
     if (selectedPiece && staged) {
       console.log(selectedPiece);
-      gameManager.movePiece(selectedPiece?.id, staged[0]);
+      gm.movePiece(selectedPiece?.id, staged[0]);
       setTurnState(TurnState.Submitting);
     }
   };

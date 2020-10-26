@@ -92,20 +92,27 @@ export const boardFromGame = (game: ChessGame): ChessBoard => {
 
 const makePiece = (
   loc: BoardLocation,
-  color: Color = Color.WHITE,
+  color: Color,
   type: PieceType = PieceType.King
 ) => ({
   id: Math.random(),
-  owner: emptyAddress,
+  owner: color === Color.WHITE ? emptyAddress : almostEmptyAddress,
   location: loc,
   pieceType: type,
   captured: false,
-  color,
 });
 
-const makeObjective = (loc: BoardLocation, value: number = 10) => ({
+const makeObjective = (
+  loc: BoardLocation,
+  value: number = 10,
+  player: Color | null
+) => ({
   id: Math.random(),
-  owner: null,
+  owner: player
+    ? player === Color.WHITE
+      ? emptyAddress
+      : almostEmptyAddress
+    : null,
   location: loc,
   value,
 });
@@ -125,10 +132,10 @@ export const sampleGame: ChessGame = {
     makePiece([3, 0], Color.BLACK, PieceType.Knight),
     makePiece([5, 0], Color.BLACK),
   ],
-  myGhost: { location: [6, 3], id: 0, owner: null },
+  myGhost: { location: [6, 2], id: 0, owner: null },
   objectives: [
-    makeObjective([0, 3], 10),
-    makeObjective([3, 3], 10),
-    makeObjective([6, 3], 10),
+    makeObjective([0, 3], 10, -1),
+    makeObjective([3, 3], 10, 0),
+    makeObjective([6, 3], 10, 1),
   ],
 };

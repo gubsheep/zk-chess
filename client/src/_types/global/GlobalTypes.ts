@@ -43,8 +43,6 @@ export enum Color {
 export type Piece = GameObject & {
   pieceType: PieceType;
   captured: boolean;
-
-  color?: Color;
 };
 
 export type Ghost = GameObject & {

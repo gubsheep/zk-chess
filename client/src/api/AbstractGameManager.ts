@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import {
   BoardLocation,
   ChessGame,
+  Color,
   EthAddress,
 } from '../_types/global/GlobalTypes';
 
@@ -17,6 +18,7 @@ export default interface AbstractGameManager extends EventEmitter {
 
   getAccount(): EthAddress | null;
   isMyTurn(): boolean;
+  getColor(account: EthAddress | null): Color | null;
 
   getGameAddr(): EthAddress | null;
   getGameState(): ChessGame;

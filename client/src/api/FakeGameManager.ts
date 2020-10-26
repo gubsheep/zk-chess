@@ -1,9 +1,8 @@
-// @ts-nocheck
-
 import { EventEmitter } from 'events';
 import {
   BoardLocation,
   ChessGame,
+  Color,
   EthAddress,
   PlayerMap,
 } from '../_types/global/GlobalTypes';
@@ -60,6 +59,12 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     const { turnNumber, player1, player2 } = this.gameState;
     const player = turnNumber % 2 === 0 ? player1 : player2;
     return this.account === player.address;
+  }
+
+  getColor(account: EthAddress | null): Color | null {
+    if (this.gameState.player1.address === account) return Color.WHITE;
+    if (this.gameState.player2.address === account) return Color.BLACK;
+    return null;
   }
 
   getGameAddr(): EthAddress | null {
