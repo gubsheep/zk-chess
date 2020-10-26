@@ -15,16 +15,25 @@ import {
   compareLoc,
   getCanMove,
   hasLoc,
+  isGhost,
 } from '../utils/ChessUtils';
 import {
   BoardLocation,
   ChessCell,
   ChessGame,
   Color,
+  Ghost,
+  Hook,
   Piece,
+  PieceType,
   SetFn,
 } from '../_types/global/GlobalTypes';
-import { ChessPiece, Ghost, ObjectivePiece } from './BoardPieces';
+import {
+  ChessPiece,
+  GhostPiece,
+  ObjectivePiece,
+  PiecePos,
+} from './BoardPieces';
 import { GameManagerContext } from './LandingPage';
 
 const borderColor = 'black';
@@ -49,40 +58,54 @@ const StyledGameBoard = styled.table`
   }
 `;
 
-const StyledGameCell = styled.div<{ selected: boolean; canMove: boolean }>`
+const StyledGameCell = styled.div<{ canMove: boolean }>`
   width: 100%;
   height: 100%;
   margin: 0;
 
-  background: ${(props) =>
-    props.selected ? '#d8d8d8' : props.canMove ? '#f2f2f2' : 'none'};
+  background: ${(props) => (props.canMove ? '#f2f2f2' : 'none')};
 `;
 
 function GameCell({
   cell,
   location,
-  setHovering,
-  selected,
+  setHoveringLoc,
+  selectedHook,
   canMove,
   staged,
 }: {
   // data
   cell: ChessCell;
   location: BoardLocation;
-  setHovering: SetFn<BoardLocation | null>;
+  setHoveringLoc: SetFn<BoardLocation | null>;
 
   // for displaying
-  selected: boolean;
+  selectedHook: Hook<number | null>;
   canMove: boolean;
   staged?: Piece;
 }) {
+  const [selected, setSelected] = selectedHook;
+
   return (
-    <td onMouseEnter={() => setHovering(location)}>
-      <StyledGameCell selected={selected} canMove={canMove}>
+    <td onMouseEnter={() => setHoveringLoc(location)}>
+      <StyledGameCell canMove={canMove}>
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
-        {staged && <ChessPiece piece={staged} staged />}
-        {cell.piece && <ChessPiece piece={cell.piece} />}
-        {cell.ghost && <Ghost />}
+        {cell.piece && (
+          <ChessPiece
+            piece={cell.piece}
+            onClick={() => cell.piece && setSelected(cell.piece.id)}
+            isSelected={cell.piece.id === selected}
+            pos={PiecePos.normal}
+          />
+        )}
+        {cell.ghost && (
+          <GhostPiece
+            onClick={() => cell.ghost && setSelected(cell.ghost.id)}
+            pos={PiecePos.botRight}
+            isSelected={cell.ghost.id === selected}
+          />
+        )}
+        {staged && <ChessPiece piece={staged} staged isSelected={false} />}
       </StyledGameCell>
     </td>
   );
@@ -123,11 +146,14 @@ export function Game() {
   );
   const board = boardFromGame(gameState);
 
-  const [selected, setSelected] = useState<BoardLocation | null>(null);
+  // you can hover / select ghosts or pieces - keyed by id
+  const selectedHook = useState<number | null>(null);
+  const [selected, setSelected] = selectedHook;
+
+  // once a ghost / piece is selected, you can stage it to a location
+  const [hoveringLoc, setHoveringLoc] = useState<BoardLocation | null>(null);
   const [canMove, setCanMove] = useState<BoardLocation[]>([]);
   const [staged, setStaged] = useState<[BoardLocation, Piece] | null>(null);
-
-  const [hovering, setHovering] = useState<BoardLocation | null>(null);
 
   /* attach event listeners */
   // when a move is accepted, wait for a response
@@ -160,6 +186,7 @@ export function Game() {
     };
   });
 
+  /*
   // sync selected to canMove
   useLayoutEffect(() => {
     setStaged(null);
@@ -168,28 +195,37 @@ export function Game() {
       setCanMove([]);
       return;
     }
-    const piece = board[loc[0]][loc[1]].piece;
-    if (piece) setCanMove(getCanMove(loc, piece.pieceType));
+    const { piece, ghost } = board[loc[0]][loc[1]];
+    if (ghost) {
+      setCanMove(getCanMove(loc, PieceType.King));
+      return;
+    }
+    if (piece) {
+      setCanMove(getCanMove(loc, piece.pieceType));
+    }
   }, [selected]);
+  */
 
   const submitMove = () => {
     if (!selected) return;
 
-    const selectedPiece = board[selected[0]][selected[1]].piece;
-
-    if (selectedPiece && staged) {
-      console.log(selectedPiece);
-      gm.movePiece(selectedPiece?.id, staged[0]);
+    if (staged) {
+      gm.movePiece(selected, staged[0]);
       setTurnState(TurnState.Submitting);
     }
   };
 
   // events are managed globally by the board
+
   const doClick = (_e: React.MouseEvent) => {
+    _e.preventDefault();
+    return;
+
+    /*
     if (turnState >= TurnState.Submitting) return;
     if (!hovering) return;
     const loc = hovering;
-    const piece = board[loc[0]][loc[1]].piece;
+    const { piece, ghost } = board[loc[0]][loc[1]];
 
     if (selected) {
       // if a cell is already selected...
@@ -208,14 +244,25 @@ export function Game() {
       return;
     }
 
-    if (piece) {
+    if (ghost) {
       setSelected(hovering);
+      return;
     }
+
+    if (piece) {
+      // only if the cell has a piece i own
+      setSelected(hovering);
+      return;
+    }
+    */
   };
 
   return (
     <StyledGame>
-      <StyledGameBoard onMouseLeave={() => setHovering(null)} onClick={doClick}>
+      <StyledGameBoard
+        onMouseLeave={() => setHoveringLoc(null)}
+        onClick={doClick}
+      >
         <tbody>
           {transform(board).map((row: ChessCell[], i: number) => (
             <tr key={i}>
@@ -226,8 +273,8 @@ export function Game() {
                     key={JSON.stringify(loc)}
                     location={loc}
                     cell={cell}
-                    setHovering={setHovering}
-                    selected={compareLoc(selected, loc)}
+                    setHoveringLoc={setHoveringLoc}
+                    selectedHook={selectedHook}
                     canMove={hasLoc(canMove, loc)}
                     staged={
                       staged && compareLoc(staged[0], loc)

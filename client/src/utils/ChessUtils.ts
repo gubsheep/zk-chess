@@ -5,6 +5,8 @@ import {
   ChessCell,
   PieceType,
   Color,
+  Ghost,
+  Piece,
 } from '../_types/global/GlobalTypes';
 import { almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
 import { SIZE } from './constants';
@@ -30,6 +32,11 @@ const blackBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [
   6 - j,
   6 - i,
 ];
+
+export const isGhost = (piece: Piece | Ghost): boolean => {
+  if (piece.hasOwnProperty('pieceType')) return false;
+  return true;
+}
 
 export const boardLocMap = (
   color: Color
@@ -155,7 +162,7 @@ export const sampleGame: ChessGame = {
     makePiece([3, 0], Color.BLACK, PieceType.Knight),
     makePiece([5, 0], Color.BLACK),
   ],
-  myGhost: { location: [6, 2], id: 0, owner: null },
+  myGhost: { location: [4, 2], id: 0, owner: null },
   objectives: [
     makeObjective([0, 3], 10, Color.WHITE),
     makeObjective([3, 3], 10, null),

@@ -9,6 +9,14 @@ import React, { useContext } from 'react';
 import styled, { css } from 'styled-components';
 import AbstractGameManager from '../api/AbstractGameManager';
 import { GameManagerContext } from './LandingPage';
+import { MouseEventHandler } from 'react';
+
+const flexCenter = css`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+`;
 
 const ghostImgStyles = css`
   width: 60%;
@@ -21,18 +29,32 @@ const normalImgStyles = css`
   height: 80%;
 `;
 
-const StyledPiece = styled.div`
+export enum PiecePos {
+  normal,
+  topLeft,
+  botRight,
+}
+const StyledPieceWrapper = styled.div<{ pos: PiecePos; selected?: boolean }>`
   position: absolute;
-  width: 64pt;
-  height: 64pt;
+  width: ${({ pos }) => (pos === PiecePos.normal ? '64pt' : '32pt')};
+  height: ${({ pos }) => (pos === PiecePos.normal ? '64pt' : '32pt')};
 
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
+  top: ${({ pos }) => (pos === PiecePos.botRight ? '32pt' : '0')};
+  left: ${({ pos }) => (pos === PiecePos.botRight ? '32pt' : '0')};
+
+  background: ${({ selected }) => (selected ? '#888' : 'none')};
+
+  ${flexCenter};
 `;
 
-const StyledChessPiece = styled(StyledPiece)<{
+const StyledBasePiece = styled.div`
+  width: 100%;
+  height: 100%;
+
+  ${flexCenter};
+`;
+
+const StyledChessPiece = styled(StyledBasePiece)<{
   ghost?: boolean;
   staged?: boolean;
 }>`
@@ -53,13 +75,23 @@ const blackPieceUrls = {
   Knight: './public/chess/black_knight.svg',
 };
 
+type HoverProps = {
+  onClick?: MouseEventHandler;
+  pos?: PiecePos;
+  isSelected: boolean;
+};
+
 export function ChessPiece({
   piece,
   staged,
+
+  onClick,
+  pos,
+  isSelected: selected,
 }: {
   piece: Piece;
   staged?: boolean;
-}) {
+} & HoverProps) {
   const gm = useContext<AbstractGameManager | null>(GameManagerContext);
   if (!gm) return <>error</>;
 
@@ -71,13 +103,19 @@ export function ChessPiece({
       : whitePieceUrls[piece.pieceType];
 
   return (
-    <StyledChessPiece staged={staged}>
-      <img src={url} />
-    </StyledChessPiece>
+    <StyledPieceWrapper
+      pos={pos || PiecePos.normal}
+      onClick={onClick}
+      selected={selected}
+    >
+      <StyledChessPiece staged={staged}>
+        <img src={url} />
+      </StyledChessPiece>
+    </StyledPieceWrapper>
   );
 }
 
-export function Ghost() {
+export function GhostPiece({ onClick, pos, isSelected: selected }: HoverProps) {
   const gm = useContext<AbstractGameManager | null>(GameManagerContext);
   if (!gm) return <>error</>;
 
@@ -89,9 +127,15 @@ export function Ghost() {
       : './public/chess/white_ghost.svg';
 
   return (
-    <StyledChessPiece ghost>
-      <img src={url} />
-    </StyledChessPiece>
+    <StyledPieceWrapper
+      pos={pos || PiecePos.normal}
+      onClick={onClick}
+      selected={selected}
+    >
+      <StyledChessPiece ghost>
+        <img src={url} />
+      </StyledChessPiece>
+    </StyledPieceWrapper>
   );
 }
 
@@ -109,7 +153,7 @@ const whiteObj = css`
   color: black;
 `;
 
-const StyledObjective = styled(StyledPiece)<{
+const StyledObjective = styled(StyledBasePiece)<{
   pieceColor: Color | null;
 }>`
   span.obj {
@@ -140,10 +184,12 @@ export function ObjectivePiece({ objective }: { objective: Objective }) {
   const color = gm.getColor(objective.owner);
 
   return (
-    <StyledObjective pieceColor={color}>
-      <span className='obj'>
-        <span>{objective.value}</span>
-      </span>
-    </StyledObjective>
+    <StyledPieceWrapper pos={PiecePos.normal}>
+      <StyledObjective pieceColor={color}>
+        <span className='obj'>
+          <span>{objective.value}</span>
+        </span>
+      </StyledObjective>
+    </StyledPieceWrapper>
   );
 }
