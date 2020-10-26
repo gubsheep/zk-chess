@@ -24,7 +24,7 @@ import {
   PieceType,
   SetFn,
 } from '../_types/global/GlobalTypes';
-import { ChessPiece, Ghost } from './ChessPiece';
+import { ChessPiece, Ghost, ObjectivePiece } from './BoardPieces';
 
 const borderColor = 'black';
 const StyledGameBoard = styled.table`
@@ -75,6 +75,7 @@ function GameCell({
   return (
     <td onMouseEnter={() => setHovering(location)}>
       <StyledGameCell selected={selected} canMove={canMove}>
+        {cell.objective && <ObjectivePiece objective={cell.objective} />}
         {staged && <ChessPiece piece={staged} staged />}
         {cell.piece && <ChessPiece piece={cell.piece} />}
         {cell.ghost && <Ghost />}
@@ -131,7 +132,7 @@ export function Game({ gameManager }: { gameManager: AbstractGameManager }) {
     const doConfirm = () => {
       setGameState(_.cloneDeep(gameManager.getGameState()));
       setSelected(null);
-      setTurnState(TurnState.Waiting);
+      setTurnState(TurnState.Moving);
     };
 
     gameManager.addListener(GameManagerEvent.MoveConfirmed, doConfirm);
@@ -203,8 +204,8 @@ export function Game({ gameManager }: { gameManager: AbstractGameManager }) {
                 const loc: BoardLocation = [j, i];
                 return (
                   <GameCell
-                    location={loc}
                     key={JSON.stringify(loc)}
+                    location={loc}
                     cell={cell}
                     setHovering={setHovering}
                     selected={compareLoc(selected, loc)}

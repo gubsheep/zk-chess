@@ -1,11 +1,11 @@
-import React, {useEffect, MouseEvent} from 'react';
-import {useState} from 'react';
+import React, { useEffect, MouseEvent } from 'react';
+import { useState } from 'react';
 import AbstractGameManager from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
-import {EthAddress} from '../_types/global/GlobalTypes';
-import {Game} from './Game';
+import { EthAddress } from '../_types/global/GlobalTypes';
+import { Game } from './Game';
 
 enum InitState {
   NONE,
@@ -20,7 +20,7 @@ enum InitState {
   TERMINATED,
 }
 
-const MOCK_GAME = false;
+const MOCK_GAME = true;
 
 export function LandingPage() {
   const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
@@ -30,9 +30,12 @@ export function LandingPage() {
   const [initState, setInitState] = useState<InitState>(InitState.NONE);
 
   const startGame = async () => {
+    console.log('started game');
+
     if (MOCK_GAME) {
       const newGameManager = await FakeGameManager.create();
       setGameManager(newGameManager);
+      setInitState(InitState.COMPLETE);
     } else {
       setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
     }

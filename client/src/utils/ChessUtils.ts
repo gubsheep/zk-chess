@@ -62,31 +62,29 @@ export const getCanMove = (
 
 export const boardFromGame = (game: ChessGame): ChessBoard => {
   const allPieces = game.myPieces.concat(game.theirPieces);
-  const { myGhost } = game;
+  const { myGhost, objectives } = game;
 
-  const tempBoard: (ChessCell | null)[][] = Array(SIZE)
+  const tempBoard: ChessCell[][] = Array(SIZE)
     .fill(null)
-    .map(() => Array(SIZE).fill(null));
+    .map(() =>
+      Array(SIZE)
+        .fill(null)
+        .map((_) => new Object())
+    );
 
   for (const piece of allPieces) {
     const loc = piece.location;
-    tempBoard[loc[0]][loc[1]] = { piece };
+    tempBoard[loc[0]][loc[1]].piece = piece;
   }
 
   if (myGhost) {
     const loc = myGhost.location;
-    const temp = tempBoard[loc[0]][loc[1]];
-    if (temp) {
-      temp.ghost = myGhost;
-    } else {
-      tempBoard[loc[0]][loc[1]] = { ghost: myGhost };
-    }
+    tempBoard[loc[0]][loc[1]].ghost = myGhost;
   }
 
-  for (let i = 0; i < tempBoard.length; i++) {
-    for (let j = 0; j < tempBoard[0].length; j++) {
-      if (!tempBoard[i][j]) tempBoard[i][j] = new Object() as ChessCell;
-    }
+  for (const objective of objectives) {
+    const loc = objective.location;
+    tempBoard[loc[0]][loc[1]].objective = objective;
   }
 
   return tempBoard as ChessBoard;
@@ -105,6 +103,13 @@ const makePiece = (
   color,
 });
 
+const makeObjective = (loc: BoardLocation, value: number = 10) => ({
+  id: Math.random(),
+  owner: null,
+  location: loc,
+  value,
+});
+
 export const sampleGame: ChessGame = {
   myAddress: emptyAddress,
   player1: { address: emptyAddress },
@@ -121,5 +126,9 @@ export const sampleGame: ChessGame = {
     makePiece([5, 0], Color.BLACK),
   ],
   myGhost: { location: [6, 3], id: 0, owner: null },
-  objectives: [],
+  objectives: [
+    makeObjective([0, 3], 10),
+    makeObjective([3, 3], 10),
+    makeObjective([6, 3], 10),
+  ],
 };
