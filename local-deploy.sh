@@ -5,7 +5,8 @@ cd eth
 
 (
   sleep 1
-  yarn run deploy:dev
+  truffle compile
+  truffle migrate
 ) &
 
 # start up local blockchain with hardhat

@@ -1,30 +1,16 @@
 pragma solidity ^0.6.7;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
 import "./Verifier.sol";
-import "./ZKChessStorage.sol";
 
-// .______       _______     ___       _______  .___  ___.  _______
-// |   _  \     |   ____|   /   \     |       \ |   \/   | |   ____|
-// |  |_)  |    |  |__     /  ^  \    |  .--.  ||  \  /  | |  |__
-// |      /     |   __|   /  /_\  \   |  |  |  ||  |\/|  | |   __|
-// |  |\  \----.|  |____ /  _____  \  |  '--'  ||  |  |  | |  |____
-// | _| `._____||_______/__/     \__\ |_______/ |__|  |__| |_______|
-//
-// READ THIS FIRST BEFORE EDITING ANYTHING IN THIS FILE:
-// https://docs.openzeppelin.com/learn/upgrading-smart-contracts#limitations-of-contract-upgrades
-//
-// DO NOT ADD ANY STORAGE VARIABLES IN THIS FILE
-// IT SHOULD BELONG AT STORAGE CONTRACTS
-// ADDING STORAGE VARIABLES HERE WI LL BLOCK ANY STORAGE CONTRACTS FROM EVER
-// ADDING THEIR OWN VARIABLES EVER AGAIN.
+contract ZKChessCore {
+    address public adminAddress;
+    bool public paused;
+    bool public DISABLE_ZK_CHECK;
 
-contract ZKChessCore is Initializable, ZKChessStorage {
-    function initialize(address _adminAddress, bool _disableZKCheck)
-        public
-        initializer
-    {
+    uint256 pfsVerified;
+
+    constructor(address _adminAddress, bool _disableZKCheck) public {
         paused = false;
         DISABLE_ZK_CHECK = _disableZKCheck;
     }
