@@ -35,9 +35,10 @@ export type GameObject = {
   location: BoardLocation;
 };
 
+// strings so that they're non-falsy
 export enum Color {
-  BLACK,
-  WHITE,
+  BLACK = 'BLACK',
+  WHITE = 'WHITE',
 }
 
 export type Piece = GameObject & {

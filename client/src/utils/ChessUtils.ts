@@ -6,12 +6,35 @@ import {
   PieceType,
   Color,
 } from '../_types/global/GlobalTypes';
-import { address, almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
+import { almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
 import { SIZE } from './constants';
 
-export const transpose = (board: ChessBoard): ChessBoard => {
+const transpose = (board: ChessBoard): ChessBoard => {
   return board.map((_, colIndex) => board.map((row) => row[colIndex]));
 };
+
+const rot180 = (board: ChessBoard): ChessBoard => {
+  return board.map((row) => row.reverse()).reverse();
+};
+
+const whiteTransform = (board: ChessBoard): ChessBoard => transpose(board);
+
+const blackTransform = (board: ChessBoard): ChessBoard =>
+  rot180(transpose(board));
+
+export const boardMap = (color: Color): ((b: ChessBoard) => ChessBoard) =>
+  color === Color.WHITE ? whiteTransform : blackTransform;
+
+const whiteBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [j, i];
+const blackBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [
+  6 - j,
+  6 - i,
+];
+
+export const boardLocMap = (
+  color: Color
+): ((loc: BoardLocation) => BoardLocation) =>
+  color === Color.WHITE ? whiteBoardLocMap : blackBoardLocMap;
 
 export const compareLoc = (
   a: BoardLocation | null,
@@ -134,8 +157,8 @@ export const sampleGame: ChessGame = {
   ],
   myGhost: { location: [6, 2], id: 0, owner: null },
   objectives: [
-    makeObjective([0, 3], 10, -1),
-    makeObjective([3, 3], 10, 0),
-    makeObjective([6, 3], 10, 1),
+    makeObjective([0, 3], 10, Color.WHITE),
+    makeObjective([3, 3], 10, null),
+    makeObjective([6, 3], 10, Color.BLACK),
   ],
 };

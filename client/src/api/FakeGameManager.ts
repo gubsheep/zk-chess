@@ -13,7 +13,7 @@ import _ from 'lodash';
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 
 import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
-import { emptyAddress } from '../utils/CheckedTypeUtils';
+import { almostEmptyAddress, emptyAddress } from '../utils/CheckedTypeUtils';
 import { sampleGame } from '../utils/ChessUtils';
 import autoBind from 'auto-bind';
 import { getRandomActionId } from '../utils/Utils';
@@ -29,7 +29,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     super();
 
     this.gameState = _.cloneDeep(sampleGame);
-    this.account = emptyAddress;
+    this.account = almostEmptyAddress;
     autoBind(this);
   }
 

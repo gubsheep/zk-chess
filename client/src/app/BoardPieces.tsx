@@ -40,7 +40,7 @@ const StyledChessPiece = styled(StyledPiece)<{
     ${(props) => (props.ghost ? ghostImgStyles : normalImgStyles)};
   }
 
-  opacity: ${(props) => (props.staged ? '0.7' : '1.0')};
+  opacity: ${(props) => (props.staged ? '0.5' : '1.0')};
 `;
 
 const whitePieceUrls: Record<PieceType, string> = {
@@ -77,11 +77,17 @@ export function ChessPiece({
   );
 }
 
-export function Ghost({ color }: { color: Color }) {
+export function Ghost() {
+  const gm = useContext<AbstractGameManager | null>(GameManagerContext);
+  if (!gm) return <>error</>;
+
+  const color = gm.getColor(gm.getAccount());
+
   const url =
     color === Color.BLACK
       ? './public/chess/black_ghost.svg'
       : './public/chess/white_ghost.svg';
+
   return (
     <StyledChessPiece ghost>
       <img src={url} />

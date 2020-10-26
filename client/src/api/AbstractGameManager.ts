@@ -17,8 +17,6 @@ export default interface AbstractGameManager extends EventEmitter {
   destroy(): void;
 
   getAccount(): EthAddress | null;
-  isMyTurn(): boolean;
-  getColor(account: EthAddress | null): Color | null;
 
   getGameAddr(): EthAddress | null;
   getGameState(): ChessGame;
@@ -29,4 +27,8 @@ export default interface AbstractGameManager extends EventEmitter {
   ghostAttack(): void;
 
   makeProof(): AbstractGameManager;
+
+  // should be in gameUImanager
+  isMyTurn(): boolean;
+  getColor(account: EthAddress | null): Color | null;
 }

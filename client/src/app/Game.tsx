@@ -10,20 +10,18 @@ import AbstractGameManager, {
 import GameManager from '../api/GameManager';
 import {
   boardFromGame,
+  boardLocMap,
+  boardMap,
   compareLoc,
   getCanMove,
   hasLoc,
-  sampleGame,
-  transpose,
 } from '../utils/ChessUtils';
 import {
   BoardLocation,
   ChessCell,
   ChessGame,
   Color,
-  Hook,
   Piece,
-  PieceType,
   SetFn,
 } from '../_types/global/GlobalTypes';
 import { ChessPiece, Ghost, ObjectivePiece } from './BoardPieces';
@@ -84,7 +82,7 @@ function GameCell({
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
         {staged && <ChessPiece piece={staged} staged />}
         {cell.piece && <ChessPiece piece={cell.piece} />}
-        {cell.ghost && <Ghost color={Color.WHITE} />}
+        {cell.ghost && <Ghost />}
       </StyledGameCell>
     </td>
   );
@@ -111,6 +109,12 @@ const StyledGame = styled.div`
 export function Game() {
   const gm = useContext<AbstractGameManager | null>(GameManagerContext);
   if (!gm) return <>error initializing</>;
+
+  const myColor: Color | null = gm.getColor(gm.getAccount());
+  if (!myColor) return <>error with color</>;
+
+  const transform = boardMap(myColor);
+  const locMap = boardLocMap(myColor);
 
   const [turnState, setTurnState] = useState<TurnState>(TurnState.Moving);
 
@@ -188,19 +192,20 @@ export function Game() {
     const piece = board[loc[0]][loc[1]].piece;
 
     if (selected) {
-      if (compareLoc(selected, loc)) {
-        setSelected(null);
-        setTurnState(TurnState.Moving);
-        return;
-      }
+      // if a cell is already selected...
       if (hasLoc(canMove, loc)) {
+        // if you clicked a pending loc, stage a move
         const selectedPiece = board[selected[0]][selected[1]].piece;
         if (selectedPiece) {
           setStaged([loc, selectedPiece]);
           setTurnState(TurnState.Staging);
         }
-        return;
+      } else {
+        // otherwise reset selected
+        setSelected(null);
+        setTurnState(TurnState.Moving);
       }
+      return;
     }
 
     if (piece) {
@@ -212,10 +217,10 @@ export function Game() {
     <StyledGame>
       <StyledGameBoard onMouseLeave={() => setHovering(null)} onClick={doClick}>
         <tbody>
-          {transpose(board).map((row: ChessCell[], j: number) => (
-            <tr key={j}>
-              {row.map((cell: ChessCell, i: number) => {
-                const loc: BoardLocation = [i, j];
+          {transform(board).map((row: ChessCell[], i: number) => (
+            <tr key={i}>
+              {row.map((cell: ChessCell, j: number) => {
+                const loc: BoardLocation = locMap([i, j]);
                 return (
                   <GameCell
                     key={JSON.stringify(loc)}
