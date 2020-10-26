@@ -1,4 +1,4 @@
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -6,14 +6,14 @@ import {
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
-import {sampleGame} from '../utils/ChessUtils';
+import { sampleGame } from '../utils/ChessUtils';
 import _ from 'lodash';
 
 import AbstractGameManager from './AbstractGameManager';
 
-import {ContractsAPIEvent} from '../_types/darkforest/api/ContractsAPITypes';
-import {emptyAddress} from '../utils/CheckedTypeUtils';
-import {getRandomActionId} from '../utils/Utils';
+import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
+import { emptyAddress } from '../utils/CheckedTypeUtils';
+import { getRandomActionId } from '../utils/Utils';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -67,6 +67,16 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     window['gm'] = gameManager;
 
     return gameManager;
+  }
+
+  getAccount(): EthAddress | null {
+    return this.account;
+  }
+
+  isMyTurn(): boolean {
+    const { turnNumber, player1, player2 } = this.gameState;
+    const player = turnNumber % 2 === 0 ? player1 : player2;
+    return this.account === player.address;
   }
 
   getGameAddr(): EthAddress | null {

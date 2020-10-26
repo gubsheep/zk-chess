@@ -116,31 +116,48 @@ export function Game({ gameManager }: { gameManager: AbstractGameManager }) {
 
   const [hovering, setHovering] = useState<BoardLocation | null>(null);
 
-  // attach event listeners
+  /* attach event listeners */
+  // when a move is accepted, wait for a response
   useEffect(() => {
-    const doAccept = () => {
-      setTurnState(TurnState.Submitting);
-    };
-
+    const doAccept = () => setTurnState(TurnState.Submitting);
     gameManager.addListener(GameManagerEvent.MoveAccepted, doAccept);
 
     return () => {
-      gameManager.removeListener(GameManagerEvent.MoveAccepted, doAccept);
+      gameManager.removeAllListeners(GameManagerEvent.MoveAccepted);
     };
   });
+
+  // when you get a response, sync the game state
   useEffect(() => {
     const doConfirm = () => {
-      setGameState(_.cloneDeep(gameManager.getGameState()));
+      const newState = gameManager.getGameState();
+      setGameState(_.cloneDeep(newState));
       setSelected(null);
-      setTurnState(TurnState.Moving);
-    };
 
+      if (gameManager.isMyTurn()) {
+        setTurnState(TurnState.Moving);
+      } else {
+        setTurnState(TurnState.Waiting);
+      }
+    };
     gameManager.addListener(GameManagerEvent.MoveConfirmed, doConfirm);
 
     return () => {
       gameManager.removeAllListeners(GameManagerEvent.MoveConfirmed);
     };
   });
+
+  // sync selected to canMove
+  useLayoutEffect(() => {
+    setStaged(null);
+    const loc = selected;
+    if (!loc) {
+      setCanMove([]);
+      return;
+    }
+    const piece = board[loc[0]][loc[1]].piece;
+    if (piece) setCanMove(getCanMove(loc, piece.pieceType));
+  }, [selected]);
 
   const submitMove = () => {
     if (!selected) return;
@@ -154,7 +171,7 @@ export function Game({ gameManager }: { gameManager: AbstractGameManager }) {
     }
   };
 
-  // clicking should be managed at this level
+  // events are managed globally by the board
   const doClick = (_e: React.MouseEvent) => {
     if (turnState >= TurnState.Submitting) return;
     if (!hovering) return;
@@ -182,26 +199,14 @@ export function Game({ gameManager }: { gameManager: AbstractGameManager }) {
     }
   };
 
-  // sync selected to canMove
-  useLayoutEffect(() => {
-    setStaged(null);
-    const loc = selected;
-    if (!loc) {
-      setCanMove([]);
-      return;
-    }
-    const piece = board[loc[0]][loc[1]].piece;
-    if (piece) setCanMove(getCanMove(loc, piece.pieceType));
-  }, [selected]);
-
   return (
     <StyledGame>
       <StyledGameBoard onMouseLeave={() => setHovering(null)} onClick={doClick}>
         <tbody>
-          {transpose(board).map((row: ChessCell[], i: number) => (
-            <tr key={i}>
-              {row.map((cell: ChessCell, j: number) => {
-                const loc: BoardLocation = [j, i];
+          {transpose(board).map((row: ChessCell[], j: number) => (
+            <tr key={j}>
+              {row.map((cell: ChessCell, i: number) => {
+                const loc: BoardLocation = [i, j];
                 return (
                   <GameCell
                     key={JSON.stringify(loc)}

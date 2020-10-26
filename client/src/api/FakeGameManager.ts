@@ -1,4 +1,6 @@
-import {EventEmitter} from 'events';
+// @ts-nocheck
+
+import { EventEmitter } from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -9,13 +11,13 @@ import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
+import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 
-import {ContractsAPIEvent} from '../_types/darkforest/api/ContractsAPITypes';
-import {emptyAddress} from '../utils/CheckedTypeUtils';
-import {sampleGame} from '../utils/ChessUtils';
+import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
+import { emptyAddress } from '../utils/CheckedTypeUtils';
+import { sampleGame } from '../utils/ChessUtils';
 import autoBind from 'auto-bind';
-import {getRandomActionId} from '../utils/Utils';
+import { getRandomActionId } from '../utils/Utils';
 
 class FakeGameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -28,6 +30,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     super();
 
     this.gameState = _.cloneDeep(sampleGame);
+    this.account = emptyAddress;
     autoBind(this);
   }
 
@@ -47,6 +50,16 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     window['gm'] = gameManager;
 
     return gameManager;
+  }
+
+  getAccount(): EthAddress | null {
+    return this.account;
+  }
+
+  isMyTurn(): boolean {
+    const { turnNumber, player1, player2 } = this.gameState;
+    const player = turnNumber % 2 === 0 ? player1 : player2;
+    return this.account === player.address;
   }
 
   getGameAddr(): EthAddress | null {
@@ -80,20 +93,28 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     return Promise.resolve();
   }
 
-  confirmMove(): void {
-    this.emit(GameManagerEvent.MoveAccepted);
-
-    setTimeout(() => {
-      this.emit(GameManagerEvent.MoveConfirmed);
-      console.log('gm confirm move');
-    }, Math.random() * 5000);
-  }
-
   makeProof(): FakeGameManager {
     this.snarkHelper.getProof(1, 1, 1).then((args) => {
       this.contractsAPI.submitProof(args, getRandomActionId());
     });
     return this;
+  }
+
+  // AI functions
+  confirmMove(): void {
+    this.emit(GameManagerEvent.MoveAccepted);
+    this.gameState.turnNumber = 1;
+
+    setTimeout(() => {
+      this.emit(GameManagerEvent.MoveConfirmed);
+      console.log('gm confirm move');
+    }, 500);
+  }
+
+  opponentMove(): void {
+    this.gameState.theirPieces[1].location = [4, 2];
+    this.gameState.turnNumber = 0;
+    this.emit(GameManagerEvent.MoveConfirmed);
   }
 }
 

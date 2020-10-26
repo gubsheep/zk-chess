@@ -1,4 +1,4 @@
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -14,6 +14,9 @@ export enum GameManagerEvent {
 
 export default interface AbstractGameManager extends EventEmitter {
   destroy(): void;
+
+  getAccount(): EthAddress | null;
+  isMyTurn(): boolean;
 
   getGameAddr(): EthAddress | null;
   getGameState(): ChessGame;
