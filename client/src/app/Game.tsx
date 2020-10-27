@@ -12,6 +12,7 @@ import {
   boardMap,
   compareLoc,
   getCanMove,
+  getScores,
   hasLoc,
   isGhost,
 } from '../utils/ChessUtils';
@@ -20,6 +21,7 @@ import {
   ChessCell,
   ChessGame,
   Color,
+  GameWinner,
   Ghost,
   Hook,
   Piece,
@@ -65,12 +67,12 @@ function GameCell({
   selectedHook,
   canMove,
   stagedHook,
-  turnState,
+  gamePaused,
 }: {
   // data
   cell: ChessCell;
   location: BoardLocation;
-  turnState: TurnState;
+  gamePaused: boolean;
 
   // for displaying
   selectedHook: Hook<Selectable | null>;
@@ -83,16 +85,13 @@ function GameCell({
   const [selected, setSelected] = selectedHook;
   const [staged, setStaged] = stagedHook;
 
-  const double = cell.piece && cell.ghost;
   const isEmpty = !cell.piece && !cell.ghost;
   const canReallyMove = canMove && isEmpty;
-
-  const notMyTurn = turnState >= TurnState.Submitting;
 
   const pieceHandler = (obj: Piece | Ghost): React.MouseEventHandler => (
     e: React.MouseEvent
   ) => {
-    if (notMyTurn) return;
+    if (gamePaused) return;
 
     // if i don't own it, do nothing
     if (obj.owner !== gm.getAccount()) return;
@@ -110,7 +109,7 @@ function GameCell({
   };
 
   const cellHandler = (): void => {
-    if (notMyTurn) return;
+    if (gamePaused) return;
 
     // if selected is null, do nothing
     if (selected === null) return;
@@ -138,7 +137,7 @@ function GameCell({
                 onClick={pieceHandler(obj)}
                 isSelected={obj.id === selected?.id}
                 pos={i === 1 ? PiecePos.botRight : PiecePos.normal}
-                disabled={obj.owner !== gm.getAccount() || notMyTurn}
+                disabled={obj.owner !== gm.getAccount() || gamePaused}
               />
             )
         )}
@@ -263,6 +262,9 @@ export function Game() {
     setTurnState(TurnState.Submitting);
   };
 
+  const gamePaused =
+    turnState >= TurnState.Submitting || gameState.winner !== GameWinner.None;
+
   return (
     <StyledGame>
       <StyledGameBoard>
@@ -279,7 +281,7 @@ export function Game() {
                     selectedHook={selectedHook}
                     canMove={hasLoc(canMove, loc)}
                     stagedHook={stagedHook}
-                    turnState={turnState}
+                    gamePaused={gamePaused}
                   />
                 );
               })}
@@ -287,19 +289,40 @@ export function Game() {
           ))}
         </tbody>
       </StyledGameBoard>
-      <p>
-        {turnState === TurnState.Moving && (
-          <span>
-            your turn! move a piece...{' '}
-            {staged && <u onClick={submitMove}>click to confirm</u>}
-            {ghostCanAct && <u onClick={ghostAttack}>attack</u>}
-          </span>
-        )}
-        {turnState === TurnState.Submitting && <span>submitting move...</span>}
-        {turnState === TurnState.Waiting && (
-          <span>move confirmed. awaiting other player...</span>
-        )}
-      </p>
+      {gameState.winner === GameWinner.None ? (
+        <p>
+          {turnState === TurnState.Moving && (
+            <span>
+              your turn! move a piece...{' '}
+              {staged && <u onClick={submitMove}>click to confirm</u>}
+              {ghostCanAct && <u onClick={ghostAttack}>attack</u>}
+            </span>
+          )}
+          {turnState === TurnState.Submitting && (
+            <span>submitting move...</span>
+          )}
+          {turnState === TurnState.Waiting && (
+            <span>move confirmed. awaiting other player...</span>
+          )}
+        </p>
+      ) : (
+        <>
+          <p>
+            game complete! winner:{' '}
+            {gameState.winner === GameWinner.Player1
+              ? 'white (player 1)'
+              : 'black (player 2)'}
+          </p>
+          <p>
+            scores: <br />
+            {getScores(gameState).map((entry, i) => (
+              <>
+                player {i + 1} ({entry.player.address}): {entry.score} <br />
+              </>
+            ))}
+          </p>
+        </>
+      )}
     </StyledGame>
   );
 }

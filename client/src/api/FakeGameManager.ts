@@ -83,10 +83,10 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     console.log(`moved piece ${pieceId} to ${to}!`);
 
     const newState = _.cloneDeep(this.gameState);
-    for (let i = 0; i < newState.myPieces.length; i++) {
-      if (newState.myPieces[i].id === pieceId) {
+    for (let i = 0; i < newState.player1pieces.length; i++) {
+      if (newState.player1pieces[i].id === pieceId) {
         console.log('found a piece!');
-        newState.myPieces[i].location = to;
+        newState.player1pieces[i].location = to;
       }
     }
 
@@ -111,10 +111,10 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
     const newState = _.cloneDeep(this.gameState);
     const loc = newState.myGhost.location;
-    for (let i = 0; i < newState.theirPieces.length; i++) {
+    for (let i = 0; i < newState.player2pieces.length; i++) {
       // if my ghost is overlapping
-      if (compareLoc(newState.theirPieces[i].location, loc)) {
-        newState.theirPieces.splice(i, 1);
+      if (compareLoc(newState.player2pieces[i].location, loc)) {
+        newState.player2pieces.splice(i, 1);
         break;
       }
     }
@@ -143,7 +143,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
   }
 
   opponentMove(): void {
-    this.gameState.theirPieces[1].location = [4, 2];
+    this.gameState.player2pieces[1].location = [4, 2];
     this.gameState.turnNumber = 0;
     this.emit(GameManagerEvent.MoveConfirmed);
   }

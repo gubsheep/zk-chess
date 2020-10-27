@@ -57,14 +57,23 @@ export type Objective = GameObject & {
 export type Selectable = Ghost | Piece;
 export type StagedLoc = [BoardLocation, Selectable];
 
+export enum GameWinner {
+  None,
+  Player1,
+  Player2,
+}
+
 export type ChessGame = {
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
-  turnNumber: number;
 
-  myPieces: Piece[];
-  theirPieces: Piece[];
+  player1pieces: Piece[];
+  player2pieces: Piece[];
+
+  turnNumber: number;
+  winner: GameWinner; 
+
   myGhost: Ghost;
   objectives: Objective[];
 };

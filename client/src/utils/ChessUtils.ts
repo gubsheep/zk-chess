@@ -7,6 +7,9 @@ import {
   Color,
   Ghost,
   Piece,
+  GameWinner,
+  EthAddress,
+  Player,
 } from '../_types/global/GlobalTypes';
 import { almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
 import { SIZE } from './constants';
@@ -98,7 +101,7 @@ export const getCanMove = (obj: Piece | Ghost | null): BoardLocation[] => {
 };
 
 export const boardFromGame = (game: ChessGame): ChessBoard => {
-  const allPieces = game.myPieces.concat(game.theirPieces);
+  const allPieces = game.player1pieces.concat(game.player2pieces);
   const { myGhost, objectives } = game;
 
   const tempBoard: ChessCell[][] = Array(SIZE)
@@ -154,17 +157,41 @@ const makeObjective = (
   value,
 });
 
+export type ScoreEntry = {
+  player: Player;
+  score: number;
+};
+
+export const getScores = (game: ChessGame): [ScoreEntry, ScoreEntry] => {
+  let p1score = 0;
+  let p2score = 0;
+
+  for (const objective of game.objectives) {
+    if (objective.owner === game.player1.address) {
+      p1score += objective.value;
+    } else if (objective.owner === game.player2.address) {
+      p2score += objective.value;
+    }
+  }
+
+  return [
+    { player: game.player1, score: p1score },
+    { player: game.player2, score: p2score },
+  ];
+};
+
 export const sampleGame: ChessGame = {
   myAddress: emptyAddress,
   player1: { address: emptyAddress },
   player2: { address: almostEmptyAddress },
   turnNumber: 0,
-  myPieces: [
+  winner: GameWinner.Player1,
+  player1pieces: [
     makePiece([1, 6], Color.WHITE),
     makePiece([3, 6], Color.WHITE, PieceType.Knight),
     makePiece([5, 6], Color.WHITE),
   ],
-  theirPieces: [
+  player2pieces: [
     makePiece([1, 1], Color.BLACK),
     makePiece([3, 0], Color.BLACK, PieceType.Knight),
     makePiece([5, 0], Color.BLACK),
