@@ -80,21 +80,34 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
   }
 
   movePiece(pieceId: number, to: BoardLocation): Promise<void> {
-    for (const piece of this.gameState.myPieces) {
-      if (piece.id === pieceId) {
+    console.log(`moved piece ${pieceId} to ${to}!`);
+
+    const newState = _.cloneDeep(this.gameState);
+    for (let i = 0; i < newState.myPieces.length; i++) {
+      if (newState.myPieces[i].id === pieceId) {
         console.log('found a piece!');
-        piece.location = to;
+        newState.myPieces[i].location = to;
       }
     }
+
+    this.gameState = newState;
     console.log(this.gameState);
+
     return Promise.resolve();
   }
 
   moveGhost(ghostId: number, to: BoardLocation): Promise<void> {
+    console.log(`moved ghost ${ghostId} to ${to}!`);
+
+    const newState = _.cloneDeep(this.gameState);
+    newState.myGhost.location = to;
+    this.gameState = newState;
+
     return Promise.resolve();
   }
 
   ghostAttack(): Promise<void> {
+    console.log('ghost attack!');
     return Promise.resolve();
   }
 
@@ -113,6 +126,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     setTimeout(() => {
       this.emit(GameManagerEvent.MoveConfirmed);
       console.log('gm confirm move');
+      console.log(this.gameState);
     }, 500);
   }
 

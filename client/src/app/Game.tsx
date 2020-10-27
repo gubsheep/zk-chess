@@ -13,6 +13,7 @@ import {
   compareLoc,
   getCanMove,
   hasLoc,
+  isGhost,
 } from '../utils/ChessUtils';
 import {
   BoardLocation,
@@ -22,9 +23,7 @@ import {
   Ghost,
   Hook,
   Piece,
-  PieceType,
   Selectable,
-  SetFn,
   StagedLoc,
 } from '../_types/global/GlobalTypes';
 import { ChessPiece, ObjectivePiece, PiecePos } from './BoardPieces';
@@ -66,10 +65,12 @@ function GameCell({
   selectedHook,
   canMove,
   stagedHook,
+  turnState,
 }: {
   // data
   cell: ChessCell;
   location: BoardLocation;
+  turnState: TurnState;
 
   // for displaying
   selectedHook: Hook<Selectable | null>;
@@ -89,13 +90,17 @@ function GameCell({
   const pieceHandler = (obj: Piece | Ghost): React.MouseEventHandler => (
     e: React.MouseEvent
   ) => {
-    if (obj) {
-      if (obj.owner !== gm.getAccount()) return;
-      if (selected?.id === obj.id) {
-        setSelected(null);
-      } else {
-        setSelected(obj);
-      }
+    if (turnState >= TurnState.Submitting) return;
+
+    // if i don't own it, do nothing
+    if (obj.owner !== gm.getAccount()) return;
+
+    // clear staged when i click on currently selected
+    if (selected?.id === obj.id) {
+      setStaged(null);
+    } else {
+      // otherwise, i clicked a diff guy - select it
+      setSelected(obj);
     }
 
     // if you clicked on a piece, don't ask the cell to do anything
@@ -103,6 +108,8 @@ function GameCell({
   };
 
   const cellHandler = (): void => {
+    if (turnState >= TurnState.Submitting) return;
+
     // if selected is null, do nothing
     if (selected === null) return;
 
@@ -227,11 +234,37 @@ export function Game() {
     return;
   }, [selected]);
 
+  const [ghostCanAct, setGhostCanAct] = useState<boolean>(false);
+  useEffect(() => {
+    if (!selected || staged || !isGhost(selected)) {
+      setGhostCanAct(false);
+      return;
+    }
+
+    // if the cell the ghost is on has an enemy piece
+    for (const row of board) {
+      for (const cell of row) {
+        if (cell.piece && cell.ghost && cell.piece.owner !== cell.ghost.owner) {
+          // should always be true, but a fallback just in case
+          const fallback = compareLoc(selected.location, cell.ghost.location);
+          setGhostCanAct(fallback);
+          return;
+        }
+      }
+    }
+  }, [selected, staged, gameState]);
+
   const submitMove = () => {
     if (staged && selected !== null) {
-      gm.movePiece(selected.id, staged[0]);
+      if (isGhost(selected)) gm.moveGhost(selected.id, staged[0]);
+      else gm.movePiece(selected.id, staged[0]);
       setTurnState(TurnState.Submitting);
     }
+  };
+
+  const ghostAttack = () => {
+    gm.ghostAttack();
+    setTurnState(TurnState.Submitting);
   };
 
   return (
@@ -250,6 +283,7 @@ export function Game() {
                     selectedHook={selectedHook}
                     canMove={hasLoc(canMove, loc)}
                     stagedHook={stagedHook}
+                    turnState={turnState}
                   />
                 );
               })}
@@ -262,6 +296,7 @@ export function Game() {
           <span>
             your turn! move a piece...{' '}
             {staged && <u onClick={submitMove}>click to confirm</u>}
+            {ghostCanAct && <u onClick={ghostAttack}>attack</u>}
           </span>
         )}
         {turnState === TurnState.Submitting && <span>submitting move...</span>}
