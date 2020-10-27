@@ -2,8 +2,12 @@ pragma solidity ^0.6.7;
 pragma experimental ABIEncoderV2;
 
 import "./Verifier.sol";
+import "./Hasher.sol";
 
 contract ZKChessCore {
+    uint256
+        public constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+
     address public adminAddress;
     bool public paused;
     bool public DISABLE_ZK_CHECK;
@@ -52,6 +56,24 @@ contract ZKChessCore {
     //////////////
     /// Helper ///
     //////////////
+
+    function hashTriple(
+        uint256 val1,
+        uint256 val2,
+        uint256 val3
+    ) public pure returns (uint256) {
+        uint256 R = 0;
+        uint256 C = 0;
+
+        R = addmod(R, val1, FIELD_SIZE);
+        (R, C) = Hasher.MiMCSponge(R, C, 0);
+        R = addmod(R, val2, FIELD_SIZE);
+        (R, C) = Hasher.MiMCSponge(R, C, 0);
+        R = addmod(R, val3, FIELD_SIZE);
+        (R, C) = Hasher.MiMCSponge(R, C, 0);
+
+        return R;
+    }
 
     //////////////////////
     /// Game Mechanics ///

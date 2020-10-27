@@ -4,6 +4,8 @@ const rawExec = util.promisify(require("child_process").exec);
 
 const ZKChessCore = artifacts.require("ZKChessCore");
 const Verifier = artifacts.require("Verifier");
+const Hasher = artifacts.require("Hasher");
+const genContract = require("circomlib/src/mimcsponge_gencontract.js");
 
 const exec = async (command) => {
   const { error, stdout, stderr } = await rawExec(command);
@@ -18,6 +20,12 @@ const exec = async (command) => {
 };
 
 module.exports = async function (deployer, network, accounts) {
+  const SEED = "mimcsponge";
+  Hasher.abi = genContract.abi;
+  Hasher.bytecode = genContract.createCode(SEED, 220);
+  await deployer.deploy(Hasher);
+  await ZKChessCore.link(Hasher, Hasher.address);
+
   await deployer.deploy(Verifier);
   await ZKChessCore.link(Verifier, Verifier.address);
   const coreContract = await deployer.deploy(ZKChessCore, accounts[0], false);

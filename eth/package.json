@@ -16,7 +16,9 @@
   },
   "dependencies": {
     "@openzeppelin/contracts-ethereum-package": "^3.0.0",
+    "@truffle/artifactor": "^4.0.83",
     "@truffle/hdwallet-provider": "^1.1.1",
+    "circomlib": "^0.2.4",
     "dotenv": "^8.2.0",
     "readline-sync": "^1.4.10"
   }
