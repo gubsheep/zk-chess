@@ -137,7 +137,7 @@ function GameCell({
                 piece={obj}
                 onClick={pieceHandler(obj)}
                 isSelected={obj.id === selected?.id}
-                pos={double ? PiecePos.topLeft + i : PiecePos.normal}
+                pos={i === 1 ? PiecePos.botRight : PiecePos.normal}
                 disabled={obj.owner !== gm.getAccount() || notMyTurn}
               />
             )

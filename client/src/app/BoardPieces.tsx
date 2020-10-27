@@ -44,8 +44,8 @@ const StyledPieceWrapper = styled.div<{
   position: absolute;
   ${flexCenter};
 
-  width: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '70%')};
-  height: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '70%')};
+  width: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '60%')};
+  height: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '60%')};
 
   ${({ pos }) =>
     pos === PiecePos.botRight ? 'bottom: 0; right: 0;' : 'top: 0; left: 0;'};
