@@ -3,13 +3,14 @@ import {
   Objective,
   Piece,
   PieceType,
+  Selectable,
 } from '../_types/global/GlobalTypes';
 
 import React, { useContext } from 'react';
 import styled, { css } from 'styled-components';
 import AbstractGameManager from '../api/AbstractGameManager';
 import { GameManagerContext } from './LandingPage';
-import { MouseEventHandler } from 'react';
+import { isGhost } from '../utils/ChessUtils';
 
 const flexCenter = css`
   display: flex;
@@ -35,7 +36,11 @@ export enum PiecePos {
   botRight,
 }
 
-const StyledPieceWrapper = styled.div<{ pos: PiecePos; selected?: boolean }>`
+const StyledPieceWrapper = styled.div<{
+  pos: PiecePos;
+  selected?: boolean;
+  nohover?: boolean;
+}>`
   position: absolute;
   ${flexCenter};
 
@@ -46,12 +51,17 @@ const StyledPieceWrapper = styled.div<{ pos: PiecePos; selected?: boolean }>`
     pos === PiecePos.botRight ? 'bottom: 0; right: 0;' : 'top: 0; left: 0;'};
 
   // shitty but whatever
-  background: ${({ selected }) => (selected ? '#aaa !important' : 'none')};
+  ${({ selected }) =>
+    selected ? 'background: #aaa !important; z-index: 1;' : 'none'};
 
-  &:hover {
-    background: #eee;
-    z-index: 1;
-  }
+  ${({ nohover }) =>
+    !nohover &&
+    `
+    &:hover {
+      background: #eee;
+      z-index: 2;
+    }
+  `}
 `;
 
 const StyledBasePiece = styled.div`
@@ -83,7 +93,7 @@ const blackPieceUrls = {
 };
 
 type HoverProps = {
-  onClick?: MouseEventHandler;
+  onClick?: React.MouseEventHandler;
   pos?: PiecePos;
   isSelected: boolean;
 };
@@ -96,7 +106,7 @@ export function ChessPiece({
   pos,
   isSelected: selected,
 }: {
-  piece: Piece;
+  piece: Selectable;
   staged?: boolean;
 } & HoverProps) {
   const gm = useContext<AbstractGameManager | null>(GameManagerContext);
@@ -104,10 +114,19 @@ export function ChessPiece({
 
   const color = gm.getColor(piece.owner);
 
-  const url =
-    color === Color.BLACK
-      ? blackPieceUrls[piece.pieceType]
-      : whitePieceUrls[piece.pieceType];
+  let url: string = '';
+  if (isGhost(piece)) {
+    url =
+      color === Color.BLACK
+        ? './public/chess/black_ghost.svg'
+        : './public/chess/white_ghost.svg';
+  } else {
+    const chessPiece = piece as Piece;
+    url =
+      color === Color.BLACK
+        ? blackPieceUrls[chessPiece.pieceType]
+        : whitePieceUrls[chessPiece.pieceType];
+  }
 
   return (
     <StyledPieceWrapper
@@ -191,7 +210,7 @@ export function ObjectivePiece({ objective }: { objective: Objective }) {
   const color = gm.getColor(objective.owner);
 
   return (
-    <StyledPieceWrapper pos={PiecePos.normal}>
+    <StyledPieceWrapper pos={PiecePos.normal} nohover>
       <StyledObjective pieceColor={color}>
         <span className='obj'>
           <span>{objective.value}</span>

@@ -54,6 +54,9 @@ export type Objective = GameObject & {
   value: number;
 };
 
+export type Selectable = Ghost | Piece;
+export type StagedLoc = [BoardLocation, Selectable];
+
 export type ChessGame = {
   myAddress: EthAddress;
   player1: Player;

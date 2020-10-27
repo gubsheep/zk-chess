@@ -165,11 +165,11 @@ export const sampleGame: ChessGame = {
     makePiece([5, 6], Color.WHITE),
   ],
   theirPieces: [
-    makePiece([1, 0], Color.BLACK),
+    makePiece([1, 1], Color.BLACK),
     makePiece([3, 0], Color.BLACK, PieceType.Knight),
     makePiece([5, 0], Color.BLACK),
   ],
-  myGhost: { location: [1, 0], id: Math.random(), owner: null },
+  myGhost: { location: [1, 1], id: Math.random(), owner: null },
   objectives: [
     makeObjective([0, 3], 10, Color.WHITE),
     makeObjective([3, 3], 10, null),

@@ -23,7 +23,9 @@ import {
   Hook,
   Piece,
   PieceType,
+  Selectable,
   SetFn,
+  StagedLoc,
 } from '../_types/global/GlobalTypes';
 import {
   ChessPiece,
@@ -66,59 +68,77 @@ const StyledGameCell = styled.div<{ canMove: boolean }>`
 function GameCell({
   cell,
   location,
-  setHoveringLoc,
   selectedHook,
   canMove,
-  staged,
+  stagedHook,
 }: {
   // data
   cell: ChessCell;
   location: BoardLocation;
-  setHoveringLoc: SetFn<BoardLocation | null>;
 
   // for displaying
-  selectedHook: Hook<number | null>;
+  selectedHook: Hook<Selectable | null>;
   canMove: boolean;
-  staged?: Piece;
+  stagedHook: Hook<StagedLoc | null>;
 }) {
   const [selected, setSelected] = selectedHook;
-
-  const makeClick = (obj: Piece | Ghost): (() => void) => () => {
-    if (obj) {
-      if (selected === obj.id) {
-        setSelected(null);
-      } else {
-        setSelected(obj.id);
-      }
-    }
-  };
-
-  const emptyHandler = (): void => {
-    if (!cell.piece && !cell.ghost) setSelected(null);
-  };
+  const [staged, setStaged] = stagedHook;
 
   const double = cell.piece && cell.ghost;
+  const isEmpty = !cell.piece && !cell.ghost;
+  const canReallyMove = canMove && isEmpty;
+
+  const pieceHandler = (obj: Piece | Ghost): React.MouseEventHandler => (
+    e: React.MouseEvent
+  ) => {
+    if (obj) {
+      if (selected?.id === obj.id) {
+        setSelected(null);
+      } else {
+        setSelected(obj);
+      }
+    }
+
+    // if you clicked on a piece, don't ask the cell to do anything
+    e.stopPropagation();
+  };
+
+  const cellHandler = (): void => {
+    // if selected is null, do nothing
+    if (selected === null) return;
+
+    // if it's stageable, stage it
+    if (canReallyMove) {
+      setStaged([location, selected]);
+      return;
+    }
+
+    // otherwise, check if the cell is empty
+    if (isEmpty) setSelected(null);
+  };
 
   return (
-    <td onMouseEnter={() => setHoveringLoc(location)} onClick={emptyHandler}>
-      <StyledGameCell canMove={canMove}>
+    <td onClick={cellHandler}>
+      <StyledGameCell canMove={canReallyMove}>
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
         {cell.piece && (
           <ChessPiece
             piece={cell.piece}
-            onClick={makeClick(cell.piece)}
-            isSelected={cell.piece.id === selected}
+            onClick={pieceHandler(cell.piece)}
+            isSelected={cell.piece.id === selected?.id}
             pos={double ? PiecePos.topLeft : PiecePos.normal}
           />
         )}
         {cell.ghost && (
           <GhostPiece
-            onClick={makeClick(cell.ghost)}
-            isSelected={cell.ghost.id === selected}
+            onClick={pieceHandler(cell.ghost)}
+            isSelected={cell.ghost.id === selected?.id}
             pos={double ? PiecePos.botRight : PiecePos.normal}
           />
         )}
-        {staged && <ChessPiece piece={staged} staged isSelected={false} />}
+        {staged && compareLoc(staged[0], location) && (
+          <ChessPiece piece={staged[1]} staged isSelected={false} />
+        )}
       </StyledGameCell>
     </td>
   );
@@ -126,16 +146,9 @@ function GameCell({
 
 enum TurnState {
   Moving, // no move made
-  Staging, // move made, ask to confirm
   Submitting, // move submitted to chain
   Waiting, // move confirmed by chain; await other player
 }
-
-// enum ClickState {
-//   None,
-//   Selected,
-//   Staged,
-// }
 
 const StyledGame = styled.div`
   margin: 4em auto;
@@ -160,13 +173,13 @@ export function Game() {
   const board = boardFromGame(gameState);
 
   // you can hover / select ghosts or pieces - keyed by id
-  const selectedHook = useState<number | null>(null);
+  const selectedHook = useState<Selectable | null>(null);
   const [selected, setSelected] = selectedHook;
 
   // once a ghost / piece is selected, you can stage it to a location
-  const [hoveringLoc, setHoveringLoc] = useState<BoardLocation | null>(null);
   const [canMove, setCanMove] = useState<BoardLocation[]>([]);
-  const [staged, setStaged] = useState<[BoardLocation, Piece] | null>(null);
+  const stagedHook = useState<StagedLoc | null>(null);
+  const [staged, setStaged] = stagedHook;
 
   /* attach event listeners */
   // when a move is accepted, wait for a response
@@ -201,91 +214,26 @@ export function Game() {
 
   // sync selected to canMove
   useLayoutEffect(() => {
-    console.log(selected);
-
     setStaged(null);
     if (selected === null) {
       setCanMove([]);
       return;
     }
 
-    // O(n^2) but it's small so whatever
-    let obj: Ghost | Piece | null = null;
-    for (const row of board) {
-      for (const cell of row) {
-        if (cell.piece?.id === selected) {
-          obj = cell.piece;
-          break;
-        } else if (cell.ghost?.id === selected) {
-          console.log('hey i found a ghost');
-          obj = cell.ghost;
-          break;
-        }
-      }
-      if (obj) break;
-    }
-
-    setCanMove(getCanMove(obj));
+    setCanMove(getCanMove(selected));
     return;
   }, [selected]);
 
   const submitMove = () => {
-    if (selected === null) return;
-
-    if (staged) {
-      gm.movePiece(selected, staged[0]);
+    if (staged && selected !== null) {
+      gm.movePiece(selected.id, staged[0]);
       setTurnState(TurnState.Submitting);
     }
   };
 
-  // events are managed globally by the board
-
-  const doClick = (_e: React.MouseEvent) => {
-    _e.preventDefault();
-    return;
-
-    /*
-    if (turnState >= TurnState.Submitting) return;
-    if (!hovering) return;
-    const loc = hovering;
-    const { piece, ghost } = board[loc[0]][loc[1]];
-
-    if (selected) {
-      // if a cell is already selected...
-      if (hasLoc(canMove, loc)) {
-        // if you clicked a pending loc, stage a move
-        const selectedPiece = board[selected[0]][selected[1]].piece;
-        if (selectedPiece) {
-          setStaged([loc, selectedPiece]);
-          setTurnState(TurnState.Staging);
-        }
-      } else {
-        // otherwise reset selected
-        setSelected(null);
-        setTurnState(TurnState.Moving);
-      }
-      return;
-    }
-
-    if (ghost) {
-      setSelected(hovering);
-      return;
-    }
-
-    if (piece) {
-      // only if the cell has a piece i own
-      setSelected(hovering);
-      return;
-    }
-    */
-  };
-
   return (
     <StyledGame>
-      <StyledGameBoard
-        onMouseLeave={() => setHoveringLoc(null)}
-        onClick={doClick}
-      >
+      <StyledGameBoard>
         <tbody>
           {transform(board).map((row: ChessCell[], i: number) => (
             <tr key={i}>
@@ -296,14 +244,9 @@ export function Game() {
                     key={JSON.stringify(loc)}
                     location={loc}
                     cell={cell}
-                    setHoveringLoc={setHoveringLoc}
                     selectedHook={selectedHook}
                     canMove={hasLoc(canMove, loc)}
-                    staged={
-                      staged && compareLoc(staged[0], loc)
-                        ? staged[1]
-                        : undefined
-                    }
+                    stagedHook={stagedHook}
                   />
                 );
               })}
@@ -313,12 +256,9 @@ export function Game() {
       </StyledGameBoard>
       <p>
         {turnState === TurnState.Moving && (
-          <span>your turn! move a piece...</span>
-        )}
-        {turnState === TurnState.Staging && (
           <span>
             your turn! move a piece...{' '}
-            <u onClick={submitMove}>click to confirm</u>
+            {staged && <u onClick={submitMove}>click to confirm</u>}
           </span>
         )}
         {turnState === TurnState.Submitting && <span>submitting move...</span>}
