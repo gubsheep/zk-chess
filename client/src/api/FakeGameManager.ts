@@ -14,7 +14,7 @@ import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 
 import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
 import { almostEmptyAddress, emptyAddress } from '../utils/CheckedTypeUtils';
-import { sampleGame } from '../utils/ChessUtils';
+import { compareLoc, sampleGame } from '../utils/ChessUtils';
 import autoBind from 'auto-bind';
 import { getRandomActionId } from '../utils/Utils';
 
@@ -108,6 +108,18 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
   ghostAttack(): Promise<void> {
     console.log('ghost attack!');
+
+    const newState = _.cloneDeep(this.gameState);
+    const loc = newState.myGhost.location;
+    for (let i = 0; i < newState.theirPieces.length; i++) {
+      // if my ghost is overlapping
+      if (compareLoc(newState.theirPieces[i].location, loc)) {
+        newState.theirPieces.splice(i, 1);
+        break;
+      }
+    }
+    this.gameState = newState;
+
     return Promise.resolve();
   }
 
