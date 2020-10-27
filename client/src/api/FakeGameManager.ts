@@ -55,6 +55,10 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     return this.account;
   }
 
+  getEnemyAccount(): EthAddress | null {
+    return almostEmptyAddress;
+  }
+
   isMyTurn(): boolean {
     const { turnNumber, player1, player2 } = this.gameState;
     const player = turnNumber % 2 === 0 ? player1 : player2;
@@ -144,6 +148,14 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
   opponentMove(): void {
     this.gameState.player2pieces[1].location = [4, 2];
+    this.gameState.turnNumber = 0;
+    this.emit(GameManagerEvent.MoveConfirmed);
+  }
+
+  opponentAttack(): void {
+    const newState = _.cloneDeep(this.gameState);
+    newState.player1pieces.splice(0, 1);
+    this.gameState = newState;
     this.gameState.turnNumber = 0;
     this.emit(GameManagerEvent.MoveConfirmed);
   }

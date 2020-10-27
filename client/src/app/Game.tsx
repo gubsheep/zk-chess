@@ -11,6 +11,7 @@ import {
   boardLocMap,
   boardMap,
   compareLoc,
+  enemyGhostMoved,
   getCanMove,
   getScores,
   hasLoc,
@@ -68,6 +69,7 @@ function GameCell({
   canMove,
   stagedHook,
   gamePaused,
+  enemyGhostOpacity,
 }: {
   // data
   cell: ChessCell;
@@ -78,6 +80,9 @@ function GameCell({
   selectedHook: Hook<Selectable | null>;
   canMove: boolean;
   stagedHook: Hook<StagedLoc | null>;
+
+  // for animation
+  enemyGhostOpacity: number | null;
 }) {
   const gm = useContext<AbstractGameManager | null>(GameManagerContext);
   if (!gm) return <>error</>;
@@ -124,10 +129,24 @@ function GameCell({
     if (isEmpty) setSelected(null);
   };
 
+  const dummyGhost: Ghost = {
+    owner: gm.getEnemyAccount(),
+    id: 0,
+    location: [0, 0],
+  };
+
   return (
     <td onClick={cellHandler}>
       <StyledGameCell canMove={canReallyMove}>
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
+        {enemyGhostOpacity !== null && (
+          <ChessPiece
+            piece={dummyGhost}
+            pos={PiecePos.topLeft}
+            disabled={true}
+            style={{ opacity: enemyGhostOpacity }}
+          />
+        )}
         {[cell.piece, cell.ghost].map(
           (obj, i) =>
             obj && (
@@ -186,6 +205,11 @@ export function Game() {
   const stagedHook = useState<StagedLoc | null>(null);
   const [staged, setStaged] = stagedHook;
 
+  // enemy ghost as [loc, opacity]
+  const [enemyGhost, setEnemyGhost] = useState<[BoardLocation, number] | null>(
+    null
+  );
+
   /* attach event listeners */
   // when a move is accepted, wait for a response
   useEffect(() => {
@@ -197,25 +221,51 @@ export function Game() {
     };
   });
 
-  // when you get a response, sync the game state
+  // subscribe to game state updates
   useEffect(() => {
-    const doConfirm = () => {
+    const syncState = () => {
       const newState = gm.getGameState();
+
+      // check if enemy ghost has acted
+      const enemyGhostLoc = enemyGhostMoved(
+        gameState,
+        newState,
+        gm.getAccount()
+      );
+      if (enemyGhostLoc) {
+        setEnemyGhost([enemyGhostLoc, 1]);
+      }
+
       setGameState(_.cloneDeep(newState));
       setSelected(null);
-
-      if (gm.isMyTurn()) {
-        setTurnState(TurnState.Moving);
-      } else {
-        setTurnState(TurnState.Waiting);
-      }
     };
-    gm.addListener(GameManagerEvent.MoveConfirmed, doConfirm);
+    gm.addListener(GameManagerEvent.MoveConfirmed, syncState);
 
     return () => {
       gm.removeAllListeners(GameManagerEvent.MoveConfirmed);
     };
   });
+
+  // sync things to game state
+  useEffect(() => {
+    if (gm.isMyTurn()) {
+      setTurnState(TurnState.Moving);
+    } else {
+      setTurnState(TurnState.Waiting);
+    }
+  }, [gameState]);
+
+  // handle animation
+  useLayoutEffect(() => {
+    if (enemyGhost === null) return;
+    if (enemyGhost[1] <= 0) {
+      setEnemyGhost(null);
+      return;
+    }
+    setTimeout(() => {
+      setEnemyGhost((ghost) => ghost && [ghost[0], ghost[1] - 0.02]);
+    }, 30);
+  }, [enemyGhost]);
 
   // sync selected to canMove
   useLayoutEffect(() => {
@@ -282,6 +332,11 @@ export function Game() {
                     canMove={hasLoc(canMove, loc)}
                     stagedHook={stagedHook}
                     gamePaused={gamePaused}
+                    enemyGhostOpacity={
+                      enemyGhost && compareLoc(enemyGhost[0], loc)
+                        ? enemyGhost[1]
+                        : null
+                    }
                   />
                 );
               })}

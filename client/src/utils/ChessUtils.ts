@@ -180,12 +180,45 @@ export const getScores = (game: ChessGame): [ScoreEntry, ScoreEntry] => {
   ];
 };
 
+export const enemyGhostMoved = (
+  oldState: ChessGame,
+  newState: ChessGame,
+  myAddress: EthAddress | null
+): BoardLocation | null => {
+  if (!myAddress) return null;
+  const isPlayer1 = oldState.player1.address === myAddress;
+  const myOldPieces = isPlayer1
+    ? oldState.player1pieces
+    : oldState.player2pieces;
+  const myNewPieces = isPlayer1
+    ? newState.player1pieces
+    : newState.player2pieces;
+
+  // no pieces taken
+  if (myOldPieces.length === myNewPieces.length) return null;
+
+  // find where a piece was taken
+  for (const piece of myOldPieces) {
+    let found = false;
+    for (const newPiece of myNewPieces) {
+      if (newPiece.id === piece.id) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) return piece.location;
+  }
+
+  return null;
+};
+
 export const sampleGame: ChessGame = {
   myAddress: emptyAddress,
   player1: { address: emptyAddress },
   player2: { address: almostEmptyAddress },
   turnNumber: 0,
-  winner: GameWinner.Player1,
+  winner: GameWinner.None,
   player1pieces: [
     makePiece([1, 6], Color.WHITE),
     makePiece([3, 6], Color.WHITE, PieceType.Knight),

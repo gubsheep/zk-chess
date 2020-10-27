@@ -17,6 +17,7 @@ export default interface AbstractGameManager extends EventEmitter {
   destroy(): void;
 
   getAccount(): EthAddress | null;
+  getEnemyAccount(): EthAddress | null;
 
   getGameAddr(): EthAddress | null;
   getGameState(): ChessGame;

@@ -74,6 +74,10 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     return this.account;
   }
 
+  getEnemyAccount(): EthAddress | null {
+    return emptyAddress;
+  }
+
   isMyTurn(): boolean {
     const { turnNumber, player1, player2 } = this.gameState;
     const player = turnNumber % 2 === 0 ? player1 : player2;

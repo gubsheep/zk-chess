@@ -50,16 +50,17 @@ const StyledPieceWrapper = styled.div<{
   ${({ pos }) =>
     pos === PiecePos.botRight ? 'bottom: 0; right: 0;' : 'top: 0; left: 0;'};
 
+  ${({ pos }) =>
+    pos !== PiecePos.normal ? 'z-index: 2;' : PiecePos.topLeft && 'z-index: 1;'}
+
   // shitty but whatever
-  ${({ selected }) =>
-    selected ? 'background: #aaa !important; z-index: 1;' : 'none'};
+  ${({ selected }) => (selected ? 'background: #aaa !important;' : 'none')};
 
   ${({ nohover }) =>
     !nohover &&
     `
     &:hover {
       background: #eee;
-      z-index: 2;
     }
   `}
 `;
@@ -96,12 +97,13 @@ type HoverProps = {
   disabled?: boolean;
   onClick?: React.MouseEventHandler;
   pos?: PiecePos;
-  isSelected: boolean;
+  isSelected?: boolean;
 };
 
 export function ChessPiece({
   piece,
   staged,
+  style,
 
   onClick,
   pos,
@@ -110,11 +112,12 @@ export function ChessPiece({
 }: {
   piece: Selectable;
   staged?: boolean;
+  style?: React.CSSProperties;
 } & HoverProps) {
   const gm = useContext<AbstractGameManager | null>(GameManagerContext);
   if (!gm) return <>error</>;
 
-  const color = gm.getColor(piece.owner);
+  const color = gm.getColor(piece.owner) || Color.WHITE;
 
   let url: string = '';
   if (isGhost(piece)) {
@@ -136,6 +139,7 @@ export function ChessPiece({
       onClick={onClick}
       selected={isSelected}
       nohover={disabled}
+      style={style}
     >
       <StyledChessPiece staged={staged}>
         <img src={url} />
