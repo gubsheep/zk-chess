@@ -27,12 +27,7 @@ import {
   SetFn,
   StagedLoc,
 } from '../_types/global/GlobalTypes';
-import {
-  ChessPiece,
-  GhostPiece,
-  ObjectivePiece,
-  PiecePos,
-} from './BoardPieces';
+import { ChessPiece, ObjectivePiece, PiecePos } from './BoardPieces';
 import { GameManagerContext } from './LandingPage';
 
 const borderColor = 'black';
@@ -81,6 +76,9 @@ function GameCell({
   canMove: boolean;
   stagedHook: Hook<StagedLoc | null>;
 }) {
+  const gm = useContext<AbstractGameManager | null>(GameManagerContext);
+  if (!gm) return <>error</>;
+
   const [selected, setSelected] = selectedHook;
   const [staged, setStaged] = stagedHook;
 
@@ -92,6 +90,7 @@ function GameCell({
     e: React.MouseEvent
   ) => {
     if (obj) {
+      if (obj.owner !== gm.getAccount()) return;
       if (selected?.id === obj.id) {
         setSelected(null);
       } else {
@@ -127,13 +126,17 @@ function GameCell({
             onClick={pieceHandler(cell.piece)}
             isSelected={cell.piece.id === selected?.id}
             pos={double ? PiecePos.topLeft : PiecePos.normal}
+            disabled={cell.piece.owner !== gm.getAccount()}
           />
         )}
         {cell.ghost && (
-          <GhostPiece
+          <ChessPiece
+            piece={cell.ghost}
             onClick={pieceHandler(cell.ghost)}
             isSelected={cell.ghost.id === selected?.id}
             pos={double ? PiecePos.botRight : PiecePos.normal}
+            // shouldn't need this, but just in case
+            disabled={cell.ghost.owner !== gm.getAccount()}
           />
         )}
         {staged && compareLoc(staged[0], location) && (

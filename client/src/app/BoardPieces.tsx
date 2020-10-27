@@ -93,6 +93,7 @@ const blackPieceUrls = {
 };
 
 type HoverProps = {
+  disabled?: boolean;
   onClick?: React.MouseEventHandler;
   pos?: PiecePos;
   isSelected: boolean;
@@ -104,7 +105,8 @@ export function ChessPiece({
 
   onClick,
   pos,
-  isSelected: selected,
+  isSelected,
+  disabled,
 }: {
   piece: Selectable;
   staged?: boolean;
@@ -132,33 +134,10 @@ export function ChessPiece({
     <StyledPieceWrapper
       pos={pos || PiecePos.normal}
       onClick={onClick}
-      selected={selected}
+      selected={isSelected}
+      nohover={disabled}
     >
       <StyledChessPiece staged={staged}>
-        <img src={url} />
-      </StyledChessPiece>
-    </StyledPieceWrapper>
-  );
-}
-
-export function GhostPiece({ onClick, pos, isSelected: selected }: HoverProps) {
-  const gm = useContext<AbstractGameManager | null>(GameManagerContext);
-  if (!gm) return <>error</>;
-
-  const color = gm.getColor(gm.getAccount());
-
-  const url =
-    color === Color.BLACK
-      ? './public/chess/black_ghost.svg'
-      : './public/chess/white_ghost.svg';
-
-  return (
-    <StyledPieceWrapper
-      pos={pos || PiecePos.normal}
-      onClick={onClick}
-      selected={selected}
-    >
-      <StyledChessPiece ghost>
         <img src={url} />
       </StyledChessPiece>
     </StyledPieceWrapper>

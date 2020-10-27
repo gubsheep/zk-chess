@@ -29,7 +29,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     super();
 
     this.gameState = _.cloneDeep(sampleGame);
-    this.account = almostEmptyAddress;
+    this.account = emptyAddress;
     autoBind(this);
   }
 
