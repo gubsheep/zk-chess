@@ -36,7 +36,7 @@ const blackBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [
 export const isGhost = (piece: Piece | Ghost): boolean => {
   if (piece.hasOwnProperty('pieceType')) return false;
   return true;
-}
+};
 
 export const boardLocMap = (
   color: Color
@@ -58,7 +58,7 @@ export const hasLoc = (arr: BoardLocation[], loc: BoardLocation): boolean => {
   return false;
 };
 
-export const getCanMove = (
+export const getCanMoveLoc = (
   loc: BoardLocation,
   pieceType: PieceType
 ): BoardLocation[] => {
@@ -88,6 +88,13 @@ export const getCanMove = (
   }
 
   return [];
+};
+
+export const getCanMove = (obj: Piece | Ghost | null): BoardLocation[] => {
+  if (!obj) return [];
+  const loc = obj.location;
+  if (isGhost(obj)) return getCanMoveLoc(loc, PieceType.King);
+  else return getCanMoveLoc(loc, (obj as Piece).pieceType);
 };
 
 export const boardFromGame = (game: ChessGame): ChessBoard => {
@@ -162,7 +169,7 @@ export const sampleGame: ChessGame = {
     makePiece([3, 0], Color.BLACK, PieceType.Knight),
     makePiece([5, 0], Color.BLACK),
   ],
-  myGhost: { location: [4, 2], id: 0, owner: null },
+  myGhost: { location: [1, 0], id: Math.random(), owner: null },
   objectives: [
     makeObjective([0, 3], 10, Color.WHITE),
     makeObjective([3, 3], 10, null),

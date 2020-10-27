@@ -1,13 +1,11 @@
 import _ from 'lodash';
-import React, { useContext } from 'react';
-import { useLayoutEffect } from 'react';
+import React, { useContext, useLayoutEffect } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
-import GameManager from '../api/GameManager';
 import {
   boardFromGame,
   boardLocMap,
@@ -15,7 +13,6 @@ import {
   compareLoc,
   getCanMove,
   hasLoc,
-  isGhost,
 } from '../utils/ChessUtils';
 import {
   BoardLocation,
@@ -86,23 +83,39 @@ function GameCell({
 }) {
   const [selected, setSelected] = selectedHook;
 
+  const makeClick = (obj: Piece | Ghost): (() => void) => () => {
+    if (obj) {
+      if (selected === obj.id) {
+        setSelected(null);
+      } else {
+        setSelected(obj.id);
+      }
+    }
+  };
+
+  const emptyHandler = (): void => {
+    if (!cell.piece && !cell.ghost) setSelected(null);
+  };
+
+  const double = cell.piece && cell.ghost;
+
   return (
-    <td onMouseEnter={() => setHoveringLoc(location)}>
+    <td onMouseEnter={() => setHoveringLoc(location)} onClick={emptyHandler}>
       <StyledGameCell canMove={canMove}>
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
         {cell.piece && (
           <ChessPiece
             piece={cell.piece}
-            onClick={() => cell.piece && setSelected(cell.piece.id)}
+            onClick={makeClick(cell.piece)}
             isSelected={cell.piece.id === selected}
-            pos={PiecePos.normal}
+            pos={double ? PiecePos.topLeft : PiecePos.normal}
           />
         )}
         {cell.ghost && (
           <GhostPiece
-            onClick={() => cell.ghost && setSelected(cell.ghost.id)}
-            pos={PiecePos.botRight}
+            onClick={makeClick(cell.ghost)}
             isSelected={cell.ghost.id === selected}
+            pos={double ? PiecePos.botRight : PiecePos.normal}
           />
         )}
         {staged && <ChessPiece piece={staged} staged isSelected={false} />}
@@ -186,28 +199,38 @@ export function Game() {
     };
   });
 
-  /*
   // sync selected to canMove
   useLayoutEffect(() => {
+    console.log(selected);
+
     setStaged(null);
-    const loc = selected;
-    if (!loc) {
+    if (selected === null) {
       setCanMove([]);
       return;
     }
-    const { piece, ghost } = board[loc[0]][loc[1]];
-    if (ghost) {
-      setCanMove(getCanMove(loc, PieceType.King));
-      return;
+
+    // O(n^2) but it's small so whatever
+    let obj: Ghost | Piece | null = null;
+    for (const row of board) {
+      for (const cell of row) {
+        if (cell.piece?.id === selected) {
+          obj = cell.piece;
+          break;
+        } else if (cell.ghost?.id === selected) {
+          console.log('hey i found a ghost');
+          obj = cell.ghost;
+          break;
+        }
+      }
+      if (obj) break;
     }
-    if (piece) {
-      setCanMove(getCanMove(loc, piece.pieceType));
-    }
+
+    setCanMove(getCanMove(obj));
+    return;
   }, [selected]);
-  */
 
   const submitMove = () => {
-    if (!selected) return;
+    if (selected === null) return;
 
     if (staged) {
       gm.movePiece(selected, staged[0]);

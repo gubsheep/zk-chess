@@ -19,8 +19,8 @@ const flexCenter = css`
 `;
 
 const ghostImgStyles = css`
-  width: 60%;
-  height: 60%;
+  width: 80%;
+  height: 80%;
   // opacity: 0.5;
 `;
 
@@ -34,17 +34,24 @@ export enum PiecePos {
   topLeft,
   botRight,
 }
+
 const StyledPieceWrapper = styled.div<{ pos: PiecePos; selected?: boolean }>`
   position: absolute;
-  width: ${({ pos }) => (pos === PiecePos.normal ? '64pt' : '32pt')};
-  height: ${({ pos }) => (pos === PiecePos.normal ? '64pt' : '32pt')};
-
-  top: ${({ pos }) => (pos === PiecePos.botRight ? '32pt' : '0')};
-  left: ${({ pos }) => (pos === PiecePos.botRight ? '32pt' : '0')};
-
-  background: ${({ selected }) => (selected ? '#888' : 'none')};
-
   ${flexCenter};
+
+  width: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '70%')};
+  height: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '70%')};
+
+  ${({ pos }) =>
+    pos === PiecePos.botRight ? 'bottom: 0; right: 0;' : 'top: 0; left: 0;'};
+
+  // shitty but whatever
+  background: ${({ selected }) => (selected ? '#aaa !important' : 'none')};
+
+  &:hover {
+    background: #eee;
+    z-index: 1;
+  }
 `;
 
 const StyledBasePiece = styled.div`
