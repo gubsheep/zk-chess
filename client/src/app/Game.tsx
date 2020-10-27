@@ -87,10 +87,12 @@ function GameCell({
   const isEmpty = !cell.piece && !cell.ghost;
   const canReallyMove = canMove && isEmpty;
 
+  const notMyTurn = turnState >= TurnState.Submitting;
+
   const pieceHandler = (obj: Piece | Ghost): React.MouseEventHandler => (
     e: React.MouseEvent
   ) => {
-    if (turnState >= TurnState.Submitting) return;
+    if (notMyTurn) return;
 
     // if i don't own it, do nothing
     if (obj.owner !== gm.getAccount()) return;
@@ -108,7 +110,7 @@ function GameCell({
   };
 
   const cellHandler = (): void => {
-    if (turnState >= TurnState.Submitting) return;
+    if (notMyTurn) return;
 
     // if selected is null, do nothing
     if (selected === null) return;
@@ -127,24 +129,18 @@ function GameCell({
     <td onClick={cellHandler}>
       <StyledGameCell canMove={canReallyMove}>
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
-        {cell.piece && (
-          <ChessPiece
-            piece={cell.piece}
-            onClick={pieceHandler(cell.piece)}
-            isSelected={cell.piece.id === selected?.id}
-            pos={double ? PiecePos.topLeft : PiecePos.normal}
-            disabled={cell.piece.owner !== gm.getAccount()}
-          />
-        )}
-        {cell.ghost && (
-          <ChessPiece
-            piece={cell.ghost}
-            onClick={pieceHandler(cell.ghost)}
-            isSelected={cell.ghost.id === selected?.id}
-            pos={double ? PiecePos.botRight : PiecePos.normal}
-            // shouldn't need this, but just in case
-            disabled={cell.ghost.owner !== gm.getAccount()}
-          />
+        {[cell.piece, cell.ghost].map(
+          (obj, i) =>
+            obj && (
+              <ChessPiece
+                key={i}
+                piece={obj}
+                onClick={pieceHandler(obj)}
+                isSelected={obj.id === selected?.id}
+                pos={double ? PiecePos.topLeft : PiecePos.normal}
+                disabled={obj.owner !== gm.getAccount() || notMyTurn}
+              />
+            )
         )}
         {staged && compareLoc(staged[0], location) && (
           <ChessPiece piece={staged[1]} staged isSelected={false} />
