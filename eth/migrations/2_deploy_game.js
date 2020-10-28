@@ -28,7 +28,7 @@ module.exports = async function (deployer, network, accounts) {
 
   await deployer.deploy(Verifier);
   await ZKChessCore.link(Verifier, Verifier.address);
-  const coreContract = await deployer.deploy(ZKChessCore, accounts[0], false);
+  const coreContract = await deployer.deploy(ZKChessCore, false);
   console.log("ZKChessCore's address ", coreContract.address);
 
   await exec("mkdir -p ../client/src/utils");

@@ -276,6 +276,10 @@ library Verifier {
             218836011609678798491981644063312935463042727981456509273511908450036681027,
             11435027994633696333795808680738539689507940337297698112586662466336386102431
         );
+        vk.IC[2] = Pairing.G1Point(
+            218836011609678798491981644063312935463042727981456509273511908450036681027,
+            11435027994633696333795808680738539689507940337297698112586662466336386102431
+        );
     }
 
     function verify(
@@ -337,7 +341,7 @@ library Verifier {
         uint256[2] memory a,
         uint256[2][2] memory b,
         uint256[2] memory c,
-        uint256[1] memory input
+        uint256[2] memory input
     ) public view returns (bool) {
         uint256[] memory inputValues = new uint256[](input.length);
         for (uint256 i = 0; i < input.length; i++) {
