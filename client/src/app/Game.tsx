@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import React, { useContext, useLayoutEffect } from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import React, {useContext, useLayoutEffect} from 'react';
+import {useEffect} from 'react';
+import {useState} from 'react';
 import styled from 'styled-components';
 import AbstractGameManager, {
   GameManagerEvent,
@@ -22,15 +22,15 @@ import {
   ChessCell,
   ChessGame,
   Color,
-  GameWinner,
+  GameState,
   Ghost,
   Hook,
   Piece,
   Selectable,
   StagedLoc,
 } from '../_types/global/GlobalTypes';
-import { ChessPiece, ObjectivePiece, PiecePos } from './BoardPieces';
-import { GameManagerContext } from './LandingPage';
+import {ChessPiece, ObjectivePiece, PiecePos} from './BoardPieces';
+import {GameManagerContext} from './LandingPage';
 
 const borderColor = 'black';
 const StyledGameBoard = styled.table`
@@ -54,7 +54,7 @@ const StyledGameBoard = styled.table`
   }
 `;
 
-const StyledGameCell = styled.div<{ canMove: boolean }>`
+const StyledGameCell = styled.div<{canMove: boolean}>`
   width: 100%;
   height: 100%;
   margin: 0;
@@ -133,6 +133,7 @@ function GameCell({
     owner: gm.getEnemyAccount(),
     id: 0,
     location: [0, 0],
+    commitment: '0',
   };
 
   return (
@@ -144,7 +145,7 @@ function GameCell({
             piece={dummyGhost}
             pos={PiecePos.topLeft}
             disabled={true}
-            style={{ opacity: enemyGhostOpacity }}
+            style={{opacity: enemyGhostOpacity}}
           />
         )}
         {[cell.piece, cell.ghost].map(
@@ -213,12 +214,14 @@ export function Game() {
   /* attach event listeners */
   // when a move is accepted, wait for a response
   useEffect(() => {
+    /*
     const doAccept = () => setTurnState(TurnState.Submitting);
     gm.addListener(GameManagerEvent.MoveAccepted, doAccept);
 
     return () => {
       gm.removeAllListeners(GameManagerEvent.MoveAccepted);
     };
+    */
   });
 
   // subscribe to game state updates
@@ -239,10 +242,14 @@ export function Game() {
       setGameState(_.cloneDeep(newState));
       setSelected(null);
     };
-    gm.addListener(GameManagerEvent.MoveConfirmed, syncState);
+    gm.addListener(GameManagerEvent.GameStart, syncState);
+    gm.addListener(GameManagerEvent.MoveMade, syncState);
+    gm.addListener(GameManagerEvent.GameFinished, syncState);
 
     return () => {
-      gm.removeAllListeners(GameManagerEvent.MoveConfirmed);
+      gm.removeAllListeners(GameManagerEvent.GameStart);
+      gm.removeAllListeners(GameManagerEvent.MoveMade);
+      gm.removeAllListeners(GameManagerEvent.GameFinished);
     };
   });
 
@@ -313,7 +320,8 @@ export function Game() {
   };
 
   const gamePaused =
-    turnState >= TurnState.Submitting || gameState.winner !== GameWinner.None;
+    turnState >= TurnState.Submitting ||
+    gameState.gameState === GameState.COMPLETE;
 
   return (
     <StyledGame>
@@ -344,7 +352,7 @@ export function Game() {
           ))}
         </tbody>
       </StyledGameBoard>
-      {gameState.winner === GameWinner.None ? (
+      {gameState.gameState !== GameState.COMPLETE ? (
         <p>
           {turnState === TurnState.Moving && (
             <span>
@@ -362,12 +370,7 @@ export function Game() {
         </p>
       ) : (
         <>
-          <p>
-            game complete! winner:{' '}
-            {gameState.winner === GameWinner.Player1
-              ? 'white (player 1)'
-              : 'black (player 2)'}
-          </p>
+          <p>game complete! winner: {'TODO: CALCULATE SCORES'}</p>
           <p>
             scores: <br />
             {getScores(gameState).map((entry, i) => (

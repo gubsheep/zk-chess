@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -7,10 +7,15 @@ import {
 } from '../_types/global/GlobalTypes';
 
 export enum GameManagerEvent {
-  JoinedGame = 'JoinedGame', // args: ()
-  GameStart = 'GameStart', // args: ()
-  MoveAccepted = 'MoveAccepted', // args: ()
-  MoveConfirmed = 'MoveConfirmed', // args: ()
+  TxInitialized = 'TxInitialized', // args: (unminedTx: UnconfirmedTx)
+  TxInitFailed = 'TxInitFailed', // args: (unminedTx: UnconfirmedTx, error: Error)
+  TxSubmitted = 'TxSubmitted', // args: (unminedTx: SubmtitedTx)
+  TxFailed = 'TxFailed', // args: (unminedTx: SubmittedTx, error: Error)
+  TxConfirmed = 'TxConfirmed', // args: (unminedTx: SubmittedTx)
+
+  GameStart = 'GameStart', // args: (updatedGameState: ChessGame)
+  MoveMade = 'MoveMade', // args: (updatedGameState: ChessGame)
+  GameFinished = 'GameFinished', // args: (updatedGameState: ChessGame)
 }
 
 export default interface AbstractGameManager extends EventEmitter {
@@ -21,8 +26,9 @@ export default interface AbstractGameManager extends EventEmitter {
 
   getGameAddr(): EthAddress | null;
   getGameState(): ChessGame;
+  refreshGameState(): Promise<ChessGame>;
 
-  joinGame(): Promise<void>;
+  joinGame(): void;
   movePiece(pieceId: number, to: BoardLocation): void;
   moveGhost(ghostId: number, to: BoardLocation): void;
   ghostAttack(): void;

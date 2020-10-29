@@ -1,5 +1,4 @@
-import bigInt from 'big-integer';
-import {BigInteger} from 'big-integer';
+import bigInt, {BigInteger} from 'big-integer';
 
 export const p = bigInt(
   '21888242871839275222246405745257275088548364400416034343698204186575808495617'
@@ -277,7 +276,8 @@ function mimcSponge(
   return outputs;
 }
 
-export const modPBigInt = (x: number) => {
+export const modPBigInt = (x: BigInteger | number | string) => {
+  // @ts-ignore: declaration file for bigInt doesn't support union types
   let ret = bigInt(x).mod(p);
   if (ret.lesser(bigInt(0))) {
     ret = ret.add(p);
@@ -285,15 +285,9 @@ export const modPBigInt = (x: number) => {
   return ret;
 };
 
-export const modPBigIntNative = (x: BigInteger) => {
-  let ret = x.mod(p);
-  if (ret.lesser(bigInt(0))) {
-    ret = ret.add(p);
-  }
-  return ret;
-};
-
-export const mimcWithRounds = (rounds: number) => (...inputs: number[]) =>
+export const mimcWithRounds = (rounds: number) => (
+  ...inputs: (number | BigInteger | string)[]
+) =>
   mimcSponge(
     inputs.map((n) => modPBigInt(n)),
     1,

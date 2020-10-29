@@ -1,11 +1,13 @@
-import React, { createContext } from 'react';
-import { useState } from 'react';
-import AbstractGameManager from '../api/AbstractGameManager';
+import React, {createContext} from 'react';
+import {useState} from 'react';
+import AbstractGameManager, {
+  GameManagerEvent,
+} from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
-import { EthAddress } from '../_types/global/GlobalTypes';
-import { Game } from './Game';
+import {EthAddress} from '../_types/global/GlobalTypes';
+import {Game} from './Game';
 
 enum InitState {
   NONE,
@@ -15,12 +17,12 @@ enum InitState {
   ASKING_GAME_ADDR,
   FETCHING_ETH_DATA,
   FETCHED_ETH_DATA,
-  ALL_CHECKS_PASS,
+  WAITING_FOR_PLAYERS,
   COMPLETE,
   TERMINATED,
 }
 
-const MOCK_GAME = true;
+const MOCK_GAME = false;
 
 export const GameManagerContext = createContext<AbstractGameManager | null>(
   null
@@ -79,8 +81,11 @@ export function LandingPage() {
     if (!gameManager) {
       return;
     }
-    await gameManager.joinGame();
-    setInitState(InitState.COMPLETE);
+    gameManager.on(GameManagerEvent.GameStart, () => {
+      setInitState(InitState.COMPLETE);
+    });
+    gameManager.joinGame();
+    setInitState(InitState.WAITING_FOR_PLAYERS);
   };
 
   if (initState === InitState.NONE) {
@@ -115,6 +120,12 @@ export function LandingPage() {
     return (
       <div>
         <p onClick={joinGame}>Join Game</p>
+      </div>
+    );
+  } else if (initState === InitState.WAITING_FOR_PLAYERS) {
+    return (
+      <div>
+        <p>Waiting for players...</p>
       </div>
     );
   } else if (initState === InitState.COMPLETE && gameManager) {

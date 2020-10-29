@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
-import { Dispatch } from 'react';
-import { SetStateAction } from 'react';
+import {EventEmitter} from 'events';
+import {Dispatch} from 'react';
+import {SetStateAction} from 'react';
 
 interface WindowEthereumObject extends EventEmitter {
   enable: () => void;
@@ -23,8 +23,8 @@ export type SetFn<S> = Dispatch<SetStateAction<S>>;
 export type Hook<S> = [S, SetFn<S>];
 
 export enum PieceType {
-  King = 'King',
-  Knight = 'Knight',
+  King,
+  Knight,
 }
 
 export type BoardLocation = [number, number];
@@ -47,7 +47,13 @@ export type Piece = GameObject & {
 };
 
 export type Ghost = GameObject & {
-  color?: boolean;
+  commitment: string;
+};
+
+export type ContractGhost = {
+  id: number;
+  owner: EthAddress | null;
+  commitment: string;
 };
 
 export type Objective = GameObject & {
@@ -57,11 +63,27 @@ export type Objective = GameObject & {
 export type Selectable = Ghost | Piece;
 export type StagedLoc = [BoardLocation, Selectable];
 
-export enum GameWinner {
-  None,
-  Player1,
-  Player2,
+export enum GameState {
+  WAITING_FOR_PLAYERS,
+  P1_TO_MOVE,
+  P2_TO_MOVE,
+  COMPLETE,
 }
+
+export type ChessGameContractData = {
+  myAddress: EthAddress;
+  player1: Player;
+  player2: Player;
+
+  player1pieces: Piece[];
+  player2pieces: Piece[];
+
+  turnNumber: number;
+  gameState: GameState;
+
+  myContractGhost: ContractGhost;
+  objectives: Objective[];
+};
 
 export type ChessGame = {
   myAddress: EthAddress;
@@ -72,7 +94,7 @@ export type ChessGame = {
   player2pieces: Piece[];
 
   turnNumber: number;
-  winner: GameWinner; 
+  gameState: GameState;
 
   myGhost: Ghost;
   objectives: Objective[];

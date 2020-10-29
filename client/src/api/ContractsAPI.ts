@@ -1,15 +1,22 @@
 //import * as EventEmitter from 'events';
+import {BigNumber as EthersBN} from 'ethers';
 import {EventEmitter} from 'events';
-import {EthAddress} from '../_types/global/GlobalTypes';
+import {
+  ChessGameContractData,
+  ContractGhost,
+  EthAddress,
+  Objective,
+  Piece,
+} from '../_types/global/GlobalTypes';
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
 // in particular, the below is bad!
 // import {TransactionReceipt, Provider, TransactionResponse, Web3Provider} from "ethers/providers";
 import {Contract, providers} from 'ethers';
 import _ from 'lodash';
 
-import {address} from '../utils/CheckedTypeUtils';
+import {address, emptyAddress} from '../utils/CheckedTypeUtils';
 import {
-  UnconfirmedTx,
+  UnsubmittedAction,
   ContractsAPIEvent,
   SubmittedTx,
   ContractEvent,
@@ -18,10 +25,15 @@ import {
   SubmittedProve,
   ZKArgIdx,
   ProveArgIdx,
+  RawPiece,
+  RawObjective,
+  SubmittedMove,
+  UnsubmittedMove,
+  UnsubmittedProve,
+  UnsubmittedJoin,
+  SubmittedJoin,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
-
-export const contractPrecision = 1000;
 
 type QueuedTxRequest = {
   actionId: string;
@@ -120,7 +132,7 @@ class ContractsAPI extends EventEmitter {
   readonly account: EthAddress;
   private coreContract: Contract;
   private readonly txRequestExecutor: TxExecutor;
-  private unminedTxs: Map<string, UnconfirmedTx>;
+  private unminedTxs: Map<string, UnsubmittedAction>;
 
   private constructor(
     account: EthAddress,
@@ -131,7 +143,7 @@ class ContractsAPI extends EventEmitter {
     this.account = account;
     this.coreContract = coreContract;
     this.txRequestExecutor = new TxExecutor(nonce);
-    this.unminedTxs = new Map<string, UnconfirmedTx>();
+    this.unminedTxs = new Map<string, UnsubmittedAction>();
   }
 
   static async create(): Promise<ContractsAPI> {
@@ -166,6 +178,15 @@ class ContractsAPI extends EventEmitter {
         this.emit(ContractsAPIEvent.ProofVerified);
       }
     );
+    this.coreContract.on(ContractEvent.GameStart, () => {
+      this.emit(ContractsAPIEvent.GameStart);
+    });
+    this.coreContract.on(ContractEvent.MoveMade, () => {
+      this.emit(ContractsAPIEvent.MoveMade);
+    });
+    this.coreContract.on(ContractEvent.GameFinished, () => {
+      this.emit(ContractsAPIEvent.GameFinished);
+    });
   }
 
   removeEventListeners(): void {
@@ -176,7 +197,7 @@ class ContractsAPI extends EventEmitter {
     return address(this.coreContract.address);
   }
 
-  public onTxInit(unminedTx: UnconfirmedTx): void {
+  public onTxInit(unminedTx: UnsubmittedAction): void {
     this.unminedTxs.set(unminedTx.actionId, unminedTx);
     this.emit(ContractsAPIEvent.TxInitialized, unminedTx);
   }
@@ -194,13 +215,69 @@ class ContractsAPI extends EventEmitter {
 
   private onTxConfirmation(unminedTx: SubmittedTx, success: boolean) {
     this.unminedTxs.delete(unminedTx.actionId);
-    if (!success) console.error(`tx ${unminedTx.txHash} reverted`);
-    this.emit(ContractsAPIEvent.TxConfirmed, unminedTx);
+    if (success) this.emit(ContractsAPIEvent.TxConfirmed, unminedTx);
+    else this.emit(ContractsAPIEvent.TxFailed, new Error('tx reverted'));
+  }
+
+  public async getGameState(): Promise<ChessGameContractData> {
+    const contract = this.coreContract;
+    const player1Addr = address(await contract.player1());
+    const player2Addr = address(await contract.player2());
+    const rawPieces: RawPiece[] = await contract.getPieces();
+    const rawObjectives: RawObjective[] = await contract.getObjectives();
+    const turnNumber = await contract.turnNumber();
+    const gameState = await contract.gameState();
+
+    const player1pieces: Piece[] = [];
+    const player2pieces: Piece[] = [];
+    let myContractGhost: ContractGhost = {
+      id: -1,
+      owner: null,
+      commitment: '',
+    }; // dummy value
+    for (const rawPiece of rawPieces) {
+      const piece = this.rawPieceToPiece(rawPiece);
+      if (piece) {
+        if (piece.owner === player1Addr) {
+          player1pieces.push(piece);
+        } else if (piece.owner === player2Addr) {
+          player2pieces.push(piece);
+        }
+      } else {
+        // is a ghost
+        if (address(rawPiece[2]) === this.account) {
+          // my ghost
+          myContractGhost = {
+            id: rawPiece[0],
+            owner: address(rawPiece[2]),
+            commitment: rawPiece[6].toString(),
+          };
+        }
+      }
+    }
+
+    const objectives = [];
+    for (const rawObjective of rawObjectives) {
+      const objective = this.rawObjectiveToPiece(rawObjective);
+      objectives.push(objective);
+    }
+
+    return {
+      myAddress: this.account,
+      player1: {address: player1Addr},
+      player2: {address: player2Addr},
+      player1pieces,
+      player2pieces,
+      turnNumber,
+      gameState,
+      myContractGhost,
+      objectives,
+    };
   }
 
   public async submitProof(
     snarkArgs: ProofArgs,
-    actionId: string
+    action: UnsubmittedProve
   ): Promise<providers.TransactionReceipt> {
     const overrides: providers.TransactionRequest = {
       gasPrice: 1000000000,
@@ -209,7 +286,7 @@ class ContractsAPI extends EventEmitter {
 
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
-        actionId,
+        actionId: action.actionId,
         contract: this.coreContract,
         method: 'checkProof',
         args: snarkArgs,
@@ -219,15 +296,104 @@ class ContractsAPI extends EventEmitter {
 
     if (tx.hash) {
       const unminedProveTx: SubmittedProve = {
-        actionId,
-        type: EthTxType.PROVE,
+        ...action,
         txHash: tx.hash,
         sentAtTimestamp: Math.floor(Date.now() / 1000),
-        output: snarkArgs[ZKArgIdx.DATA][ProveArgIdx.OUTPUT],
       };
       this.onTxSubmit(unminedProveTx);
     }
     return tx.wait();
+  }
+
+  public async joinGame(
+    action: UnsubmittedJoin
+  ): Promise<providers.TransactionReceipt> {
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        actionId: action.actionId,
+        contract: this.coreContract,
+        method: 'joinGame',
+        args: [],
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      const unminedJoinTx: SubmittedJoin = {
+        ...action,
+        txHash: tx.hash,
+        sentAtTimestamp: Math.floor(Date.now() / 1000),
+      };
+      this.onTxSubmit(unminedJoinTx);
+    }
+    return tx.wait();
+  }
+
+  public async movePiece(
+    pieceId: number,
+    toRow: number,
+    toCol: number,
+    action: UnsubmittedMove
+  ): Promise<providers.TransactionReceipt> {
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        actionId: action.actionId,
+        contract: this.coreContract,
+        method: 'movePiece',
+        args: [pieceId.toString(), toRow.toString(), toCol.toString()],
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      const unminedMoveTx: SubmittedMove = {
+        ...action,
+        txHash: tx.hash,
+        sentAtTimestamp: Math.floor(Date.now() / 1000),
+      };
+      this.onTxSubmit(unminedMoveTx);
+    }
+    return tx.wait();
+  }
+
+  private rawPieceToPiece(rawPiece: RawPiece): Piece | null {
+    // returns null if ghost
+    if (rawPiece[1] === 2) {
+      // this is a ghost
+      return null;
+    }
+    let owner: EthAddress | null = address(rawPiece[2]);
+    if (owner === emptyAddress) {
+      owner = null;
+    }
+    return {
+      id: rawPiece[0],
+      owner,
+      location: [rawPiece[4], rawPiece[3]],
+      pieceType: rawPiece[1],
+      captured: rawPiece[5],
+    };
+  }
+
+  private rawObjectiveToPiece(rawObjective: RawObjective): Objective {
+    let owner: EthAddress | null = address(rawObjective[4]);
+    if (owner === emptyAddress) {
+      owner = null;
+    }
+    return {
+      id: rawObjective[0],
+      owner,
+      location: [rawObjective[3], rawObjective[2]],
+      value: rawObjective[1],
+    };
   }
 }
 

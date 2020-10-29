@@ -27,14 +27,22 @@ export enum MoveArgIdxs {
 
 export enum ContractEvent {
   ProofVerified = 'ProofVerified',
+  GameStart = 'GameStart',
+  MoveMade = 'MoveMade',
+  GameFinished = 'GameFinished',
 }
 
 export enum ContractsAPIEvent {
   ProofVerified = 'ProofVerified',
-  TxInitialized = 'TxInitialized',
-  TxInitFailed = 'TxInitFailed',
-  TxSubmitted = 'TxSubmitted',
-  TxConfirmed = 'TxConfirmed',
+  GameStart = 'GameStart', // args: ()
+  MoveMade = 'MoveMade', // args: ()
+  GameFinished = 'GameFinished', // args: ()
+
+  TxInitialized = 'TxInitialized', // args: (unminedTx: UnconfirmedTx)
+  TxInitFailed = 'TxInitFailed', // args: (unminedTx: UnconfirmedTx, error: Error)
+  TxSubmitted = 'TxSubmitted', // args: (unminedTx: SubmittedTx)
+  TxFailed = 'TxFailed', // args: (unminedTx: SubmittedTx, error: Error)
+  TxConfirmed = 'TxConfirmed', // args: (unminedTx: SubmittedTx)
 }
 
 export type ProofArgs = [
@@ -69,58 +77,82 @@ export type MoveArgs = [
   ]
 ];
 
-export type RawUpgrade = {
-  0: EthersBN;
-  popCapMultiplier?: EthersBN;
+export type RawPiece = {
+  0: number;
+  id?: number;
 
-  1: EthersBN;
-  popGroMultiplier?: EthersBN;
+  1: number;
+  pieceType?: number;
 
-  2: EthersBN;
-  rangeMultiplier?: EthersBN;
+  2: string;
+  owner?: string;
 
-  3: EthersBN;
-  speedMultiplier?: EthersBN;
+  3: number;
+  row?: number;
 
-  4: EthersBN;
-  defMultiplier?: EthersBN;
+  4: number;
+  col?: number;
+
+  5: boolean;
+  dead?: boolean;
+
+  6: EthersBN;
+  commitment?: EthersBN;
+};
+
+export type RawObjective = {
+  0: number;
+  id?: number;
+
+  1: number;
+  value?: number;
+
+  2: number;
+  row?: number;
+
+  3: number;
+  col?: number;
+
+  4: string;
+  capturedBy?: string;
 };
 
 export enum EthTxType {
   PROVE = 'PROVE',
   MOVE = 'MOVE',
+  JOIN_GAME = 'JOIN_GAME',
 }
 
-export enum EthTxStatus {
-  Init,
-  Submit,
-  Confirm,
-  Fail,
-}
-
-export type UnconfirmedTx = {
-  // we generate a txId so we can reference the tx
+export type UnsubmittedAction = {
+  // an intent to submit a transaction
+  // we generate an ID so we can reference the tx
   // before it is submitted to chain and given a txHash
   actionId: string;
   type: EthTxType;
 };
 
-export type SubmittedTx = UnconfirmedTx & {
+export type SubmittedTx = UnsubmittedAction & {
   txHash: string;
   sentAtTimestamp: number;
 };
 
-export type UnconfirmedProve = UnconfirmedTx & {
+export type UnsubmittedJoin = UnsubmittedAction & {
+  type: EthTxType.JOIN_GAME;
+};
+
+export type SubmittedJoin = UnsubmittedJoin & SubmittedTx;
+
+export type UnsubmittedProve = UnsubmittedAction & {
+  type: EthTxType.PROVE;
   output: string;
 };
 
-export type SubmittedProve = UnconfirmedProve & SubmittedTx;
+export type SubmittedProve = UnsubmittedProve & SubmittedTx;
 
-export type UnconfirmedMove = UnconfirmedTx & {
+export type UnsubmittedMove = UnsubmittedAction & {
   type: EthTxType.MOVE;
-  from: BoardLocation;
-  to: BoardLocation;
   pieceId: number;
+  to: BoardLocation;
 };
 
-export type SubmittedMove = UnconfirmedMove & SubmittedTx;
+export type SubmittedMove = UnsubmittedMove & SubmittedTx;

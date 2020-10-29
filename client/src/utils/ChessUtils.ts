@@ -7,12 +7,12 @@ import {
   Color,
   Ghost,
   Piece,
-  GameWinner,
   EthAddress,
   Player,
+  GameState,
 } from '../_types/global/GlobalTypes';
-import { almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
-import { SIZE } from './constants';
+import {almostEmptyAddress, emptyAddress} from './CheckedTypeUtils';
+import {SIZE} from './constants';
 
 const transpose = (board: ChessBoard): ChessBoard => {
   return board.map((_, colIndex) => board.map((row) => row[colIndex]));
@@ -102,7 +102,7 @@ export const getCanMove = (obj: Piece | Ghost | null): BoardLocation[] => {
 
 export const boardFromGame = (game: ChessGame): ChessBoard => {
   const allPieces = game.player1pieces.concat(game.player2pieces);
-  const { myGhost, objectives } = game;
+  const {myGhost, objectives} = game;
 
   const tempBoard: ChessCell[][] = Array(SIZE)
     .fill(null)
@@ -175,8 +175,8 @@ export const getScores = (game: ChessGame): [ScoreEntry, ScoreEntry] => {
   }
 
   return [
-    { player: game.player1, score: p1score },
-    { player: game.player2, score: p2score },
+    {player: game.player1, score: p1score},
+    {player: game.player2, score: p2score},
   ];
 };
 
@@ -215,10 +215,10 @@ export const enemyGhostMoved = (
 
 export const sampleGame: ChessGame = {
   myAddress: emptyAddress,
-  player1: { address: emptyAddress },
-  player2: { address: almostEmptyAddress },
+  player1: {address: emptyAddress},
+  player2: {address: almostEmptyAddress},
   turnNumber: 0,
-  winner: GameWinner.None,
+  gameState: GameState.P1_TO_MOVE,
   player1pieces: [
     makePiece([1, 6], Color.WHITE),
     makePiece([3, 6], Color.WHITE, PieceType.Knight),
@@ -229,7 +229,12 @@ export const sampleGame: ChessGame = {
     makePiece([3, 0], Color.BLACK, PieceType.Knight),
     makePiece([5, 0], Color.BLACK),
   ],
-  myGhost: { location: [1, 1], id: Math.random(), owner: emptyAddress },
+  myGhost: {
+    location: [1, 1],
+    id: Math.random(),
+    owner: emptyAddress,
+    commitment: '0',
+  },
   objectives: [
     makeObjective([0, 3], 10, Color.WHITE),
     makeObjective([3, 3], 10, null),

@@ -182,6 +182,26 @@ contract ZKChessCore {
     event MoveMade(address player);
     event GameFinished();
 
+    ///////////////
+    /// GETTERS ///
+    ///////////////
+
+    function getPieces() public view returns (Piece[] memory ret) {
+        ret = new Piece[](pieceIds.length);
+        for (uint8 i = 0; i < pieceIds.length; i++) {
+            ret[i] = pieces[pieceIds[i]];
+        }
+        return ret;
+    }
+
+    function getObjectives() public view returns (Objective[] memory ret) {
+        ret = new Objective[](objectiveIds.length);
+        for (uint8 i = 0; i < objectiveIds.length; i++) {
+            ret[i] = objectives[objectiveIds[i]];
+        }
+        return ret;
+    }
+
     //////////////
     /// Helper ///
     //////////////
@@ -208,9 +228,13 @@ contract ZKChessCore {
         Piece memory piece,
         uint8 toRow,
         uint8 toCol
-    ) public pure returns (bool) {
+    ) public view returns (bool) {
         if (toRow >= BOARD_SIZE || toCol >= BOARD_SIZE) {
             // must be in the range [0, SIZE - 1]
+            return false;
+        }
+        if (boardPieces[toRow][toCol] > 0) {
+            // a piece already exists there
             return false;
         }
         if (piece.pieceType == PieceType.GHOST) {
@@ -277,7 +301,7 @@ contract ZKChessCore {
 
     function joinGame() public {
         require(
-            gameState != GameState.WAITING_FOR_PLAYERS,
+            gameState == GameState.WAITING_FOR_PLAYERS,
             "Game already started"
         );
         if (player1 == address(0)) {
@@ -287,6 +311,7 @@ contract ZKChessCore {
         }
         // another player has joined. game is ready to start
 
+        require(msg.sender != player1, "can't join game twice");
         // randomize player order
         if (block.timestamp % 2 == 0) {
             player2 = msg.sender;
@@ -336,6 +361,7 @@ contract ZKChessCore {
         if (msg.sender == player2) {
             require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
         }
+        // require(turnNumber > 0, "Must move ghost on first turn");
         Piece storage piece = pieces[pieceId];
         require(piece.owner == msg.sender, "You don't own that piece");
         require(!piece.dead, "Piece is dead");
@@ -399,6 +425,7 @@ contract ZKChessCore {
         if (msg.sender == player2) {
             require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
         }
+        require(turnNumber > 0, "Must move ghost on first turn");
         Piece storage piece = pieces[pieceId];
         require(piece.pieceType == PieceType.GHOST, "Piece must be a ghost");
         require(piece.owner == msg.sender, "You don't own that piece");

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -10,13 +10,19 @@ import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
+import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 
-import { ContractsAPIEvent } from '../_types/darkforest/api/ContractsAPITypes';
-import { almostEmptyAddress, emptyAddress } from '../utils/CheckedTypeUtils';
-import { compareLoc, sampleGame } from '../utils/ChessUtils';
+import {
+  ContractsAPIEvent,
+  EthTxType,
+  ProveArgIdx,
+  UnsubmittedProve,
+  ZKArgIdx,
+} from '../_types/darkforest/api/ContractsAPITypes';
+import {almostEmptyAddress, emptyAddress} from '../utils/CheckedTypeUtils';
+import {compareLoc, sampleGame} from '../utils/ChessUtils';
 import autoBind from 'auto-bind';
-import { getRandomActionId } from '../utils/Utils';
+import {getRandomActionId} from '../utils/Utils';
 
 class FakeGameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -60,7 +66,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
   }
 
   isMyTurn(): boolean {
-    const { turnNumber, player1, player2 } = this.gameState;
+    const {turnNumber, player1, player2} = this.gameState;
     const player = turnNumber % 2 === 0 ? player1 : player2;
     return this.account === player.address;
   }
@@ -79,8 +85,12 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     return this.gameState;
   }
 
-  joinGame(): Promise<void> {
-    return Promise.resolve();
+  refreshGameState(): Promise<ChessGame> {
+    return Promise.resolve(this.gameState);
+  }
+
+  joinGame(): void {
+    return;
   }
 
   movePiece(pieceId: number, to: BoardLocation): Promise<void> {
@@ -129,27 +139,22 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
   makeProof(): FakeGameManager {
     this.snarkHelper.getProof(1, 1, 1).then((args) => {
-      this.contractsAPI.submitProof(args, getRandomActionId());
+      const unsubmittedProve: UnsubmittedProve = {
+        actionId: getRandomActionId(),
+        type: EthTxType.PROVE,
+        output: args[ZKArgIdx.DATA][ProveArgIdx.OUTPUT],
+      };
+      this.contractsAPI.onTxInit(unsubmittedProve);
+      this.contractsAPI.submitProof(args, unsubmittedProve);
     });
     return this;
   }
 
   // AI functions
-  confirmMove(): void {
-    this.emit(GameManagerEvent.MoveAccepted);
-    this.gameState.turnNumber = 1;
-
-    setTimeout(() => {
-      this.emit(GameManagerEvent.MoveConfirmed);
-      console.log('gm confirm move');
-      console.log(this.gameState);
-    }, 500);
-  }
-
   opponentMove(): void {
     this.gameState.player2pieces[1].location = [4, 2];
     this.gameState.turnNumber = 0;
-    this.emit(GameManagerEvent.MoveConfirmed);
+    this.emit(GameManagerEvent.MoveMade);
   }
 
   opponentAttack(): void {
@@ -157,7 +162,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     newState.player1pieces.splice(0, 1);
     this.gameState = newState;
     this.gameState.turnNumber = 0;
-    this.emit(GameManagerEvent.MoveConfirmed);
+    this.emit(GameManagerEvent.MoveMade);
   }
 }
 

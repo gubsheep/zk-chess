@@ -7,7 +7,7 @@ import {
   SnarkJSProofAndSignals,
 } from '../_types/global/GlobalTypes';
 import {BigInteger} from 'big-integer';
-import mimcHash, {modPBigInt, modPBigIntNative} from '../miner/mimc';
+import mimcHash, {modPBigInt} from '../hash/mimc';
 
 interface ProveArgs {
   x: string;
@@ -44,7 +44,7 @@ class SnarkArgsHelper {
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
-        publicSignals.map((x) => modPBigIntNative(x))
+        publicSignals.map((x) => modPBigInt(x))
       ) as ProofArgs;
       return ret;
     } catch (e) {
