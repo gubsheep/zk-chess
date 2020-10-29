@@ -2,9 +2,10 @@ import React, { useEffect, useReducer } from 'react';
 import { useContext } from 'react';
 import { createContainer } from 'react-tracked';
 import { GameManagerContext } from '../app/LandingPage';
-import { getCanMove } from '../utils/ChessUtils';
+import { boardFromGame, getCanMove } from '../utils/ChessUtils';
 import {
   BoardLocation,
+  ChessBoard,
   ChessGame,
   Color,
   EthAddress,
@@ -37,13 +38,13 @@ type PlayerInfo = {
   color: Color;
 };
 
+// TODO maybe we need the notion of set vs computed state?
 // type StoredState = {};
 type ZKChessState = {
-  // mutable states
   session: SessionState;
   game: ChessGame | null;
+  board: ChessBoard;
 
-  // calculated info
   player: PlayerInfo | null;
 };
 
@@ -54,6 +55,7 @@ const initialState: ZKChessState = {
     staged: null,
   },
   game: null,
+  board: [], // todo make this not fail silently
   player: null,
 };
 
@@ -78,6 +80,7 @@ const reducer = (state: ZKChessState, action: Action): ZKChessState => {
       return {
         ...state,
         game: action.game,
+        board: boardFromGame(action.game),
       };
     case ActionType.UpdateSelected:
       return {
@@ -184,6 +187,8 @@ function ZKChessStateSyncer({
     gm.addListener(GameManagerEvent.GameStart, syncState);
     gm.addListener(GameManagerEvent.MoveMade, syncState);
     gm.addListener(GameManagerEvent.GameFinished, syncState);
+
+    syncState();
 
     return () => {
       gm.removeAllListeners(GameManagerEvent.GameStart);

@@ -65,13 +65,11 @@ const StyledGameCell = styled.div<{ canMove: boolean }>`
 `;
 
 function RawGameCell({
-  cell,
   location,
   gamePaused,
   enemyGhostOpacity,
 }: {
   // data
-  cell: ChessCell;
   location: BoardLocation;
   gamePaused: boolean;
 
@@ -87,6 +85,7 @@ function RawGameCell({
   const canMove = hasLoc(canMoveArr, location);
   const staged = myState.session.staged;
   const setStaged = setters.updateStaged;
+  const cell = myState.board[location[0]][location[1]];
 
   const isEmpty = !cell.piece && !cell.ghost;
   const canReallyMove = canMove && isEmpty;
@@ -188,7 +187,7 @@ export function Game() {
 
   const [myState, setters] = useZKChessState();
   const gameState = myState.game || _.cloneDeep(gm.getGameState());
-  const board = boardFromGame(gameState);
+  const board = myState.board;
 
   const selected = myState.session.selected;
   const staged = myState.session.staged;
@@ -281,7 +280,6 @@ export function Game() {
                   <GameCell
                     key={JSON.stringify(loc)}
                     location={loc}
-                    cell={cell}
                     gamePaused={gamePaused}
                     enemyGhostOpacity={
                       enemyGhost && compareLoc(enemyGhost[0], loc)
