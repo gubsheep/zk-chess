@@ -2,6 +2,7 @@ import _ from 'lodash';
 import React, { useContext, useLayoutEffect } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
+import { memo } from 'react-tracked';
 import styled from 'styled-components';
 import AbstractGameManager, {
   GameManagerEvent,
@@ -63,11 +64,9 @@ const StyledGameCell = styled.div<{ canMove: boolean }>`
   background: ${(props) => (props.canMove ? '#f2f2f2' : 'none')};
 `;
 
-function GameCell({
+function RawGameCell({
   cell,
   location,
-  canMove,
-  stagedHook,
   gamePaused,
   enemyGhostOpacity,
 }: {
@@ -76,21 +75,18 @@ function GameCell({
   location: BoardLocation;
   gamePaused: boolean;
 
-  // for displaying
-  canMove: boolean;
-  stagedHook: Hook<StagedLoc | null>;
-
   // for animation
   enemyGhostOpacity: number | null;
 }) {
   const gm = useContext<AbstractGameManager | null>(GameManagerContext);
   if (!gm) return <>error</>;
 
-  const [state, dispatch] = useZKChessState();
-  const { selected } = state.session;
-  const setSelected = dispatch.updateSelected;
-
-  const [staged, setStaged] = stagedHook;
+  const [myState, setters] = useZKChessState();
+  const { selected, canMove: canMoveArr } = myState.session;
+  const setSelected = setters.updateSelected;
+  const canMove = hasLoc(canMoveArr, location);
+  const staged = myState.session.staged;
+  const setStaged = setters.updateStaged;
 
   const isEmpty = !cell.piece && !cell.ghost;
   const canReallyMove = canMove && isEmpty;
@@ -99,18 +95,14 @@ function GameCell({
     e: React.MouseEvent
   ) => {
     if (gamePaused) return;
+    if (obj.owner !== gm.getAccount()) return; // if i don't own it, do nothing
 
-    // if i don't own it, do nothing
-    if (obj.owner !== gm.getAccount()) return;
-
-    // clear staged when i click on currently selected
     if (selected?.id === obj.id) {
+      // clear staged when i click on currently selected
       setStaged(null);
     } else {
-      // otherwise, i clicked a diff guy - select it
-      setSelected(obj);
+      setSelected(obj); // otherwise, i clicked a diff guy - select it
     }
-
     // if you clicked on a piece, don't ask the cell to do anything
     e.stopPropagation();
   };
@@ -118,8 +110,7 @@ function GameCell({
   const cellHandler = (): void => {
     if (gamePaused) return;
 
-    // if selected is null, do nothing
-    if (selected === null) return;
+    if (selected === null) return; // if selected is null, do nothing
 
     // if it's stageable, stage it
     if (canReallyMove) {
@@ -127,8 +118,7 @@ function GameCell({
       return;
     }
 
-    // otherwise, check if the cell is empty
-    if (isEmpty) setSelected(null);
+    if (isEmpty) setSelected(null); // otherwise, check if the cell is empty
   };
 
   const dummyGhost: Ghost = {
@@ -171,6 +161,8 @@ function GameCell({
   );
 }
 
+const GameCell = memo(RawGameCell);
+
 enum TurnState {
   Moving, // no move made
   Submitting, // move submitted to chain
@@ -194,17 +186,12 @@ export function Game() {
 
   const [turnState, setTurnState] = useState<TurnState>(TurnState.Moving);
 
-  const [myState, setMyState] = useZKChessState();
+  const [myState, setters] = useZKChessState();
   const gameState = myState.game || _.cloneDeep(gm.getGameState());
   const board = boardFromGame(gameState);
 
-  // you can hover / select ghosts or pieces - keyed by id
   const selected = myState.session.selected;
-
-  // once a ghost / piece is selected, you can stage it to a location
-  const [canMove, setCanMove] = useState<BoardLocation[]>([]);
-  const stagedHook = useState<StagedLoc | null>(null);
-  const [staged, setStaged] = stagedHook;
+  const staged = myState.session.staged;
 
   // enemy ghost as [loc, opacity]
   const [enemyGhost, setEnemyGhost] = useState<[BoardLocation, number] | null>(
@@ -244,18 +231,6 @@ export function Game() {
       setEnemyGhost((ghost) => ghost && [ghost[0], ghost[1] - 0.02]);
     }, 30);
   }, [enemyGhost]);
-
-  // sync selected to canMove
-  useLayoutEffect(() => {
-    setStaged(null);
-    if (selected === null) {
-      setCanMove([]);
-      return;
-    }
-
-    setCanMove(getCanMove(selected));
-    return;
-  }, [selected]);
 
   const [ghostCanAct, setGhostCanAct] = useState<boolean>(false);
   useEffect(() => {
@@ -307,8 +282,6 @@ export function Game() {
                     key={JSON.stringify(loc)}
                     location={loc}
                     cell={cell}
-                    canMove={hasLoc(canMove, loc)}
-                    stagedHook={stagedHook}
                     gamePaused={gamePaused}
                     enemyGhostOpacity={
                       enemyGhost && compareLoc(enemyGhost[0], loc)

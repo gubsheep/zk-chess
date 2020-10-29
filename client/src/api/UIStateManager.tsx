@@ -2,6 +2,7 @@ import React, { useEffect, useReducer } from 'react';
 import { useContext } from 'react';
 import { createContainer } from 'react-tracked';
 import { GameManagerContext } from '../app/LandingPage';
+import { getCanMove } from '../utils/ChessUtils';
 import {
   BoardLocation,
   ChessGame,
@@ -9,6 +10,7 @@ import {
   EthAddress,
   GameState,
   Selectable,
+  StagedLoc,
 } from '../_types/global/GlobalTypes';
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 
@@ -26,6 +28,8 @@ ui state (combined): shared across all objects
 
 type SessionState = {
   selected: Selectable | null;
+  canMove: BoardLocation[];
+  staged: StagedLoc | null;
 };
 
 type PlayerInfo = {
@@ -46,6 +50,8 @@ type ZKChessState = {
 const initialState: ZKChessState = {
   session: {
     selected: null,
+    canMove: [],
+    staged: null,
   },
   game: null,
   player: null,
@@ -56,11 +62,15 @@ const initialState: ZKChessState = {
 enum ActionType {
   UpdateGameState = 'UpdateGameState',
   UpdateSelected = 'UpdateSelected',
+  UpdateCanMove = 'UpdateCanMove',
+  UpdateStaged = 'UpdateStaged',
 }
 
 type Action =
   | { type: ActionType.UpdateGameState; game: ChessGame }
-  | { type: ActionType.UpdateSelected; object: Selectable | null };
+  | { type: ActionType.UpdateSelected; object: Selectable | null }
+  | { type: ActionType.UpdateCanMove; canMove: BoardLocation[] }
+  | { type: ActionType.UpdateStaged; staged: StagedLoc | null };
 
 const reducer = (state: ZKChessState, action: Action): ZKChessState => {
   switch (action.type) {
@@ -75,6 +85,22 @@ const reducer = (state: ZKChessState, action: Action): ZKChessState => {
         session: {
           ...state.session,
           selected: action.object,
+        },
+      };
+    case ActionType.UpdateCanMove:
+      return {
+        ...state,
+        session: {
+          ...state.session,
+          canMove: action.canMove,
+        },
+      };
+    case ActionType.UpdateStaged:
+      return {
+        ...state,
+        session: {
+          ...state.session,
+          staged: action.staged,
         },
       };
     default:
@@ -93,10 +119,11 @@ const { Provider, useTrackedState, useUpdate: useDispatch } = container;
 type ZKChessUpdate = {
   updateGame: (state: ChessGame) => void;
   updateSelected: (loc: Selectable | null) => void;
+  updateStaged: (staged: StagedLoc | null) => void;
 };
 type ZKChessDispatch = React.Dispatch<Action>;
 // todo turn this into a struct
-type ZKChessHook = [ZKChessState, ZKChessUpdate, ZKChessDispatch];
+type ZKChessHook = [ZKChessState, ZKChessUpdate];
 
 const useZKChessState = (): ZKChessHook => {
   const state = useTrackedState();
@@ -105,16 +132,22 @@ const useZKChessState = (): ZKChessHook => {
   const updateGame = (newState: ChessGame) =>
     dispatch({ type: ActionType.UpdateGameState, game: newState });
 
-  const updateSelected = (loc: Selectable | null) =>
-    dispatch({ type: ActionType.UpdateSelected, object: loc });
+  const updateSelected = (obj: Selectable | null) => {
+    dispatch({ type: ActionType.UpdateSelected, object: obj });
+    dispatch({ type: ActionType.UpdateCanMove, canMove: getCanMove(obj) });
+  };
+
+  const updateStaged = (staged: StagedLoc | null) => {
+    dispatch({ type: ActionType.UpdateStaged, staged });
+  };
 
   return [
     state,
     {
       updateGame,
       updateSelected,
+      updateStaged,
     },
-    dispatch,
   ];
 };
 
