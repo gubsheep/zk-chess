@@ -5265,6 +5265,11 @@ react-spinkit@^3.0.0:
     object-assign "^4.1.0"
     prop-types "^15.5.8"
 
+react-tracked@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/react-tracked/-/react-tracked-1.4.2.tgz#ff5940ab367a18da285729865465842cb927a9bf"
+  integrity sha512-Rjc8tdXPP6peuyph2wTBAQVm/7K0EH1uEmxcWCF072o9Z42mI72YZtTY0KnUB6iT6xEBM/ri35GzhgC/pxNTRg==
+
 react-typist@^2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/react-typist/-/react-typist-2.0.5.tgz#9830395a73a03e6368e1392ecb98edaa3a648e44"

@@ -1,13 +1,14 @@
-import React, {createContext} from 'react';
-import {useState} from 'react';
+import React, { createContext } from 'react';
+import { useState } from 'react';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
-import {EthAddress} from '../_types/global/GlobalTypes';
-import {Game} from './Game';
+import { ZKChessStateProvider } from '../api/UIStateManager';
+import { EthAddress } from '../_types/global/GlobalTypes';
+import { Game } from './Game';
 
 enum InitState {
   NONE,
@@ -22,7 +23,7 @@ enum InitState {
   TERMINATED,
 }
 
-const MOCK_GAME = false;
+const MOCK_GAME = true;
 
 export const GameManagerContext = createContext<AbstractGameManager | null>(
   null
@@ -130,9 +131,9 @@ export function LandingPage() {
     );
   } else if (initState === InitState.COMPLETE && gameManager) {
     return (
-      <GameManagerContext.Provider value={gameManager}>
+      <ZKChessStateProvider gameManager={gameManager}>
         <Game />
-      </GameManagerContext.Provider>
+      </ZKChessStateProvider>
     );
   }
   return <div></div>;

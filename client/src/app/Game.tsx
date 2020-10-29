@@ -1,11 +1,12 @@
 import _ from 'lodash';
-import React, {useContext, useLayoutEffect} from 'react';
-import {useEffect} from 'react';
-import {useState} from 'react';
+import React, { useContext, useLayoutEffect } from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
+import { useZKChessState } from '../api/UIStateManager';
 import {
   boardFromGame,
   boardLocMap,
@@ -29,8 +30,8 @@ import {
   Selectable,
   StagedLoc,
 } from '../_types/global/GlobalTypes';
-import {ChessPiece, ObjectivePiece, PiecePos} from './BoardPieces';
-import {GameManagerContext} from './LandingPage';
+import { ChessPiece, ObjectivePiece, PiecePos } from './BoardPieces';
+import { GameManagerContext } from './LandingPage';
 
 const borderColor = 'black';
 const StyledGameBoard = styled.table`
@@ -54,7 +55,7 @@ const StyledGameBoard = styled.table`
   }
 `;
 
-const StyledGameCell = styled.div<{canMove: boolean}>`
+const StyledGameCell = styled.div<{ canMove: boolean }>`
   width: 100%;
   height: 100%;
   margin: 0;
@@ -65,7 +66,6 @@ const StyledGameCell = styled.div<{canMove: boolean}>`
 function GameCell({
   cell,
   location,
-  selectedHook,
   canMove,
   stagedHook,
   gamePaused,
@@ -77,7 +77,6 @@ function GameCell({
   gamePaused: boolean;
 
   // for displaying
-  selectedHook: Hook<Selectable | null>;
   canMove: boolean;
   stagedHook: Hook<StagedLoc | null>;
 
@@ -87,7 +86,10 @@ function GameCell({
   const gm = useContext<AbstractGameManager | null>(GameManagerContext);
   if (!gm) return <>error</>;
 
-  const [selected, setSelected] = selectedHook;
+  const [state, dispatch] = useZKChessState();
+  const { selected } = state.session;
+  const setSelected = dispatch.updateSelected;
+
   const [staged, setStaged] = stagedHook;
 
   const isEmpty = !cell.piece && !cell.ghost;
@@ -145,7 +147,7 @@ function GameCell({
             piece={dummyGhost}
             pos={PiecePos.topLeft}
             disabled={true}
-            style={{opacity: enemyGhostOpacity}}
+            style={{ opacity: enemyGhostOpacity }}
           />
         )}
         {[cell.piece, cell.ghost].map(
@@ -192,14 +194,12 @@ export function Game() {
 
   const [turnState, setTurnState] = useState<TurnState>(TurnState.Moving);
 
-  const [gameState, setGameState] = useState<ChessGame>(
-    _.cloneDeep(gm.getGameState())
-  );
+  const [myState, setMyState] = useZKChessState();
+  const gameState = myState.game || _.cloneDeep(gm.getGameState());
   const board = boardFromGame(gameState);
 
   // you can hover / select ghosts or pieces - keyed by id
-  const selectedHook = useState<Selectable | null>(null);
-  const [selected, setSelected] = selectedHook;
+  const selected = myState.session.selected;
 
   // once a ghost / piece is selected, you can stage it to a location
   const [canMove, setCanMove] = useState<BoardLocation[]>([]);
@@ -222,35 +222,6 @@ export function Game() {
       gm.removeAllListeners(GameManagerEvent.MoveAccepted);
     };
     */
-  });
-
-  // subscribe to game state updates
-  useEffect(() => {
-    const syncState = () => {
-      const newState = gm.getGameState();
-
-      // check if enemy ghost has acted
-      const enemyGhostLoc = enemyGhostMoved(
-        gameState,
-        newState,
-        gm.getAccount()
-      );
-      if (enemyGhostLoc) {
-        setEnemyGhost([enemyGhostLoc, 1]);
-      }
-
-      setGameState(_.cloneDeep(newState));
-      setSelected(null);
-    };
-    gm.addListener(GameManagerEvent.GameStart, syncState);
-    gm.addListener(GameManagerEvent.MoveMade, syncState);
-    gm.addListener(GameManagerEvent.GameFinished, syncState);
-
-    return () => {
-      gm.removeAllListeners(GameManagerEvent.GameStart);
-      gm.removeAllListeners(GameManagerEvent.MoveMade);
-      gm.removeAllListeners(GameManagerEvent.GameFinished);
-    };
   });
 
   // sync things to game state
@@ -336,7 +307,6 @@ export function Game() {
                     key={JSON.stringify(loc)}
                     location={loc}
                     cell={cell}
-                    selectedHook={selectedHook}
                     canMove={hasLoc(canMove, loc)}
                     stagedHook={stagedHook}
                     gamePaused={gamePaused}
