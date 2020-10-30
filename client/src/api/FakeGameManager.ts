@@ -131,19 +131,6 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     return Promise.resolve();
   }
 
-  makeProof(): FakeGameManager {
-    this.snarkHelper.getProof(1, 1, 1).then((args) => {
-      const unsubmittedProve: UnsubmittedProve = {
-        actionId: getRandomActionId(),
-        type: EthTxType.PROVE,
-        output: args[ZKArgIdx.DATA][ProveArgIdx.OUTPUT],
-      };
-      this.contractsAPI.onTxInit(unsubmittedProve);
-      this.contractsAPI.submitProof(args, unsubmittedProve);
-    });
-    return this;
-  }
-
   // AI functions
   opponentMove(): void {
     this.gameState.player2pieces[1].location = [4, 2];

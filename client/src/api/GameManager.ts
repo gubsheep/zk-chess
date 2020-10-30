@@ -15,14 +15,12 @@ import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 import {
   ContractsAPIEvent,
   EthTxType,
-  ProveArgIdx,
   SubmittedTx,
   UnsubmittedAction,
   UnsubmittedGhostAttack,
+  UnsubmittedGhostMove,
   UnsubmittedJoin,
   UnsubmittedMove,
-  UnsubmittedProve,
-  ZKArgIdx,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import {emptyAddress} from '../utils/CheckedTypeUtils';
 import {getRandomActionId} from '../utils/Utils';
@@ -245,6 +243,37 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   moveGhost(ghostId: number, to: BoardLocation): Promise<void> {
+    // const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
+    const newSalt = '0';
+    this.ghostCommitmentsMap.set(mimcHash(to[1], to[0], newSalt).toString(), [
+      to[1],
+      to[0],
+      bigInt(newSalt),
+    ]);
+    const unsubmittedGhostMove: UnsubmittedGhostMove = {
+      actionId: getRandomActionId(),
+      type: EthTxType.GHOST_MOVE,
+      pieceId: ghostId,
+      to,
+      newSalt,
+    };
+    this.contractsAPI.onTxInit(unsubmittedGhostMove);
+
+    const {myGhost} = this.gameState;
+    const oldLoc = myGhost.location;
+    this.snarkHelper
+      .getGhostMoveProof(
+        oldLoc[1],
+        oldLoc[0],
+        myGhost.salt,
+        to[1],
+        to[0],
+        newSalt
+      )
+      .then((args) => {
+        console.log(args);
+        this.contractsAPI.moveGhost(args, ghostId, unsubmittedGhostMove);
+      });
     return Promise.resolve();
   }
 
@@ -267,19 +296,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       unsubmittedGhostAttack
     );
     return Promise.resolve();
-  }
-
-  makeProof(): GameManager {
-    this.snarkHelper.getProof(1, 1, 1).then((args) => {
-      const unsubmittedProve: UnsubmittedProve = {
-        actionId: getRandomActionId(),
-        type: EthTxType.PROVE,
-        output: args[ZKArgIdx.DATA][ProveArgIdx.OUTPUT],
-      };
-      this.contractsAPI.onTxInit(unsubmittedProve);
-      this.contractsAPI.submitProof(args, unsubmittedProve);
-    });
-    return this;
   }
 }
 

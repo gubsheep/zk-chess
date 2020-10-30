@@ -15,14 +15,9 @@ export enum ProveArgIdx {
   OUTPUT,
 }
 
-export enum MoveArgIdxs {
-  FROM_ID,
-  TO_ID,
-  TO_PERLIN,
-  TO_RADIUS,
-  DIST_MAX,
-  SHIPS_SENT,
-  SILVER_SENT,
+export enum GhostMoveArgIdxs {
+  OLD_COMMIT,
+  NEW_COMMIT,
 }
 
 export enum ContractEvent {
@@ -58,7 +53,7 @@ export type ProofArgs = [
   ]
 ];
 
-export type MoveArgs = [
+export type GhostMoveArgs = [
   [string, string], // proofA
   [
     // proofB
@@ -67,13 +62,8 @@ export type MoveArgs = [
   ],
   [string, string], // proofC
   [
-    string, // from locationID (BigInt)
-    string, // to locationID (BigInt)
-    string, // perlin at to
-    string, // radius at to
-    string, // distMax
-    string, // ships sent
-    string // silver sent
+    string, // old commit
+    string // new commit
   ]
 ];
 

@@ -16,6 +16,9 @@ declare global {
     // mimcHash: any;
     /* eslint-disable @typescript-eslint/no-explicit-any */
     snarkjs: any;
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    mimcHash: any;
   }
 }
 
