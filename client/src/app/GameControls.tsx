@@ -1,17 +1,17 @@
-import React, { useContext, useEffect, useState } from 'react';
-import AbstractGameManager from '../api/AbstractGameManager';
+import React, { useEffect, useState } from 'react';
 import { useZKChessState } from '../api/UIStateManager';
 import { isGhost, compareLoc, getScores } from '../utils/ChessUtils';
 import { GameStatus } from '../_types/global/GlobalTypes';
 import { TurnState } from './Game';
 
 export function GameControls() {
-  const { state, setters } = useZKChessState();
-  const board = state.computed.board;
+  const { state } = useZKChessState();
 
-  const selected = state.session.selected;
-  const staged = state.session.staged;
-  const turnState = state.session.turnState;
+  const {
+    computed: { board },
+    session: { selected, staged, turnState },
+  } = state;
+
   const [ghostCanAct, setGhostCanAct] = useState<boolean>(false);
 
   useEffect(() => {

@@ -169,56 +169,21 @@ const getDispatchProxy = (
 
 /* define hooks */
 
-type ZKChessSetters = {
-  updateGame: (state: ChessGame) => void;
-  updateSelected: (loc: Selectable | null) => void;
-  updateStaged: (staged: StagedLoc | null) => void;
-  updateTurnState: (turnState: TurnState) => void;
-};
-
-// type ZKChessGetters = {};
-
-type ZKChessDispatch = DispatchProxy;
-
 type ZKChessHook = {
   state: ZKChessState;
-  setters: ZKChessSetters;
-  // getters: ZKChessGetters;
   gameManager: AbstractGameManager | null;
-  dispatch: ZKChessDispatch;
+  dispatch: DispatchProxy;
 };
 
 // should only call this inside of ZKChessStateProvider
 const useZKChessState = (): ZKChessHook => {
   const state = useTrackedState();
-  const dispatch = useDispatch();
+  const dispatch = getDispatchProxy(useDispatch());
   const gameManager = useGameManager();
-
-  const updateGame = (gameState: ChessGame) =>
-    dispatch({ type: 'updateGame', arg: { gameState } });
-
-  const updateSelected = (selected: Selectable | null) => {
-    dispatch({ type: 'updateSession', arg: { selected } });
-  };
-
-  const updateStaged = (staged: StagedLoc | null) => {
-    dispatch({ type: 'updateSession', arg: { staged } });
-  };
-
-  const updateTurnState = (turnState: TurnState) => {
-    dispatch({ type: 'updateSession', arg: { turnState } });
-  };
 
   return {
     state,
-    setters: {
-      updateGame,
-      updateSelected,
-      updateStaged,
-      updateTurnState,
-    },
-    // getters: {},
-    dispatch: getDispatchProxy(dispatch),
+    dispatch,
     gameManager,
   };
 };

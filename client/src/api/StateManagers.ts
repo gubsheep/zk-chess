@@ -5,6 +5,7 @@ import {
   Color,
   EthAddress,
   GameStatus,
+  Ghost,
   PlayerInfo,
 } from '../_types/global/GlobalTypes';
 import { GameManagerEvent } from './AbstractGameManager';
@@ -15,14 +16,14 @@ export const useInitGame = (): void => {
 };
 
 export const useSyncGame = (): void => {
-  const { setters, gameManager: gm } = useZKChessState();
+  const { gameManager: gm, dispatch } = useZKChessState();
 
   // sync the shared state to game state
   useEffect(() => {
     if (!gm) return;
     // subscribe to game state updates
     const syncState = () => {
-      const newState = gm.getGameState();
+      const gameState = gm.getGameState();
 
       /*
       // check if enemy ghost has acted
@@ -35,8 +36,8 @@ export const useSyncGame = (): void => {
         setEnemyGhost([enemyGhostLoc, 1]);
       }
       */
-      setters.updateGame(newState);
-      setters.updateSelected(null);
+      dispatch.updateGame({ gameState });
+      dispatch.updateSession({ selected: null });
     };
     gm.addListener(GameManagerEvent.GameStart, syncState);
     gm.addListener(GameManagerEvent.MoveMade, syncState);
@@ -53,7 +54,7 @@ export const useSyncGame = (): void => {
 };
 
 export const useComputed = (): void => {
-  const { state, setters, dispatch, gameManager: gm } = useZKChessState();
+  const { state, dispatch, gameManager: gm } = useZKChessState();
 
   useEffect(() => {
     if (!state.game.gameState) return;

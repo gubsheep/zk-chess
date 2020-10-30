@@ -43,13 +43,15 @@ const StyledGameCell = styled.div<{ canMove: boolean }>`
 `;
 
 const GameCell = memo(function ({ location }: { location: BoardLocation }) {
-  const { state, setters } = useZKChessState();
-  const { selected, canMove: canMoveArr } = state.session;
+  const { state, dispatch } = useZKChessState();
+  const {
+    session: { selected, canMove: canMoveArr, staged },
+    computed: { gamePaused, board },
+    game: { player },
+  } = state;
+
   const canMove = hasLoc(canMoveArr, location);
-  const staged = state.session.staged;
-  const cell = state.computed.board[location[0]][location[1]];
-  const { gamePaused } = state.computed;
-  const player = state.game.player;
+  const cell = board[location[0]][location[1]];
 
   const isEmpty = !cell.piece && !cell.ghost;
   const canReallyMove = canMove && isEmpty;
@@ -62,9 +64,9 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
 
     if (selected?.id === obj.id) {
       // clear staged when i click on currently selected
-      setters.updateStaged(null);
+      dispatch.updateSession({ staged: null });
     } else {
-      setters.updateSelected(obj); // otherwise, i clicked a diff guy - select it
+      dispatch.updateSession({ selected: obj }); // otherwise, i clicked a diff guy - select it
     }
     // if you clicked on a piece, don't ask the cell to do anything
     e.stopPropagation();
@@ -77,11 +79,11 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
 
     // if it's stageable, stage it
     if (canReallyMove) {
-      setters.updateStaged([location, selected]);
+      dispatch.updateSession({ staged: [location, selected] });
       return;
     }
 
-    if (isEmpty) setters.updateSelected(null); // otherwise, check if the cell is empty
+    if (isEmpty) dispatch.updateSession({ selected: null }); // otherwise, check if the cell is empty
   };
 
   return (
