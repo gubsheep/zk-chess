@@ -119,8 +119,10 @@ export type RawObjective = {
 
 export enum EthTxType {
   PROVE = 'PROVE',
-  MOVE = 'MOVE',
   JOIN_GAME = 'JOIN_GAME',
+  MOVE = 'MOVE',
+  GHOST_ATTACK = 'GHOST_ATTACK',
+  GHOST_MOVE = 'GHOST_MOVE',
 }
 
 export type UnsubmittedAction = {
@@ -156,3 +158,20 @@ export type UnsubmittedMove = UnsubmittedAction & {
 };
 
 export type SubmittedMove = UnsubmittedMove & SubmittedTx;
+
+export type UnsubmittedGhostAttack = UnsubmittedAction & {
+  type: EthTxType.GHOST_ATTACK;
+  pieceId: number;
+  at: BoardLocation;
+};
+
+export type SubmittedGhostAttack = UnsubmittedGhostAttack & SubmittedTx;
+
+export type UnsubmittedGhostMove = UnsubmittedAction & {
+  type: EthTxType.GHOST_MOVE;
+  pieceId: number;
+  to: BoardLocation;
+  newSalt: string;
+};
+
+export type SubmittedGhostMove = UnsubmittedGhostAttack & SubmittedTx;

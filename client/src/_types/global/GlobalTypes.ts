@@ -47,6 +47,7 @@ export type Piece = GameObject & {
 };
 
 export type Ghost = GameObject & {
+  salt: string;
   commitment: string;
 };
 

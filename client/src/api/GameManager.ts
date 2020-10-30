@@ -4,6 +4,7 @@ import {
   ChessGame,
   Color,
   EthAddress,
+  GameState,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -17,6 +18,7 @@ import {
   ProveArgIdx,
   SubmittedTx,
   UnsubmittedAction,
+  UnsubmittedGhostAttack,
   UnsubmittedJoin,
   UnsubmittedMove,
   UnsubmittedProve,
@@ -64,13 +66,21 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     const snarkHelper = SnarkHelper.create();
     const ghostCommitmentsMap = new Map<string, [number, number, BigInteger]>();
     ghostCommitmentsMap.set(mimcHash(3, 3, 0).toString(), [3, 3, bigInt(0)]);
+    let salt = '0';
+    let location: BoardLocation = [3, 3];
+    const commitmentsMapEntry = ghostCommitmentsMap.get(
+      contractGameState.myContractGhost.commitment
+    );
+    if (commitmentsMapEntry) {
+      location = [commitmentsMapEntry[0], commitmentsMapEntry[1]];
+      salt = commitmentsMapEntry[2].toString();
+    }
     const gameState = {
       ...contractGameState,
       myGhost: {
         ...contractGameState.myContractGhost,
-        location: (ghostCommitmentsMap
-          .get(contractGameState.myContractGhost.commitment)
-          ?.slice(0, 2) as [number, number]) || [3, 3],
+        location,
+        salt,
       },
     };
 
@@ -168,9 +178,18 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   isMyTurn(): boolean {
-    const {turnNumber, player1, player2} = this.gameState;
-    const player = turnNumber % 2 === 0 ? player1 : player2;
-    return this.account === player.address;
+    const {gameState, player1, player2} = this.gameState;
+    if (
+      gameState === GameState.COMPLETE ||
+      gameState === GameState.WAITING_FOR_PLAYERS
+    ) {
+      return false;
+    }
+    let whoseTurn = player1;
+    if (gameState === GameState.P2_TO_MOVE) {
+      whoseTurn = player2;
+    }
+    return this.account === whoseTurn.address;
   }
 
   getGameAddr(): EthAddress | null {
@@ -183,13 +202,21 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   async refreshGameState(): Promise<ChessGame> {
     const contractGameState = await this.contractsAPI.getGameState();
+    let salt = '0';
+    let location: BoardLocation = [3, 3];
+    const commitmentsMapEntry = this.ghostCommitmentsMap.get(
+      contractGameState.myContractGhost.commitment
+    );
+    if (commitmentsMapEntry) {
+      location = [commitmentsMapEntry[0], commitmentsMapEntry[1]];
+      salt = commitmentsMapEntry[2].toString();
+    }
     this.gameState = {
       ...contractGameState,
       myGhost: {
         ...contractGameState.myContractGhost,
-        location: (this.ghostCommitmentsMap
-          .get(contractGameState.myContractGhost.commitment)
-          ?.slice(0, 2) as [number, number]) || [3, 3],
+        location,
+        salt,
       },
     };
     return this.gameState;
@@ -222,6 +249,23 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   ghostAttack(): Promise<void> {
+    const {myGhost} = this.gameState;
+    const pieceId = myGhost.id;
+    const attackAt = myGhost.location;
+    const unsubmittedGhostAttack: UnsubmittedGhostAttack = {
+      actionId: getRandomActionId(),
+      type: EthTxType.GHOST_ATTACK,
+      pieceId,
+      at: attackAt,
+    };
+    this.contractsAPI.onTxInit(unsubmittedGhostAttack);
+    this.contractsAPI.ghostAttack(
+      pieceId,
+      attackAt[1],
+      attackAt[0],
+      myGhost.salt,
+      unsubmittedGhostAttack
+    );
     return Promise.resolve();
   }
 
