@@ -10,6 +10,7 @@ import {
   EthAddress,
   Player,
   GameStatus,
+  PlayerInfo,
 } from '../_types/global/GlobalTypes';
 import { almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
 import { SIZE } from './constants';
@@ -27,8 +28,10 @@ const whiteTransform = (board: ChessBoard): ChessBoard => transpose(board);
 const blackTransform = (board: ChessBoard): ChessBoard =>
   rot180(transpose(board));
 
-export const boardMap = (color: Color): ((b: ChessBoard) => ChessBoard) =>
-  color === Color.WHITE ? whiteTransform : blackTransform;
+export const boardMap = (
+  player: PlayerInfo | null
+): ((b: ChessBoard) => ChessBoard) =>
+  player?.color === Color.WHITE ? whiteTransform : blackTransform;
 
 const whiteBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [j, i];
 const blackBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [
@@ -36,15 +39,15 @@ const blackBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [
   6 - i,
 ];
 
+export const boardLocMap = (
+  player: PlayerInfo | null
+): ((loc: BoardLocation) => BoardLocation) =>
+  player?.color === Color.WHITE ? whiteBoardLocMap : blackBoardLocMap;
+
 export const isGhost = (piece: Piece | Ghost): boolean => {
   if (piece.hasOwnProperty('pieceType')) return false;
   return true;
 };
-
-export const boardLocMap = (
-  color: Color
-): ((loc: BoardLocation) => BoardLocation) =>
-  color === Color.WHITE ? whiteBoardLocMap : blackBoardLocMap;
 
 export const compareLoc = (
   a: BoardLocation | null,
@@ -221,14 +224,14 @@ export const sampleGame: ChessGame = {
   turnNumber: 0,
   gameStatus: GameStatus.P1_TO_MOVE,
   player1pieces: [
-    makePiece([1, 6], Color.WHITE),
+    makePiece([2, 6], Color.WHITE),
     makePiece([3, 6], Color.WHITE, PieceType.Knight),
-    makePiece([5, 6], Color.WHITE),
+    makePiece([4, 6], Color.WHITE),
   ],
   player2pieces: [
-    makePiece([1, 1], Color.BLACK),
+    makePiece([2, 1], Color.BLACK),
     makePiece([3, 0], Color.BLACK, PieceType.Knight),
-    makePiece([5, 0], Color.BLACK),
+    makePiece([4, 0], Color.BLACK),
   ],
   myGhost: {
     location: [1, 1],

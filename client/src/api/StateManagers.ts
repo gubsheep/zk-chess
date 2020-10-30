@@ -2,6 +2,8 @@ import { useCallback, useEffect } from 'react';
 import { TurnState } from '../app/Game';
 import { boardFromGame, getCanMove } from '../utils/ChessUtils';
 import {
+  BoardLocation,
+  ChessCell,
   Color,
   EthAddress,
   GameStatus,
@@ -99,9 +101,24 @@ export const useComputed = (): void => {
 
   // sync canmove to selected
   useEffect(() => {
-    // TODO take this guy out; make basic dispatches first-order things
-    dispatch.updateSession({ canMove: getCanMove(state.session.selected) });
-  }, [state.session.selected]);
+    if (!state.game.gameState) return;
+
+    console.log(state.game.gameState, state.session.selected);
+
+    const canMove = getCanMove(state.session.selected);
+    const board = boardFromGame(state.game.gameState);
+    for (let i = 0; i < canMove.length; i++) {
+      const loc = canMove[i];
+
+      // check for out of bounds
+      const cell: ChessCell | undefined = board[loc[0]][loc[1]];
+      if (cell && cell.piece) {
+        canMove.splice(i--, 1);
+      }
+    }
+
+    dispatch.updateSession({ canMove });
+  }, [state.session.selected, state.game.gameState]);
 
   /* attach event listeners */
   // TODO add pendingMoves to gameState

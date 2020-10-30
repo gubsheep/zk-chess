@@ -54,7 +54,6 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
   const cell = board[location[0]][location[1]];
 
   const isEmpty = !cell.piece && !cell.ghost;
-  const canReallyMove = canMove && isEmpty;
 
   const pieceHandler = (obj: Piece | Ghost): React.MouseEventHandler => (
     e: React.MouseEvent
@@ -74,11 +73,10 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
 
   const cellHandler = (): void => {
     if (gamePaused) return;
-
     if (selected === null) return; // if selected is null, do nothing
 
     // if it's stageable, stage it
-    if (canReallyMove) {
+    if (canMove) {
       dispatch.updateSession({ staged: [location, selected] });
       return;
     }
@@ -88,7 +86,7 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
 
   return (
     <td onClick={cellHandler}>
-      <StyledGameCell canMove={canReallyMove}>
+      <StyledGameCell canMove={canMove}>
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
         {/* {enemyGhostOpacity !== null && (
           <ChessPiece
@@ -121,11 +119,13 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
 
 export function GameBoard() {
   const { state } = useZKChessState();
-  const board = state.computed.board;
-  const myColor = state.game.player?.color || Color.WHITE;
+  const {
+    computed: { board },
+    game: { player },
+  } = state;
 
-  const transform = boardMap(myColor);
-  const locMap = boardLocMap(myColor);
+  const transform = boardMap(player);
+  const locMap = boardLocMap(player);
 
   return (
     <StyledGameBoard>
