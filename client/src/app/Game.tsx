@@ -1,13 +1,13 @@
 import _ from 'lodash';
-import React, { useContext, useLayoutEffect } from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
-import { memo } from 'react-tracked';
+import React, {useContext, useLayoutEffect} from 'react';
+import {useEffect} from 'react';
+import {useState} from 'react';
+import {memo} from 'react-tracked';
 import styled from 'styled-components';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
-import { useZKChessState } from '../api/UIStateManager';
+import {useZKChessState} from '../api/UIStateManager';
 import {
   boardFromGame,
   boardLocMap,
@@ -31,8 +31,8 @@ import {
   Selectable,
   StagedLoc,
 } from '../_types/global/GlobalTypes';
-import { ChessPiece, ObjectivePiece, PiecePos } from './BoardPieces';
-import { GameManagerContext } from './LandingPage';
+import {ChessPiece, ObjectivePiece, PiecePos} from './BoardPieces';
+import {GameManagerContext} from './LandingPage';
 
 const borderColor = 'black';
 const StyledGameBoard = styled.table`
@@ -56,7 +56,7 @@ const StyledGameBoard = styled.table`
   }
 `;
 
-const StyledGameCell = styled.div<{ canMove: boolean }>`
+const StyledGameCell = styled.div<{canMove: boolean}>`
   width: 100%;
   height: 100%;
   margin: 0;
@@ -80,7 +80,7 @@ function RawGameCell({
   if (!gm) return <>error</>;
 
   const [myState, setters] = useZKChessState();
-  const { selected, canMove: canMoveArr } = myState.session;
+  const {selected, canMove: canMoveArr} = myState.session;
   const setSelected = setters.updateSelected;
   const canMove = hasLoc(canMoveArr, location);
   const staged = myState.session.staged;
@@ -125,6 +125,7 @@ function RawGameCell({
     id: 0,
     location: [0, 0],
     commitment: '0',
+    salt: '0',
   };
 
   return (
@@ -136,7 +137,7 @@ function RawGameCell({
             piece={dummyGhost}
             pos={PiecePos.topLeft}
             disabled={true}
-            style={{ opacity: enemyGhostOpacity }}
+            style={{opacity: enemyGhostOpacity}}
           />
         )}
         {[cell.piece, cell.ghost].map(

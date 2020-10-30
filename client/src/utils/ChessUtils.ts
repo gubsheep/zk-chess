@@ -234,6 +234,7 @@ export const sampleGame: ChessGame = {
     id: Math.random(),
     owner: emptyAddress,
     commitment: '0',
+    salt: '0',
   },
   objectives: [
     makeObjective([0, 3], 10, Color.WHITE),

@@ -1,5 +1,4 @@
 //import * as EventEmitter from 'events';
-import {BigNumber as EthersBN} from 'ethers';
 import {EventEmitter} from 'events';
 import {
   ChessGameContractData,
@@ -21,17 +20,12 @@ import {
   SubmittedTx,
   ContractEvent,
   ProofArgs,
-  EthTxType,
-  SubmittedProve,
-  ZKArgIdx,
-  ProveArgIdx,
   RawPiece,
   RawObjective,
-  SubmittedMove,
   UnsubmittedMove,
   UnsubmittedProve,
   UnsubmittedJoin,
-  SubmittedJoin,
+  UnsubmittedGhostAttack,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -202,7 +196,12 @@ class ContractsAPI extends EventEmitter {
     this.emit(ContractsAPIEvent.TxInitialized, unminedTx);
   }
 
-  public onTxSubmit(unminedTx: SubmittedTx): void {
+  public onTxSubmit(action: UnsubmittedAction, txHash: string): void {
+    const unminedTx = {
+      ...action,
+      txHash,
+      sentAtTimestamp: Math.floor(Date.now() / 1000),
+    };
     // TODO encapsulate this into terminalemitter
     this.unminedTxs.set(unminedTx.actionId, unminedTx);
     this.emit(ContractsAPIEvent.TxSubmitted, unminedTx);
@@ -295,12 +294,7 @@ class ContractsAPI extends EventEmitter {
     );
 
     if (tx.hash) {
-      const unminedProveTx: SubmittedProve = {
-        ...action,
-        txHash: tx.hash,
-        sentAtTimestamp: Math.floor(Date.now() / 1000),
-      };
-      this.onTxSubmit(unminedProveTx);
+      this.onTxSubmit(action, tx.hash);
     }
     return tx.wait();
   }
@@ -323,12 +317,7 @@ class ContractsAPI extends EventEmitter {
     );
 
     if (tx.hash) {
-      const unminedJoinTx: SubmittedJoin = {
-        ...action,
-        txHash: tx.hash,
-        sentAtTimestamp: Math.floor(Date.now() / 1000),
-      };
-      this.onTxSubmit(unminedJoinTx);
+      this.onTxSubmit(action, tx.hash);
     }
     return tx.wait();
   }
@@ -354,12 +343,35 @@ class ContractsAPI extends EventEmitter {
     );
 
     if (tx.hash) {
-      const unminedMoveTx: SubmittedMove = {
-        ...action,
-        txHash: tx.hash,
-        sentAtTimestamp: Math.floor(Date.now() / 1000),
-      };
-      this.onTxSubmit(unminedMoveTx);
+      this.onTxSubmit(action, tx.hash);
+    }
+    return tx.wait();
+  }
+
+  public async ghostAttack(
+    pieceId: number,
+    row: number,
+    col: number,
+    salt: string,
+    action: UnsubmittedGhostAttack
+  ): Promise<providers.TransactionReceipt> {
+    console.log(row, col, salt);
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        actionId: action.actionId,
+        contract: this.coreContract,
+        method: 'ghostAttack',
+        args: [pieceId.toString(), row.toString(), col.toString(), salt],
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      this.onTxSubmit(action, tx.hash);
     }
     return tx.wait();
   }

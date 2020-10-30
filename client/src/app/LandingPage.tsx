@@ -1,14 +1,14 @@
-import React, { createContext } from 'react';
-import { useState } from 'react';
+import React, {createContext} from 'react';
+import {useState} from 'react';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
-import { ZKChessStateProvider } from '../api/UIStateManager';
-import { EthAddress } from '../_types/global/GlobalTypes';
-import { Game } from './Game';
+import {ZKChessStateProvider} from '../api/UIStateManager';
+import {EthAddress, GameState} from '../_types/global/GlobalTypes';
+import {Game} from './Game';
 
 enum InitState {
   NONE,
@@ -23,7 +23,7 @@ enum InitState {
   TERMINATED,
 }
 
-const MOCK_GAME = true;
+const MOCK_GAME = false;
 
 export const GameManagerContext = createContext<AbstractGameManager | null>(
   null
@@ -68,14 +68,21 @@ export function LandingPage() {
     ethConnection.setAccount(id);
 
     setInitState(InitState.FETCHING_ETH_DATA);
+    let newGameManager: AbstractGameManager;
     if (MOCK_GAME) {
-      const newGameManager = await FakeGameManager.create();
+      newGameManager = await FakeGameManager.create();
       setGameManager(newGameManager);
     } else {
-      const newGameManager = await GameManager.create();
+      newGameManager = await GameManager.create();
       setGameManager(newGameManager);
     }
-    setInitState(InitState.FETCHED_ETH_DATA);
+    if (
+      newGameManager.getGameState().gameState !== GameState.WAITING_FOR_PLAYERS
+    ) {
+      setInitState(InitState.COMPLETE);
+    } else {
+      setInitState(InitState.FETCHED_ETH_DATA);
+    }
   };
 
   const joinGame = async () => {

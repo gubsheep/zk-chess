@@ -9,7 +9,7 @@ contract ZKChessCore {
     uint256
         public constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
     uint256
-        public constant GHOST_START_COMMITMENT = 7214751084937475278685990361647698062370992456785139288868246743057894630983;
+        public constant GHOST_START_COMMITMENT = 7374563847362678215915084925243633004703986452179446109135597066279732561698;
     uint256 public constant BOARD_SIZE = 7;
 
     uint8 public turnNumber;
@@ -412,7 +412,7 @@ contract ZKChessCore {
         completeTurn();
     }
 
-    function revealGhost(
+    function ghostAttack(
         uint8 pieceId,
         uint256 row,
         uint256 col,
@@ -438,9 +438,11 @@ contract ZKChessCore {
         if (msg.sender == player1) {
             opponent = player2;
         }
-        if (theirPiece.owner == opponent) {
-            theirPiece.dead = true;
-        }
+        require(
+            theirPiece.owner == opponent,
+            "can only reveal to capture opposing piece"
+        );
+        theirPiece.dead = true;
         completeTurn();
     }
 
