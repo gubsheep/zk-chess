@@ -1,5 +1,6 @@
 import {
   ContractCallArgs,
+  GhostMoveArgs,
   ProofArgs,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import {
@@ -8,12 +9,6 @@ import {
 } from '../_types/global/GlobalTypes';
 import {BigInteger} from 'big-integer';
 import mimcHash, {modPBigInt} from '../hash/mimc';
-
-interface ProveArgs {
-  x: string;
-  y: string;
-  salt: string;
-}
 
 class SnarkArgsHelper {
   // private constructor() {}
@@ -27,15 +22,23 @@ class SnarkArgsHelper {
     return snarkArgsHelper;
   }
 
-  async getProof(x: number, y: number, salt: number): Promise<ProofArgs> {
+  async getGhostMoveProof(
+    x1: number,
+    y1: number,
+    salt1: string,
+    x2: number,
+    y2: number,
+    salt2: string
+  ): Promise<GhostMoveArgs> {
     try {
-      const input: ProveArgs = {
-        x: modPBigInt(x).toString(),
-        y: modPBigInt(y).toString(),
-        salt: modPBigInt(salt).toString(),
+      const input = {
+        x1: modPBigInt(x1).toString(),
+        y1: modPBigInt(y1).toString(),
+        salt1: modPBigInt(salt1).toString(),
+        x2: modPBigInt(x2).toString(),
+        y2: modPBigInt(y2).toString(),
+        salt2: modPBigInt(salt2).toString(),
       };
-
-      const publicSignals: BigInteger[] = [mimcHash(x, y, salt)];
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
@@ -44,8 +47,8 @@ class SnarkArgsHelper {
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
-        publicSignals.map((x) => modPBigInt(x))
-      ) as ProofArgs;
+        snarkProof.publicSignals
+      ) as GhostMoveArgs;
       return ret;
     } catch (e) {
       console.error(e);
@@ -55,7 +58,7 @@ class SnarkArgsHelper {
 
   private callArgsFromProofAndSignals(
     snarkProof: SnarkJSProof,
-    publicSignals: BigInteger[]
+    publicSignals: (BigInteger | string)[]
   ): ContractCallArgs {
     // the object returned by genZKSnarkProof needs to be massaged into a set of parameters the verifying contract
     // will accept

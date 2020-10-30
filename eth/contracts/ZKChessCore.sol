@@ -332,23 +332,6 @@ contract ZKChessCore {
         emit GameStart(player1, player2);
     }
 
-    function checkProof(
-        uint256[2] memory _a,
-        uint256[2][2] memory _b,
-        uint256[2] memory _c,
-        uint256[2] memory _input
-    ) public returns (bool) {
-        if (!DISABLE_ZK_CHECK) {
-            require(
-                Verifier.verifyMoveProof(_a, _b, _c, _input),
-                "Failed init proof check"
-            );
-        }
-        pfsVerified += 1;
-        emit ProofVerified(pfsVerified);
-        return true;
-    }
-
     function movePiece(
         uint8 pieceId,
         uint8 toRow,
@@ -361,7 +344,7 @@ contract ZKChessCore {
         if (msg.sender == player2) {
             require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
         }
-        // require(turnNumber > 0, "Must move ghost on first turn");
+        require(turnNumber > 0, "Must move ghost on first turn");
         Piece storage piece = pieces[pieceId];
         require(piece.owner == msg.sender, "You don't own that piece");
         require(!piece.dead, "Piece is dead");

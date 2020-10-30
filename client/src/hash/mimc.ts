@@ -296,4 +296,6 @@ export const mimcWithRounds = (rounds: number) => (
 
 const mimcHash = mimcWithRounds(220);
 
+window.mimcHash = mimcHash;
+
 export default mimcHash;

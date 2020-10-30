@@ -26,6 +26,8 @@ import {
   UnsubmittedProve,
   UnsubmittedJoin,
   UnsubmittedGhostAttack,
+  GhostMoveArgs,
+  UnsubmittedGhostMove,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -109,7 +111,7 @@ class TxExecutor extends EventEmitter {
       } catch (e) {
         console.error('error while submitting tx:');
         console.error(e);
-        throw new Error('Unknown error occurred.');
+        throw e;
       }
     } catch (e) {
       this.emit(txRequest.actionId, undefined, e);
@@ -274,31 +276,6 @@ class ContractsAPI extends EventEmitter {
     };
   }
 
-  public async submitProof(
-    snarkArgs: ProofArgs,
-    action: UnsubmittedProve
-  ): Promise<providers.TransactionReceipt> {
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        actionId: action.actionId,
-        contract: this.coreContract,
-        method: 'checkProof',
-        args: snarkArgs,
-        overrides,
-      }
-    );
-
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
-    }
-    return tx.wait();
-  }
-
   public async joinGame(
     action: UnsubmittedJoin
   ): Promise<providers.TransactionReceipt> {
@@ -366,6 +343,32 @@ class ContractsAPI extends EventEmitter {
         contract: this.coreContract,
         method: 'ghostAttack',
         args: [pieceId.toString(), row.toString(), col.toString(), salt],
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      this.onTxSubmit(action, tx.hash);
+    }
+    return tx.wait();
+  }
+
+  public async moveGhost(
+    args: GhostMoveArgs,
+    pieceId: number,
+    action: UnsubmittedGhostMove
+  ) {
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        actionId: action.actionId,
+        contract: this.coreContract,
+        method: 'moveGhost',
+        args: [...args, pieceId],
         overrides,
       }
     );
