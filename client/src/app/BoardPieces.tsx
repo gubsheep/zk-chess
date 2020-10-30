@@ -1,15 +1,18 @@
 import {
+  BoardLocation,
   Color,
+  Ghost,
   Objective,
   Piece,
   PieceType,
   Selectable,
 } from '../_types/global/GlobalTypes';
 
-import React from 'react';
+import React, { MutableRefObject, useLayoutEffect } from 'react';
 import styled, { css } from 'styled-components';
-import { isGhost } from '../utils/ChessUtils';
+import { compareLoc, isGhost } from '../utils/ChessUtils';
 import { useZKChessState } from '../api/UIStateManager';
+import { useState } from 'react';
 
 const flexCenter = css`
   display: flex;
@@ -99,51 +102,78 @@ type HoverProps = {
   isSelected?: boolean;
 };
 
-export function ChessPiece({
-  piece,
-  staged,
-  style,
-
-  onClick,
-  pos,
-  isSelected,
-  disabled,
-}: {
+type ChessPieceProps = {
   piece: Selectable;
   staged?: boolean;
   style?: React.CSSProperties;
-} & HoverProps) {
-  const { state } = useZKChessState();
-  const { computed, methods } = state;
+} & HoverProps;
 
-  const color = methods.getColor(piece.owner) || Color.WHITE;
+export const ChessPiece = React.forwardRef(
+  (props: ChessPieceProps, ref: MutableRefObject<HTMLDivElement | null>) => {
+    const { piece, staged, style, onClick, pos, isSelected, disabled } = props;
 
-  let url: string = '';
-  if (isGhost(piece)) {
-    url =
-      color === Color.BLACK
-        ? './public/chess/black_ghost.svg'
-        : './public/chess/white_ghost.svg';
-  } else {
-    const chessPiece = piece as Piece;
-    url =
-      color === Color.BLACK
-        ? blackPieceUrls[chessPiece.pieceType]
-        : whitePieceUrls[chessPiece.pieceType];
+    const { state } = useZKChessState();
+    const { methods } = state;
+
+    const color = methods.getColor(piece.owner) || Color.WHITE;
+
+    let url: string = '';
+    if (isGhost(piece)) {
+      url =
+        color === Color.BLACK
+          ? './public/chess/black_ghost.svg'
+          : './public/chess/white_ghost.svg';
+    } else {
+      const chessPiece = piece as Piece;
+      url =
+        color === Color.BLACK
+          ? blackPieceUrls[chessPiece.pieceType]
+          : whitePieceUrls[chessPiece.pieceType];
+    }
+
+    return (
+      <StyledPieceWrapper
+        pos={pos || PiecePos.normal}
+        onClick={onClick}
+        selected={isSelected}
+        nohover={disabled}
+        style={style}
+        ref={ref}
+      >
+        <StyledChessPiece staged={staged}>
+          <img src={url} />
+        </StyledChessPiece>
+      </StyledPieceWrapper>
+    );
   }
+);
+
+export function EnemyGhost({ location }: { location: BoardLocation }) {
+  const { state } = useZKChessState();
+  const {
+    game: { enemyPlayer, enemyGhost },
+  } = state;
+
+  const [styleObj, setStyleObj] = useState<React.CSSProperties>({
+    display: 'none',
+  });
+
+  useLayoutEffect(() => {
+    if (compareLoc(enemyGhost, location)) {
+      setStyleObj({ display: 'block' });
+      setTimeout(() => {
+        setStyleObj({ display: 'none' });
+      }, 1000);
+    }
+  }, [enemyGhost]);
 
   return (
-    <StyledPieceWrapper
-      pos={pos || PiecePos.normal}
-      onClick={onClick}
-      selected={isSelected}
-      nohover={disabled}
-      style={style}
-    >
-      <StyledChessPiece staged={staged}>
-        <img src={url} />
-      </StyledChessPiece>
-    </StyledPieceWrapper>
+    <ChessPiece
+      piece={{ owner: enemyPlayer?.account } as Ghost}
+      pos={PiecePos.topLeft}
+      disabled={true}
+      style={styleObj}
+    />
   );
 }
 

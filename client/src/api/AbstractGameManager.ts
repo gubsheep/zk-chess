@@ -2,7 +2,6 @@ import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
-  Color,
   EthAddress,
 } from '../_types/global/GlobalTypes';
 

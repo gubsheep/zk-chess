@@ -185,11 +185,11 @@ export const getScores = (game: ChessGame): [ScoreEntry, ScoreEntry] => {
 };
 
 export const enemyGhostMoved = (
-  oldState: ChessGame,
-  newState: ChessGame,
+  oldState: ChessGame | null,
+  newState: ChessGame | null,
   myAddress: EthAddress | null
 ): BoardLocation | null => {
-  if (!myAddress) return null;
+  if (!myAddress || !oldState || !newState) return null;
   const isPlayer1 = oldState.player1.address === myAddress;
   const myOldPieces = isPlayer1
     ? oldState.player1pieces

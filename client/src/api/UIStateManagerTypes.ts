@@ -39,6 +39,7 @@ export type ChessGameState = {
   gameState: ChessGame | null;
   player: PlayerInfo | null;
   enemyPlayer: PlayerInfo | null;
+  enemyGhost: BoardLocation | null;
 };
 
 export type ZKChessState = {

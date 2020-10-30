@@ -37,6 +37,7 @@ const initialState: ZKChessState = {
     gameState: null,
     player: null,
     enemyPlayer: null,
+    enemyGhost: null,
   },
   session: {
     selected: null,

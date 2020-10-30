@@ -1,19 +1,20 @@
-import { useLayoutEffect } from 'react';
+import _ from 'lodash';
+import { MutableRefObject, useLayoutEffect, useRef, useState } from 'react';
 import { useCallback, useEffect } from 'react';
 import { TurnState } from '../app/Game';
 import {
   boardFromGame,
   compareLoc,
+  enemyGhostMoved,
   getCanMove,
   isGhost,
 } from '../utils/ChessUtils';
 import {
-  BoardLocation,
   ChessCell,
+  ChessGame,
   Color,
   EthAddress,
   GameStatus,
-  Ghost,
   PlayerInfo,
   Selectable,
   StagedLoc,
@@ -81,11 +82,11 @@ export const useSyncGame = (): void => {
 };
 
 export const useComputed = (): void => {
-  const { state, dispatch, gameManager: gm } = useZKChessState();
+  const { state, dispatch } = useZKChessState();
   const {
     session: { selected, turnState, staged },
-    game: { gameState },
-    computed: { board },
+    game: { gameState, player },
+    computed: { board, isMyTurn },
   } = state;
 
   // update board whenever gameState is updated
@@ -167,30 +168,32 @@ export const useComputed = (): void => {
     dispatch.updateComputed({ isMyTurn });
   }, [gameState]);
 
-  // TODO add pendingMoves to gameState
-  // when a move is accepted, wait for a response
-  useEffect(() => {
-    /*
-    const doAccept = () => setTurnState(TurnState.Submitting);
-    gm.addListener(GameManagerEvent.MoveAccepted, doAccept);
-
-    return () => {
-      gm.removeAllListeners(GameManagerEvent.MoveAccepted);
-    };
-    */
-  });
-
   // sync things to game state
-  // calculate turn state
-  /*
   useEffect(() => {
-    if (gm.isMyTurn()) {
-      setters.updateTurnState(TurnState.Moving);
+    if (isMyTurn) {
+      dispatch.updateSession({ turnState: TurnState.Moving });
     } else {
-      setters.updateTurnState(TurnState.Waiting);
+      dispatch.updateSession({ turnState: TurnState.Waiting });
     }
+  }, [isMyTurn]);
+
+  // check if enemy ghost moved
+  const [oldGameState, setOldGameState] = useState<ChessGame | null>(
+    _.cloneDeep(gameState)
+  );
+
+  useLayoutEffect(() => {
+    const enemyGhost = enemyGhostMoved(
+      oldGameState,
+      gameState,
+      player ? player.account : null
+    );
+    if (enemyGhost) {
+      dispatch.updateGame({ enemyGhost });
+    }
+
+    setOldGameState(_.cloneDeep(gameState));
   }, [gameState]);
-  */
 };
 
 export const useInitMethods = () => {

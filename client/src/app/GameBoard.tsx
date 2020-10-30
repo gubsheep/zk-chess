@@ -1,6 +1,5 @@
-import React, { memo, useContext, useLayoutEffect, useState } from 'react';
+import React, { memo } from 'react';
 import styled from 'styled-components';
-import AbstractGameManager from '../api/AbstractGameManager';
 import { useZKChessState } from '../api/UIStateManager';
 import { boardMap, boardLocMap, compareLoc, hasLoc } from '../utils/ChessUtils';
 import {
@@ -10,7 +9,12 @@ import {
   Ghost,
   Piece,
 } from '../_types/global/GlobalTypes';
-import { ObjectivePiece, ChessPiece, PiecePos } from './BoardPieces';
+import {
+  ObjectivePiece,
+  ChessPiece,
+  PiecePos,
+  EnemyGhost,
+} from './BoardPieces';
 
 const borderColor = 'black';
 const StyledGameBoard = styled.table`
@@ -43,11 +47,11 @@ const StyledGameCell = styled.div<{ canMove: boolean }>`
 `;
 
 const GameCell = memo(function ({ location }: { location: BoardLocation }) {
-  const { state, dispatch } = useZKChessState();
+  const { state } = useZKChessState();
   const {
     session: { selected, staged },
     computed: { gamePaused, board, canMove: canMoveArr },
-    game: { player },
+    game: { player, enemyPlayer },
     methods: { setSelected, setStaged },
   } = state;
 
@@ -89,14 +93,7 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
     <td onClick={cellHandler}>
       <StyledGameCell canMove={canMove}>
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
-        {/* {enemyGhostOpacity !== null && (
-          <ChessPiece
-            piece={dummyGhost}
-            pos={PiecePos.topLeft}
-            disabled={true}
-            style={{ opacity: enemyGhostOpacity }}
-          />
-        )} */}
+        <EnemyGhost location={location} />
         {[cell.piece, cell.ghost].map(
           (obj, i) =>
             obj && (
