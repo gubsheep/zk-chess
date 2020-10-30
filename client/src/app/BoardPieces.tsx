@@ -6,9 +6,8 @@ import {
   Selectable,
 } from '../_types/global/GlobalTypes';
 
-import React, { useContext } from 'react';
+import React from 'react';
 import styled, { css } from 'styled-components';
-import AbstractGameManager from '../api/AbstractGameManager';
 import { isGhost } from '../utils/ChessUtils';
 import { useZKChessState } from '../api/UIStateManager';
 

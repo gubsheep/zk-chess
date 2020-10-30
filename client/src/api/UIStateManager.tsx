@@ -45,6 +45,7 @@ type ComputedState = {
   board: ChessBoard;
   gamePaused: boolean;
   canMove: BoardLocation[];
+  ghostCanAct: boolean;
 };
 
 type StateMethods = {
@@ -52,6 +53,9 @@ type StateMethods = {
 
   setSelected: (obj: Selectable | null) => void;
   setStaged: (obj: StagedLoc | null) => void;
+
+  submitMove: () => void;
+  ghostAttack: () => void;
 };
 
 type ChessGameState = {
@@ -87,11 +91,14 @@ const initialState: ZKChessState = {
     board: [], // todo make this not fail silently (make nullable)
     canMove: [],
     gamePaused: false,
+    ghostCanAct: false,
   },
   methods: {
     getColor: (_) => Color.WHITE,
     setSelected: () => {},
     setStaged: () => {},
+    submitMove: () => {},
+    ghostAttack: () => {},
   },
 };
 
