@@ -173,12 +173,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     return this.account === player.address;
   }
 
-  getColor(account: EthAddress | null): Color | null {
-    if (this.gameState.player1.address === account) return Color.WHITE;
-    if (this.gameState.player2.address === account) return Color.BLACK;
-    return null;
-  }
-
   getGameAddr(): EthAddress | null {
     return this.contractsAPI.getContractAddress();
   }

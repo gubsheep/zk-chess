@@ -37,5 +37,4 @@ export default interface AbstractGameManager extends EventEmitter {
 
   // should be in gameUImanager
   isMyTurn(): boolean;
-  getColor(account: EthAddress | null): Color | null;
 }

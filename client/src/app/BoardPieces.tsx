@@ -6,11 +6,11 @@ import {
   Selectable,
 } from '../_types/global/GlobalTypes';
 
-import React, {useContext} from 'react';
-import styled, {css} from 'styled-components';
+import React, { useContext } from 'react';
+import styled, { css } from 'styled-components';
 import AbstractGameManager from '../api/AbstractGameManager';
-import {GameManagerContext} from './LandingPage';
-import {isGhost} from '../utils/ChessUtils';
+import { isGhost } from '../utils/ChessUtils';
+import { useZKChessState } from '../api/UIStateManager';
 
 const flexCenter = css`
   display: flex;
@@ -44,19 +44,19 @@ const StyledPieceWrapper = styled.div<{
   position: absolute;
   ${flexCenter};
 
-  width: ${({pos}) => (pos === PiecePos.normal ? '100%' : '60%')};
-  height: ${({pos}) => (pos === PiecePos.normal ? '100%' : '60%')};
+  width: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '60%')};
+  height: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '60%')};
 
-  ${({pos}) =>
+  ${({ pos }) =>
     pos === PiecePos.botRight ? 'bottom: 0; right: 0;' : 'top: 0; left: 0;'};
 
-  ${({pos}) =>
+  ${({ pos }) =>
     pos !== PiecePos.normal ? 'z-index: 2;' : PiecePos.topLeft && 'z-index: 1;'}
 
   // shitty but whatever
-  ${({selected}) => (selected ? 'background: #aaa !important;' : 'none')};
+  ${({ selected }) => (selected ? 'background: #aaa !important;' : 'none')};
 
-  ${({nohover}) =>
+  ${({ nohover }) =>
     !nohover &&
     `
     &:hover {
@@ -114,10 +114,10 @@ export function ChessPiece({
   staged?: boolean;
   style?: React.CSSProperties;
 } & HoverProps) {
-  const gm = useContext<AbstractGameManager | null>(GameManagerContext);
-  if (!gm) return <>error</>;
+  const { state } = useZKChessState();
+  const { computed } = state;
 
-  const color = gm.getColor(piece.owner) || Color.WHITE;
+  const color = computed.getColor(piece.owner) || Color.WHITE;
 
   let url: string = '';
   if (isGhost(piece)) {
@@ -170,7 +170,7 @@ const StyledObjective = styled(StyledBasePiece)<{
     width: 32pt;
     height: 32pt;
 
-    ${({pieceColor: color}) =>
+    ${({ pieceColor: color }) =>
       color === null
         ? neutralObj
         : color === Color.BLACK
@@ -186,11 +186,9 @@ const StyledObjective = styled(StyledBasePiece)<{
   }
 `;
 
-export function ObjectivePiece({objective}: {objective: Objective}) {
-  const gm = useContext<AbstractGameManager | null>(GameManagerContext);
-  if (!gm) return <>error</>;
-
-  const color = gm.getColor(objective.owner);
+export function ObjectivePiece({ objective }: { objective: Objective }) {
+  const { state } = useZKChessState();
+  const color = state.computed.getColor(objective.owner);
 
   return (
     <StyledPieceWrapper pos={PiecePos.normal} nohover>

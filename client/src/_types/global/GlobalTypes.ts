@@ -1,6 +1,6 @@
-import {EventEmitter} from 'events';
-import {Dispatch} from 'react';
-import {SetStateAction} from 'react';
+import { EventEmitter } from 'events';
+import { Dispatch } from 'react';
+import { SetStateAction } from 'react';
 
 interface WindowEthereumObject extends EventEmitter {
   enable: () => void;

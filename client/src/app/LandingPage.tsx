@@ -25,10 +25,6 @@ enum InitState {
 
 const MOCK_GAME = true;
 
-export const GameManagerContext = createContext<AbstractGameManager | null>(
-  null
-);
-
 export function LandingPage() {
   const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
     null

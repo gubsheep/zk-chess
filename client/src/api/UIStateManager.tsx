@@ -1,19 +1,19 @@
-import React, { useEffect, useReducer } from 'react';
-import { useContext } from 'react';
+import React, { useReducer } from 'react';
 import { createContainer } from 'react-tracked';
-import { GameManagerContext } from '../app/LandingPage';
-import { boardFromGame, getCanMove } from '../utils/ChessUtils';
+import { TurnState } from '../app/Game';
 import {
   BoardLocation,
   ChessBoard,
   ChessGame,
   Color,
   EthAddress,
-  GameState,
   Selectable,
   StagedLoc,
+  Piece,
+  Ghost,
 } from '../_types/global/GlobalTypes';
-import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
+import AbstractGameManager from './AbstractGameManager';
+import { useSyncGame, useComputedState, useInitGame } from './StateManagers';
 
 /* 
 so the model is that there's a single shared state store, and that guy is
@@ -31,21 +31,33 @@ type SessionState = {
   selected: Selectable | null;
   canMove: BoardLocation[];
   staged: StagedLoc | null;
+
+  turnState: TurnState;
+};
+
+type ComputedState = {
+  board: ChessBoard;
+  gamePaused: boolean;
+  // TODO move this guy out of computed
+  enemyPlayer: PlayerInfo;
+  player: PlayerInfo;
+
+  getColor: (obj: EthAddress | null) => Color | null;
 };
 
 type PlayerInfo = {
   account: EthAddress | null;
-  color: Color;
+  color: Color | null;
 };
 
 // TODO maybe we need the notion of set vs computed state?
+// TODO refactor this and give each guy some assertions
 // type StoredState = {};
+
 type ZKChessState = {
   session: SessionState;
+  computed: ComputedState;
   game: ChessGame | null;
-  board: ChessBoard;
-
-  player: PlayerInfo | null;
 };
 
 const initialState: ZKChessState = {
@@ -53,26 +65,45 @@ const initialState: ZKChessState = {
     selected: null,
     canMove: [],
     staged: null,
+    turnState: TurnState.Moving,
+  },
+  computed: {
+    board: [], // todo make this not fail silently (make nullable)
+    gamePaused: false,
+    player: {
+      account: null,
+      color: null,
+    },
+    enemyPlayer: {
+      account: null,
+      color: null,
+    },
+    getColor: (_) => Color.WHITE,
   },
   game: null,
-  board: [], // todo make this not fail silently
-  player: null,
 };
 
 /* define reducers */
 
-enum ActionType {
+// TODO can we make this shorter somehow? what if we useState instead of useReducer?
+export enum ActionType {
   UpdateGameState = 'UpdateGameState',
   UpdateSelected = 'UpdateSelected',
   UpdateCanMove = 'UpdateCanMove',
   UpdateStaged = 'UpdateStaged',
+  UpdateTurnState = 'UpdateTurnState',
+
+  UpdateComputed = 'UpdateComputed',
+  UpdatePlayer = 'UpdatePlayer',
 }
 
 type Action =
   | { type: ActionType.UpdateGameState; game: ChessGame }
   | { type: ActionType.UpdateSelected; object: Selectable | null }
   | { type: ActionType.UpdateCanMove; canMove: BoardLocation[] }
-  | { type: ActionType.UpdateStaged; staged: StagedLoc | null };
+  | { type: ActionType.UpdateStaged; staged: StagedLoc | null }
+  | { type: ActionType.UpdateTurnState; turnState: TurnState }
+  | { type: ActionType.UpdateComputed; computed: Partial<ComputedState> };
 
 const reducer = (state: ZKChessState, action: Action): ZKChessState => {
   switch (action.type) {
@@ -80,7 +111,6 @@ const reducer = (state: ZKChessState, action: Action): ZKChessState => {
       return {
         ...state,
         game: action.game,
-        board: boardFromGame(action.game),
       };
     case ActionType.UpdateSelected:
       return {
@@ -106,27 +136,53 @@ const reducer = (state: ZKChessState, action: Action): ZKChessState => {
           staged: action.staged,
         },
       };
+    case ActionType.UpdateTurnState:
+      return {
+        ...state,
+        session: {
+          ...state.session,
+          turnState: action.turnState,
+        },
+      };
+    case ActionType.UpdateComputed:
+      return {
+        ...state,
+        computed: {
+          ...state.computed,
+          ...action.computed,
+        },
+      };
     default:
       return state;
   }
 };
 
 const useValue = () => useReducer(reducer, initialState);
-
 const container = createContainer(useValue);
-
 const { Provider, useTrackedState, useUpdate: useDispatch } = container;
 
 /* define hooks */
 
-type ZKChessUpdate = {
+type ZKChessSetters = {
   updateGame: (state: ChessGame) => void;
   updateSelected: (loc: Selectable | null) => void;
   updateStaged: (staged: StagedLoc | null) => void;
+  updateTurnState: (turnState: TurnState) => void;
 };
+
+// type ZKChessGetters = {};
+
 type ZKChessDispatch = React.Dispatch<Action>;
+
 // todo turn this into a struct
-type ZKChessHook = [ZKChessState, ZKChessUpdate];
+type ZKChessHook = {
+  state: ZKChessState;
+  setters: ZKChessSetters;
+  // getters: ZKChessGetters;
+
+  // fallback
+  dispatch: ZKChessDispatch;
+};
 
 const useZKChessState = (): ZKChessHook => {
   const state = useTrackedState();
@@ -137,72 +193,47 @@ const useZKChessState = (): ZKChessHook => {
 
   const updateSelected = (obj: Selectable | null) => {
     dispatch({ type: ActionType.UpdateSelected, object: obj });
-    dispatch({ type: ActionType.UpdateCanMove, canMove: getCanMove(obj) });
   };
 
   const updateStaged = (staged: StagedLoc | null) => {
     dispatch({ type: ActionType.UpdateStaged, staged });
   };
 
-  return [
+  const updateTurnState = (turnState: TurnState) => {
+    dispatch({ type: ActionType.UpdateTurnState, turnState });
+  };
+
+  return {
     state,
-    {
+    setters: {
       updateGame,
       updateSelected,
       updateStaged,
+      updateTurnState,
     },
-  ];
+    // getters: {},
+    dispatch,
+  };
 };
 
-function ZKChessStateSyncer({
+function GameStateManager({
   children,
-  gameManager: gm,
+  gameManager,
 }: {
   children: React.ReactNode;
   gameManager: AbstractGameManager | null;
 }) {
-  const [, dispatch] = useZKChessState();
+  useInitGame(gameManager);
+  useSyncGame(gameManager); // sync with contract stuff
 
-  // sync the shared state to game state
-  useEffect(() => {
-    if (!gm) return;
-    // subscribe to game state updates
-    const syncState = () => {
-      const newState = gm.getGameState();
-
-      /*
-      // check if enemy ghost has acted
-      const enemyGhostLoc = enemyGhostMoved(
-        gameState,
-        newState,
-        gm.getAccount()
-      );
-      if (enemyGhostLoc) {
-        setEnemyGhost([enemyGhostLoc, 1]);
-      }
-      */
-      dispatch.updateGame(newState);
-      dispatch.updateSelected(null);
-    };
-    gm.addListener(GameManagerEvent.GameStart, syncState);
-    gm.addListener(GameManagerEvent.MoveMade, syncState);
-    gm.addListener(GameManagerEvent.GameFinished, syncState);
-
-    syncState();
-
-    return () => {
-      gm.removeAllListeners(GameManagerEvent.GameStart);
-      gm.removeAllListeners(GameManagerEvent.MoveMade);
-      gm.removeAllListeners(GameManagerEvent.GameFinished);
-    };
-  }, [gm]);
-
+  useComputedState(gameManager); // listen for ui changes
   return (
-    <GameManagerContext.Provider value={gm}>
-      {children}
-    </GameManagerContext.Provider>
+    // <GameManagerContext.Provider value={gameManager}>
+    <>{children}</>
+    // </GameManagerContext.Provider>
   );
 }
+
 function ZKChessStateProvider({
   children,
   gameManager,
@@ -212,9 +243,7 @@ function ZKChessStateProvider({
 }) {
   return (
     <Provider>
-      <ZKChessStateSyncer gameManager={gameManager}>
-        {children}
-      </ZKChessStateSyncer>
+      <GameStateManager gameManager={gameManager}>{children}</GameStateManager>
     </Provider>
   );
 }
