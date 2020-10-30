@@ -1,5 +1,6 @@
-import React, { useReducer } from 'react';
+import React, { useContext, useReducer } from 'react';
 import { createContainer } from 'react-tracked';
+import { QueueMethods } from 'react-use/lib/useQueue';
 import { TurnState } from '../app/Game';
 import {
   BoardLocation,
@@ -11,9 +12,13 @@ import {
   StagedLoc,
   Piece,
   Ghost,
+  Player,
+  PlayerInfo,
 } from '../_types/global/GlobalTypes';
 import AbstractGameManager from './AbstractGameManager';
-import { useSyncGame, useComputedState, useInitGame } from './StateManagers';
+import { useSyncGame, useComputed, useInitGame, useInitMethods } from './StateManagers';
+
+/* exports ZKChessStateProvider and useZKChessState - single entrypoint into the API */
 
 /* 
 so the model is that there's a single shared state store, and that guy is
@@ -38,16 +43,17 @@ type SessionState = {
 type ComputedState = {
   board: ChessBoard;
   gamePaused: boolean;
-  // TODO move this guy out of computed
-  enemyPlayer: PlayerInfo;
-  player: PlayerInfo;
+};
 
+
+type StateMethods = {
   getColor: (obj: EthAddress | null) => Color | null;
 };
 
-type PlayerInfo = {
-  account: EthAddress | null;
-  color: Color | null;
+type ChessGameState = {
+  gameState: ChessGame | null;
+  player: PlayerInfo | null;
+  enemyPlayer: PlayerInfo | null;
 };
 
 // TODO maybe we need the notion of set vs computed state?
@@ -55,12 +61,19 @@ type PlayerInfo = {
 // type StoredState = {};
 
 type ZKChessState = {
+  game: ChessGameState;
   session: SessionState;
+  // stored: StoredState;
   computed: ComputedState;
-  game: ChessGame | null;
+  methods: StateMethods;
 };
 
 const initialState: ZKChessState = {
+  game: {
+    gameState: null,
+    player: null,
+    enemyPlayer: null,
+  },
   session: {
     selected: null,
     canMove: [],
@@ -70,17 +83,10 @@ const initialState: ZKChessState = {
   computed: {
     board: [], // todo make this not fail silently (make nullable)
     gamePaused: false,
-    player: {
-      account: null,
-      color: null,
-    },
-    enemyPlayer: {
-      account: null,
-      color: null,
-    },
+  },
+  methods: {
     getColor: (_) => Color.WHITE,
   },
-  game: null,
 };
 
 /* define reducers */
@@ -94,7 +100,9 @@ export enum ActionType {
   UpdateTurnState = 'UpdateTurnState',
 
   UpdateComputed = 'UpdateComputed',
-  UpdatePlayer = 'UpdatePlayer',
+  UpdateGame = 'UpdateGame',
+  UpdateSession = 'UpdateSession',
+  UpdateMethods = 'UpdateMethods',
 }
 
 type Action =
@@ -103,14 +111,23 @@ type Action =
   | { type: ActionType.UpdateCanMove; canMove: BoardLocation[] }
   | { type: ActionType.UpdateStaged; staged: StagedLoc | null }
   | { type: ActionType.UpdateTurnState; turnState: TurnState }
-  | { type: ActionType.UpdateComputed; computed: Partial<ComputedState> };
 
+  | { type: ActionType.UpdateComputed; computed: Partial<ComputedState> }
+  | { type: ActionType.UpdateGame; game: Partial<ChessGameState> }
+  | { type: ActionType.UpdateSession; session: Partial<SessionState> }
+  | { type: ActionType.UpdateMethods; methods: Partial<StateMethods> };
+
+
+// TODO refactor this guy to 'react-use'/ useMethods
 const reducer = (state: ZKChessState, action: Action): ZKChessState => {
   switch (action.type) {
     case ActionType.UpdateGameState:
       return {
         ...state,
-        game: action.game,
+        game: {
+          ...state.game,
+          gameState: action.game,
+        },
       };
     case ActionType.UpdateSelected:
       return {
@@ -152,6 +169,30 @@ const reducer = (state: ZKChessState, action: Action): ZKChessState => {
           ...action.computed,
         },
       };
+    case ActionType.UpdateGame:
+      return {
+        ...state,
+        game: {
+          ...state.game,
+          ...action.game,
+        },
+      };
+    case ActionType.UpdateSession:
+      return {
+        ...state,
+        session: {
+          ...state.session,
+          ...action.session,
+        },
+      };
+    case ActionType.UpdateMethods:
+      return {
+        ...state,
+        methods: {
+          ...state.methods,
+          ...action.methods,
+        },
+      };
     default:
       return state;
   }
@@ -174,19 +215,19 @@ type ZKChessSetters = {
 
 type ZKChessDispatch = React.Dispatch<Action>;
 
-// todo turn this into a struct
 type ZKChessHook = {
   state: ZKChessState;
   setters: ZKChessSetters;
   // getters: ZKChessGetters;
-
-  // fallback
+  gameManager: AbstractGameManager | null;
   dispatch: ZKChessDispatch;
 };
 
+// should only call this inside of ZKChessStateProvider
 const useZKChessState = (): ZKChessHook => {
   const state = useTrackedState();
   const dispatch = useDispatch();
+  const gameManager = useGameManager();
 
   const updateGame = (newState: ChessGame) =>
     dispatch({ type: ActionType.UpdateGameState, game: newState });
@@ -213,25 +254,23 @@ const useZKChessState = (): ZKChessHook => {
     },
     // getters: {},
     dispatch,
+    gameManager,
   };
 };
 
-function GameStateManager({
-  children,
-  gameManager,
-}: {
-  children: React.ReactNode;
-  gameManager: AbstractGameManager | null;
-}) {
-  useInitGame(gameManager);
-  useSyncGame(gameManager); // sync with contract stuff
+const GameManagerContext = React.createContext<AbstractGameManager | null>(
+  null
+);
+const useGameManager = () =>
+  useContext<AbstractGameManager | null>(GameManagerContext);
 
-  useComputedState(gameManager); // listen for ui changes
-  return (
-    // <GameManagerContext.Provider value={gameManager}>
-    <>{children}</>
-    // </GameManagerContext.Provider>
-  );
+function GameStateManager({ children }: { children: React.ReactNode }) {
+  useInitGame();
+  useSyncGame(); // sync with contract stuff
+  useComputed(); // listen for ui changes
+  useInitMethods(); // add methods
+
+  return <>{children}</>;
 }
 
 function ZKChessStateProvider({
@@ -243,7 +282,9 @@ function ZKChessStateProvider({
 }) {
   return (
     <Provider>
-      <GameStateManager gameManager={gameManager}>{children}</GameStateManager>
+      <GameManagerContext.Provider value={gameManager}>
+        <GameStateManager>{children}</GameStateManager>
+      </GameManagerContext.Provider>
     </Provider>
   );
 }

@@ -9,7 +9,7 @@ import {
   Piece,
   EthAddress,
   Player,
-  GameState,
+  GameStatus,
 } from '../_types/global/GlobalTypes';
 import { almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
 import { SIZE } from './constants';
@@ -219,7 +219,7 @@ export const sampleGame: ChessGame = {
   player1: { address: emptyAddress },
   player2: { address: almostEmptyAddress },
   turnNumber: 0,
-  gameState: GameState.P1_TO_MOVE,
+  gameStatus: GameStatus.P1_TO_MOVE,
   player1pieces: [
     makePiece([1, 6], Color.WHITE),
     makePiece([3, 6], Color.WHITE, PieceType.Knight),

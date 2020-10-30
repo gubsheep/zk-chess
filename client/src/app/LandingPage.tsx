@@ -7,7 +7,7 @@ import EthereumAccountManager from '../api/EthereumAccountManager';
 import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
 import {ZKChessStateProvider} from '../api/UIStateManager';
-import {EthAddress, GameState} from '../_types/global/GlobalTypes';
+import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
 import {Game} from './Game';
 
 enum InitState {
@@ -73,7 +73,7 @@ export function LandingPage() {
       setGameManager(newGameManager);
     }
     if (
-      newGameManager.getGameState().gameState !== GameState.WAITING_FOR_PLAYERS
+      newGameManager.getGameState().gameStatus !== GameStatus.WAITING_FOR_PLAYERS
     ) {
       setInitState(InitState.COMPLETE);
     } else {

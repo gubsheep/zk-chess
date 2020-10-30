@@ -4,27 +4,20 @@ import { boardFromGame, getCanMove } from '../utils/ChessUtils';
 import {
   Color,
   EthAddress,
-  GameState,
+  GameStatus,
   Ghost,
   Piece,
+  PlayerInfo,
 } from '../_types/global/GlobalTypes';
-import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
+import { GameManagerEvent } from './AbstractGameManager';
 import { ActionType, useZKChessState } from './UIStateManager';
 
-export type StateManagerHook = (
-  gameManager: AbstractGameManager | null
-) => void;
-
-export const useInitGame: StateManagerHook = (
-  gm: AbstractGameManager | null
-) => {
+export const useInitGame = (): void => {
   const { state, dispatch } = useZKChessState();
 };
 
-export const useSyncGame: StateManagerHook = (
-  gm: AbstractGameManager | null
-) => {
-  const { setters } = useZKChessState();
+export const useSyncGame = (): void => {
+  const { setters, gameManager: gm } = useZKChessState();
 
   // sync the shared state to game state
   useEffect(() => {
@@ -61,59 +54,56 @@ export const useSyncGame: StateManagerHook = (
   }, [gm]);
 };
 
-export const useComputedState: StateManagerHook = (
-  gm: AbstractGameManager | null
-) => {
-  const { state, setters, dispatch } = useZKChessState();
+export const useComputed = (): void => {
+  const { state, setters, dispatch, gameManager: gm } = useZKChessState();
 
   useEffect(() => {
-    if (!state.game) return;
+    if (!state.game.gameState) return;
+    const { myAddress, player1, player2 } = state.game.gameState;
+    if (!myAddress) return;
 
     let colors = [Color.WHITE, Color.BLACK];
-    if (state.game.myAddress === state.game.player2.address) {
+    if (myAddress === player2.address) {
       colors = [Color.BLACK, Color.WHITE];
     }
 
+    const player: PlayerInfo = {
+      account: myAddress,
+      color: colors[0],
+    };
     dispatch({
-      type: ActionType.UpdateComputed,
-      computed: {
-        player: {
-          account: state.game.myAddress,
-          color: colors[0],
-        },
-      },
+      type: ActionType.UpdateGame,
+      game: { player },
     });
 
     const enemyAcc =
-      state.game.myAddress === state.game.player1.address
-        ? state.game.player2.address
-        : state.game.player1.address;
+      myAddress === player1.address ? player2.address : player1.address;
 
+    const enemyPlayer: PlayerInfo = {
+      account: enemyAcc,
+      color: colors[1],
+    };
     dispatch({
-      type: ActionType.UpdateComputed,
-      computed: {
-        enemyPlayer: {
-          account: enemyAcc,
-          color: colors[1],
-        },
-      },
+      type: ActionType.UpdateGame,
+      game: { enemyPlayer },
     });
-  }, [state.game?.player1, state.game?.player2, state.game?.myAddress]);
+  }, [state.game.gameState?.player1, state.game.gameState?.player2]);
 
   // update board whenever gameState is updated
   useEffect(() => {
     dispatch({
       type: ActionType.UpdateComputed,
       computed: {
-        board: boardFromGame(state.game),
+        board: boardFromGame(state.game.gameState),
       },
     });
-  }, [state.game]);
+  }, [state.game.gameState]);
 
   useEffect(() => {
     const gamePaused =
       state.session.turnState >= TurnState.Submitting ||
-      state.game?.gameState === GameState.COMPLETE;
+      state.game?.gameState?.gameStatus === GameStatus.COMPLETE;
+
     dispatch({
       type: ActionType.UpdateComputed,
       computed: {
@@ -156,19 +146,24 @@ export const useComputedState: StateManagerHook = (
     }
   }, [gameState]);
   */
+};
+
+export const useInitMethods = () => {
+  const { state, gameManager: gm, dispatch } = useZKChessState();
 
   const getColor = useCallback(
     (addr: EthAddress | null): Color | null => {
-      if (state.computed.player.account === addr) return Color.WHITE;
-      if (state.computed.enemyPlayer.account === addr) return Color.BLACK;
+      if (state.game.player?.account === addr) return Color.WHITE;
+      if (state.game.enemyPlayer?.account === addr) return Color.BLACK;
       return null;
     },
-    [gm, state.computed.player.account, state.computed.enemyPlayer.account]
+    [gm]
   );
+
   useEffect(() => {
     dispatch({
-      type: ActionType.UpdateComputed,
-      computed: {
+      type: ActionType.UpdateMethods,
+      methods: {
         getColor,
       },
     });

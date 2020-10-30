@@ -49,7 +49,7 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
   const staged = state.session.staged;
   const cell = state.computed.board[location[0]][location[1]];
   const { gamePaused } = state.computed;
-  const player = state.computed.player;
+  const player = state.game.player;
 
   const isEmpty = !cell.piece && !cell.ghost;
   const canReallyMove = canMove && isEmpty;
@@ -58,7 +58,7 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
     e: React.MouseEvent
   ) => {
     if (gamePaused) return;
-    if (obj.owner !== player.account) return; // if i don't own it, do nothing
+    if (obj.owner !== player?.account) return; // if i don't own it, do nothing
 
     if (selected?.id === obj.id) {
       // clear staged when i click on currently selected
@@ -105,7 +105,7 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
                 onClick={pieceHandler(obj)}
                 isSelected={obj.id === selected?.id}
                 pos={i === 1 ? PiecePos.botRight : PiecePos.normal}
-                disabled={obj.owner !== player.account || gamePaused}
+                disabled={obj.owner !== player?.account || gamePaused}
               />
             )
         )}
@@ -120,7 +120,7 @@ const GameCell = memo(function ({ location }: { location: BoardLocation }) {
 export function GameBoard() {
   const { state } = useZKChessState();
   const board = state.computed.board;
-  const myColor = state.computed.player.color || Color.WHITE;
+  const myColor = state.game.player?.color || Color.WHITE;
 
   const transform = boardMap(myColor);
   const locMap = boardLocMap(myColor);

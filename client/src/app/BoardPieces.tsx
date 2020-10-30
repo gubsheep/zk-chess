@@ -115,9 +115,9 @@ export function ChessPiece({
   style?: React.CSSProperties;
 } & HoverProps) {
   const { state } = useZKChessState();
-  const { computed } = state;
+  const { computed, methods } = state;
 
-  const color = computed.getColor(piece.owner) || Color.WHITE;
+  const color = methods.getColor(piece.owner) || Color.WHITE;
 
   let url: string = '';
   if (isGhost(piece)) {
@@ -188,7 +188,7 @@ const StyledObjective = styled(StyledBasePiece)<{
 
 export function ObjectivePiece({ objective }: { objective: Objective }) {
   const { state } = useZKChessState();
-  const color = state.computed.getColor(objective.owner);
+  const color = state.methods.getColor(objective.owner);
 
   return (
     <StyledPieceWrapper pos={PiecePos.normal} nohover>

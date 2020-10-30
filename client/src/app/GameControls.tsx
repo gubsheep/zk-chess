@@ -2,12 +2,11 @@ import React, { useContext, useEffect, useState } from 'react';
 import AbstractGameManager from '../api/AbstractGameManager';
 import { useZKChessState } from '../api/UIStateManager';
 import { isGhost, compareLoc, getScores } from '../utils/ChessUtils';
-import { GameState } from '../_types/global/GlobalTypes';
+import { GameStatus } from '../_types/global/GlobalTypes';
 import { TurnState } from './Game';
 
 export function GameControls() {
   const { state, setters } = useZKChessState();
-  const gameState = state.game;
   const board = state.computed.board;
 
   const selected = state.session.selected;
@@ -32,7 +31,7 @@ export function GameControls() {
         }
       }
     }
-  }, [selected, staged, gameState]);
+  }, [selected, staged, state.game]);
 
   const submitMove = () => {
     // if (staged && selected !== null) {
@@ -49,7 +48,7 @@ export function GameControls() {
 
   return (
     <div>
-      {gameState?.gameState !== GameState.COMPLETE ? (
+      {state.game.gameState?.gameStatus !== GameStatus.COMPLETE ? (
         <p>
           {turnState === TurnState.Moving && (
             <span>
@@ -70,7 +69,7 @@ export function GameControls() {
           <p>game complete! winner: {'TODO: CALCULATE SCORES'}</p>
           <p>
             scores: <br />
-            {getScores(gameState).map((entry, i) => (
+            {getScores(state.game.gameState).map((entry, i) => (
               <>
                 player {i + 1} ({entry.player.address}): {entry.score} <br />
               </>

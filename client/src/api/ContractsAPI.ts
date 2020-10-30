@@ -268,7 +268,7 @@ class ContractsAPI extends EventEmitter {
       player1pieces,
       player2pieces,
       turnNumber,
-      gameState,
+      gameStatus: gameState,
       myContractGhost,
       objectives,
     };

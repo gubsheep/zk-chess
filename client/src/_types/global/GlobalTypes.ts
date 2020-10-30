@@ -56,6 +56,10 @@ export type ContractGhost = {
   owner: EthAddress | null;
   commitment: string;
 };
+export type PlayerInfo = {
+  account: EthAddress;
+  color: Color;
+};
 
 export type Objective = GameObject & {
   value: number;
@@ -64,7 +68,7 @@ export type Objective = GameObject & {
 export type Selectable = Ghost | Piece;
 export type StagedLoc = [BoardLocation, Selectable];
 
-export enum GameState {
+export enum GameStatus {
   WAITING_FOR_PLAYERS,
   P1_TO_MOVE,
   P2_TO_MOVE,
@@ -80,7 +84,7 @@ export type ChessGameContractData = {
   player2pieces: Piece[];
 
   turnNumber: number;
-  gameState: GameState;
+  gameStatus: GameStatus;
 
   myContractGhost: ContractGhost;
   objectives: Objective[];
@@ -95,7 +99,7 @@ export type ChessGame = {
   player2pieces: Piece[];
 
   turnNumber: number;
-  gameState: GameState;
+  gameStatus: GameStatus;
 
   myGhost: Ghost;
   objectives: Objective[];

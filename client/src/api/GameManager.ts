@@ -4,7 +4,7 @@ import {
   ChessGame,
   Color,
   EthAddress,
-  GameState,
+  GameStatus,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -178,15 +178,15 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   isMyTurn(): boolean {
-    const {gameState, player1, player2} = this.gameState;
+    const {gameStatus: gameState, player1, player2} = this.gameState;
     if (
-      gameState === GameState.COMPLETE ||
-      gameState === GameState.WAITING_FOR_PLAYERS
+      gameState === GameStatus.COMPLETE ||
+      gameState === GameStatus.WAITING_FOR_PLAYERS
     ) {
       return false;
     }
     let whoseTurn = player1;
-    if (gameState === GameState.P2_TO_MOVE) {
+    if (gameState === GameStatus.P2_TO_MOVE) {
       whoseTurn = player2;
     }
     return this.account === whoseTurn.address;
