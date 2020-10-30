@@ -108,6 +108,7 @@ type ChessPieceProps = {
   style?: React.CSSProperties;
 } & HoverProps;
 
+// TODO remove this
 export const ChessPiece = React.forwardRef(
   (props: ChessPieceProps, ref: MutableRefObject<HTMLDivElement | null>) => {
     const { piece, staged, style, onClick, pos, isSelected, disabled } = props;

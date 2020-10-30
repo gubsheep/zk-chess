@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { MutableRefObject, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { useCallback, useEffect } from 'react';
 import { TurnState } from '../app/Game';
 import {
@@ -91,9 +91,7 @@ export const useComputed = (): void => {
 
   // update board whenever gameState is updated
   useEffect(() => {
-    dispatch.updateComputed({
-      board: boardFromGame(gameState),
-    });
+    dispatch.updateComputed({ board: boardFromGame(gameState) });
   }, [gameState]);
 
   // update gamepaused
