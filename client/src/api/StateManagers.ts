@@ -9,54 +9,14 @@ import {
   GameStatus,
   Ghost,
   PlayerInfo,
+  Selectable,
+  StagedLoc,
 } from '../_types/global/GlobalTypes';
 import { GameManagerEvent } from './AbstractGameManager';
 import { useZKChessState } from './UIStateManager';
 
 export const useInitGame = (): void => {
   const { state, dispatch } = useZKChessState();
-};
-
-export const useSyncGame = (): void => {
-  const { gameManager: gm, dispatch } = useZKChessState();
-
-  // sync the shared state to game state
-  useEffect(() => {
-    if (!gm) return;
-    // subscribe to game state updates
-    const syncState = () => {
-      const gameState = gm.getGameState();
-
-      /*
-      // check if enemy ghost has acted
-      const enemyGhostLoc = enemyGhostMoved(
-        gameState,
-        newState,
-        gm.getAccount()
-      );
-      if (enemyGhostLoc) {
-        setEnemyGhost([enemyGhostLoc, 1]);
-      }
-      */
-      dispatch.updateGame({ gameState });
-      dispatch.updateSession({ selected: null });
-    };
-    gm.addListener(GameManagerEvent.GameStart, syncState);
-    gm.addListener(GameManagerEvent.MoveMade, syncState);
-    gm.addListener(GameManagerEvent.GameFinished, syncState);
-
-    syncState();
-
-    return () => {
-      gm.removeAllListeners(GameManagerEvent.GameStart);
-      gm.removeAllListeners(GameManagerEvent.MoveMade);
-      gm.removeAllListeners(GameManagerEvent.GameFinished);
-    };
-  }, [gm]);
-};
-
-export const useComputed = (): void => {
-  const { state, dispatch, gameManager: gm } = useZKChessState();
 
   useEffect(() => {
     if (!state.game.gameState) return;
@@ -83,6 +43,37 @@ export const useComputed = (): void => {
     };
     dispatch.updateGame({ enemyPlayer });
   }, [state.game.gameState?.player1, state.game.gameState?.player2]);
+};
+
+export const useSyncGame = (): void => {
+  const { gameManager: gm, dispatch } = useZKChessState();
+
+  // sync the shared state to game state
+  useEffect(() => {
+    if (!gm) return;
+    // subscribe to game state updates
+    const syncState = () => {
+      const gameState = gm.getGameState();
+
+      dispatch.updateGame({ gameState });
+      dispatch.updateSession({ selected: null });
+    };
+    gm.addListener(GameManagerEvent.GameStart, syncState);
+    gm.addListener(GameManagerEvent.MoveMade, syncState);
+    gm.addListener(GameManagerEvent.GameFinished, syncState);
+
+    syncState();
+
+    return () => {
+      gm.removeAllListeners(GameManagerEvent.GameStart);
+      gm.removeAllListeners(GameManagerEvent.MoveMade);
+      gm.removeAllListeners(GameManagerEvent.GameFinished);
+    };
+  }, [gm]);
+};
+
+export const useComputed = (): void => {
+  const { state, dispatch, gameManager: gm } = useZKChessState();
 
   // update board whenever gameState is updated
   useEffect(() => {
@@ -91,6 +82,7 @@ export const useComputed = (): void => {
     });
   }, [state.game.gameState]);
 
+  // update gamepaused
   useEffect(() => {
     const gamePaused =
       state.session.turnState >= TurnState.Submitting ||
@@ -117,10 +109,9 @@ export const useComputed = (): void => {
       }
     }
 
-    dispatch.updateSession({ canMove });
+    dispatch.updateComputed({ canMove });
   }, [state.session.selected, state.game.gameState]);
 
-  /* attach event listeners */
   // TODO add pendingMoves to gameState
   // when a move is accepted, wait for a response
   useEffect(() => {
@@ -159,7 +150,23 @@ export const useInitMethods = () => {
     [gm]
   );
 
+  const setStaged = useCallback(
+    (staged: StagedLoc | null) => {
+      dispatch.updateSession({ staged });
+    },
+    [dispatch]
+  );
+
+  const setSelected = useCallback(
+    (selected: Selectable | null) => {
+      dispatch.updateSession({ selected });
+    },
+    [dispatch]
+  );
+
+  
+
   useEffect(() => {
-    dispatch.updateMethods({ getColor });
+    dispatch.updateMethods({ getColor, setSelected, setStaged });
   }, [getColor, gm]);
 };

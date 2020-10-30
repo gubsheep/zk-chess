@@ -37,21 +37,21 @@ ui state (combined): shared across all objects
 
 type SessionState = {
   selected: Selectable | null;
-
-  // TODO move this guy into computed
-  canMove: BoardLocation[];
   staged: StagedLoc | null;
-
   turnState: TurnState;
 };
 
 type ComputedState = {
   board: ChessBoard;
   gamePaused: boolean;
+  canMove: BoardLocation[];
 };
 
 type StateMethods = {
   getColor: (obj: EthAddress | null) => Color | null;
+
+  setSelected: (obj: Selectable | null) => void;
+  setStaged: (obj: StagedLoc | null) => void;
 };
 
 type ChessGameState = {
@@ -80,16 +80,18 @@ const initialState: ZKChessState = {
   },
   session: {
     selected: null,
-    canMove: [],
     staged: null,
     turnState: TurnState.Moving,
   },
   computed: {
     board: [], // todo make this not fail silently (make nullable)
+    canMove: [],
     gamePaused: false,
   },
   methods: {
     getColor: (_) => Color.WHITE,
+    setSelected: () => {},
+    setStaged: () => {},
   },
 };
 
@@ -193,7 +195,7 @@ const useGameManager = () =>
   useContext<AbstractGameManager | null>(GameManagerContext);
 
 function GameStateManager({ children }: { children: React.ReactNode }) {
-  useInitGame();
+  useInitGame(); // things that should only be done once
   useSyncGame(); // sync with contract stuff
   useComputed(); // listen for ui changes
   useInitMethods(); // add methods
