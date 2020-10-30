@@ -22,6 +22,7 @@ export type ComputedState = {
   gamePaused: boolean;
   canMove: BoardLocation[];
   ghostCanAct: boolean;
+  isMyTurn: boolean;
 };
 
 export type StateMethods = {
@@ -40,14 +41,9 @@ export type ChessGameState = {
   enemyPlayer: PlayerInfo | null;
 };
 
-// TODO maybe we need the notion of set vs computed state?
-// TODO refactor this and give each guy some assertions
-// type StoredState = {};
-
 export type ZKChessState = {
   game: ChessGameState;
   session: SessionState;
-  // stored: StoredState;
   computed: ComputedState;
   methods: StateMethods;
 };

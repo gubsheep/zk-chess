@@ -145,6 +145,28 @@ export const useComputed = (): void => {
     }
   }, [selected, staged]);
 
+  // see if it's my turn
+  useEffect(() => {
+    if (!gameState) return;
+    const { gameStatus, player1, player2, myAddress } = gameState;
+
+    if (
+      gameStatus === GameStatus.COMPLETE ||
+      gameStatus === GameStatus.WAITING_FOR_PLAYERS
+    ) {
+      dispatch.updateComputed({ isMyTurn: false });
+      return;
+    }
+
+    let whoseTurn = player1;
+    if (gameStatus === GameStatus.P2_TO_MOVE) {
+      whoseTurn = player2;
+    }
+    const isMyTurn = myAddress === whoseTurn.address;
+
+    dispatch.updateComputed({ isMyTurn });
+  }, [gameState]);
+
   // TODO add pendingMoves to gameState
   // when a move is accepted, wait for a response
   useEffect(() => {

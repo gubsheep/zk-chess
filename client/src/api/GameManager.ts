@@ -175,21 +175,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     return emptyAddress;
   }
 
-  isMyTurn(): boolean {
-    const {gameStatus: gameState, player1, player2} = this.gameState;
-    if (
-      gameState === GameStatus.COMPLETE ||
-      gameState === GameStatus.WAITING_FOR_PLAYERS
-    ) {
-      return false;
-    }
-    let whoseTurn = player1;
-    if (gameState === GameStatus.P2_TO_MOVE) {
-      whoseTurn = player2;
-    }
-    return this.account === whoseTurn.address;
-  }
-
   getGameAddr(): EthAddress | null {
     return this.contractsAPI.getContractAddress();
   }

@@ -48,6 +48,7 @@ const initialState: ZKChessState = {
     canMove: [],
     gamePaused: false,
     ghostCanAct: false,
+    isMyTurn: false,
   },
   methods: {
     getColor: (_) => Color.WHITE,

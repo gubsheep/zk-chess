@@ -32,7 +32,4 @@ export default interface AbstractGameManager extends EventEmitter {
   movePiece(pieceId: number, to: BoardLocation): void;
   moveGhost(ghostId: number, to: BoardLocation): void;
   ghostAttack(): void;
-
-  // should be in gameUImanager
-  isMyTurn(): boolean;
 }
