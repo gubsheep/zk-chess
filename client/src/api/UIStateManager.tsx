@@ -3,16 +3,7 @@ import { createContext } from 'react';
 import { createContainer } from 'react-tracked';
 import { keys } from 'ts-transformer-keys';
 import { TurnState } from '../app/Game';
-import {
-  BoardLocation,
-  ChessBoard,
-  ChessGame,
-  Color,
-  EthAddress,
-  Selectable,
-  StagedLoc,
-  PlayerInfo,
-} from '../_types/global/GlobalTypes';
+import { Color } from '../_types/global/GlobalTypes';
 import AbstractGameManager from './AbstractGameManager';
 import {
   useSyncGame,
@@ -20,6 +11,12 @@ import {
   useInitGame,
   useInitMethods,
 } from './StateManagers';
+import {
+  ZKChessState,
+  Actions,
+  DispatchProxy,
+  ZKChessHook,
+} from './UIStateManagerTypes';
 
 /* exports ZKChessStateProvider and useZKChessState - single entrypoint into the API */
 
@@ -34,47 +31,6 @@ ui state (combined): shared across all objects
 */
 
 /* define ui / game state */
-
-type SessionState = {
-  selected: Selectable | null;
-  staged: StagedLoc | null;
-  turnState: TurnState;
-};
-
-type ComputedState = {
-  board: ChessBoard;
-  gamePaused: boolean;
-  canMove: BoardLocation[];
-  ghostCanAct: boolean;
-};
-
-type StateMethods = {
-  getColor: (obj: EthAddress | null) => Color | null;
-
-  setSelected: (obj: Selectable | null) => void;
-  setStaged: (obj: StagedLoc | null) => void;
-
-  submitMove: () => void;
-  ghostAttack: () => void;
-};
-
-type ChessGameState = {
-  gameState: ChessGame | null;
-  player: PlayerInfo | null;
-  enemyPlayer: PlayerInfo | null;
-};
-
-// TODO maybe we need the notion of set vs computed state?
-// TODO refactor this and give each guy some assertions
-// type StoredState = {};
-
-type ZKChessState = {
-  game: ChessGameState;
-  session: SessionState;
-  // stored: StoredState;
-  computed: ComputedState;
-  methods: StateMethods;
-};
 
 const initialState: ZKChessState = {
   game: {
@@ -103,16 +59,6 @@ const initialState: ZKChessState = {
 };
 
 /* define reducers */
-interface Actions {
-  updateComputed: Partial<ComputedState>;
-  updateGame: Partial<ChessGameState>;
-  updateSession: Partial<SessionState>;
-  updateMethods: Partial<StateMethods>;
-}
-
-// type Action<K extends keyof Actions> = { type: K; arg: Actions[K] };
-
-// TODO refactor this guy to 'react-use'/ useMethods
 const reducer = (
   state: ZKChessState,
   { type, arg }: { type: keyof Actions; arg: Actions[typeof type] }
@@ -160,10 +106,6 @@ const useValue = () => useReducer(reducer, initialState);
 const container = createContainer(useValue);
 const { Provider, useTrackedState, useUpdate: useDispatch } = container;
 
-type DispatchProxy = {
-  [key in keyof Actions]: (arg: Actions[key]) => void;
-};
-
 const getDispatchProxy = (
   dispatch: ReturnType<typeof useDispatch>
 ): DispatchProxy => {
@@ -177,12 +119,6 @@ const getDispatchProxy = (
 };
 
 /* define hooks */
-
-type ZKChessHook = {
-  state: ZKChessState;
-  gameManager: AbstractGameManager | null;
-  dispatch: DispatchProxy;
-};
 
 // should only call this inside of ZKChessStateProvider
 const useZKChessState = (): ZKChessHook => {
