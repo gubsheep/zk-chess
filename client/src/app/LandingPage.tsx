@@ -23,7 +23,7 @@ enum InitState {
   TERMINATED,
 }
 
-const MOCK_GAME = false;
+const MOCK_GAME = true;
 
 export function LandingPage() {
   const [gameManager, setGameManager] = useState<AbstractGameManager | null>(

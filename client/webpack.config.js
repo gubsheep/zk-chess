@@ -3,6 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const keysTransformer = require('ts-transformer-keys/transformer').default;
 
 //const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -40,8 +41,8 @@ module.exports = {
         exclude: /node_modules/,
         loader: 'ts-loader',
         options: {
-          getCustomTransformers: () => ({
-            before: [styledComponentsTransformer],
+          getCustomTransformers: (program) => ({
+            before: [styledComponentsTransformer, keysTransformer(program)],
           }),
         },
       },
@@ -56,10 +57,10 @@ module.exports = {
             loader: 'file-loader',
             options: {
               name: '[name].[ext]',
-              outputPath: 'fonts/'
-            }
-          }
-        ]
+              outputPath: 'fonts/',
+            },
+          },
+        ],
       },
       // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
       {
@@ -81,6 +82,5 @@ module.exports = {
   // assume a corresponding global variable exists and use that instead.
   // This is important because it allows us to avoid bundling all of our
   // dependencies, which allows browsers to cache those libraries between builds.
-  externals: {
-  },
+  externals: {},
 };

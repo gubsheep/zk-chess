@@ -5,12 +5,10 @@ import {
   Color,
   EthAddress,
   GameStatus,
-  Ghost,
-  Piece,
   PlayerInfo,
 } from '../_types/global/GlobalTypes';
 import { GameManagerEvent } from './AbstractGameManager';
-import { ActionType, useZKChessState } from './UIStateManager';
+import { useZKChessState } from './UIStateManager';
 
 export const useInitGame = (): void => {
   const { state, dispatch } = useZKChessState();
@@ -71,10 +69,7 @@ export const useComputed = (): void => {
       account: myAddress,
       color: colors[0],
     };
-    dispatch({
-      type: ActionType.UpdateGame,
-      game: { player },
-    });
+    dispatch.updateGame({ player });
 
     const enemyAcc =
       myAddress === player1.address ? player2.address : player1.address;
@@ -83,19 +78,13 @@ export const useComputed = (): void => {
       account: enemyAcc,
       color: colors[1],
     };
-    dispatch({
-      type: ActionType.UpdateGame,
-      game: { enemyPlayer },
-    });
+    dispatch.updateGame({ enemyPlayer });
   }, [state.game.gameState?.player1, state.game.gameState?.player2]);
 
   // update board whenever gameState is updated
   useEffect(() => {
-    dispatch({
-      type: ActionType.UpdateComputed,
-      computed: {
-        board: boardFromGame(state.game.gameState),
-      },
+    dispatch.updateComputed({
+      board: boardFromGame(state.game.gameState),
     });
   }, [state.game.gameState]);
 
@@ -104,21 +93,13 @@ export const useComputed = (): void => {
       state.session.turnState >= TurnState.Submitting ||
       state.game?.gameState?.gameStatus === GameStatus.COMPLETE;
 
-    dispatch({
-      type: ActionType.UpdateComputed,
-      computed: {
-        gamePaused,
-      },
-    });
+    dispatch.updateComputed({ gamePaused });
   }, [state.session.turnState, state.game?.gameState]);
 
   // sync canmove to selected
   useEffect(() => {
     // TODO take this guy out; make basic dispatches first-order things
-    dispatch({
-      type: ActionType.UpdateCanMove,
-      canMove: getCanMove(state.session.selected),
-    });
+    dispatch.updateSession({ canMove: getCanMove(state.session.selected) });
   }, [state.session.selected]);
 
   /* attach event listeners */
@@ -161,11 +142,6 @@ export const useInitMethods = () => {
   );
 
   useEffect(() => {
-    dispatch({
-      type: ActionType.UpdateMethods,
-      methods: {
-        getColor,
-      },
-    });
+    dispatch.updateMethods({ getColor });
   }, [getColor, gm]);
 };

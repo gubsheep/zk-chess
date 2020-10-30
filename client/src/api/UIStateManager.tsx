@@ -1,6 +1,7 @@
 import React, { useContext, useReducer } from 'react';
+import { createContext } from 'react';
 import { createContainer } from 'react-tracked';
-import { QueueMethods } from 'react-use/lib/useQueue';
+import { keys } from 'ts-transformer-keys';
 import { TurnState } from '../app/Game';
 import {
   BoardLocation,
@@ -10,13 +11,15 @@ import {
   EthAddress,
   Selectable,
   StagedLoc,
-  Piece,
-  Ghost,
-  Player,
   PlayerInfo,
 } from '../_types/global/GlobalTypes';
 import AbstractGameManager from './AbstractGameManager';
-import { useSyncGame, useComputed, useInitGame, useInitMethods } from './StateManagers';
+import {
+  useSyncGame,
+  useComputed,
+  useInitGame,
+  useInitMethods,
+} from './StateManagers';
 
 /* exports ZKChessStateProvider and useZKChessState - single entrypoint into the API */
 
@@ -34,6 +37,8 @@ ui state (combined): shared across all objects
 
 type SessionState = {
   selected: Selectable | null;
+
+  // TODO move this guy into computed
   canMove: BoardLocation[];
   staged: StagedLoc | null;
 
@@ -44,7 +49,6 @@ type ComputedState = {
   board: ChessBoard;
   gamePaused: boolean;
 };
-
 
 type StateMethods = {
   getColor: (obj: EthAddress | null) => Color | null;
@@ -90,107 +94,52 @@ const initialState: ZKChessState = {
 };
 
 /* define reducers */
-
-// TODO can we make this shorter somehow? what if we useState instead of useReducer?
-export enum ActionType {
-  UpdateGameState = 'UpdateGameState',
-  UpdateSelected = 'UpdateSelected',
-  UpdateCanMove = 'UpdateCanMove',
-  UpdateStaged = 'UpdateStaged',
-  UpdateTurnState = 'UpdateTurnState',
-
-  UpdateComputed = 'UpdateComputed',
-  UpdateGame = 'UpdateGame',
-  UpdateSession = 'UpdateSession',
-  UpdateMethods = 'UpdateMethods',
+interface Actions {
+  updateComputed: Partial<ComputedState>;
+  updateGame: Partial<ChessGameState>;
+  updateSession: Partial<SessionState>;
+  updateMethods: Partial<StateMethods>;
 }
 
-type Action =
-  | { type: ActionType.UpdateGameState; game: ChessGame }
-  | { type: ActionType.UpdateSelected; object: Selectable | null }
-  | { type: ActionType.UpdateCanMove; canMove: BoardLocation[] }
-  | { type: ActionType.UpdateStaged; staged: StagedLoc | null }
-  | { type: ActionType.UpdateTurnState; turnState: TurnState }
-
-  | { type: ActionType.UpdateComputed; computed: Partial<ComputedState> }
-  | { type: ActionType.UpdateGame; game: Partial<ChessGameState> }
-  | { type: ActionType.UpdateSession; session: Partial<SessionState> }
-  | { type: ActionType.UpdateMethods; methods: Partial<StateMethods> };
-
+// type Action<K extends keyof Actions> = { type: K; arg: Actions[K] };
 
 // TODO refactor this guy to 'react-use'/ useMethods
-const reducer = (state: ZKChessState, action: Action): ZKChessState => {
-  switch (action.type) {
-    case ActionType.UpdateGameState:
-      return {
-        ...state,
-        game: {
-          ...state.game,
-          gameState: action.game,
-        },
-      };
-    case ActionType.UpdateSelected:
-      return {
-        ...state,
-        session: {
-          ...state.session,
-          selected: action.object,
-        },
-      };
-    case ActionType.UpdateCanMove:
-      return {
-        ...state,
-        session: {
-          ...state.session,
-          canMove: action.canMove,
-        },
-      };
-    case ActionType.UpdateStaged:
-      return {
-        ...state,
-        session: {
-          ...state.session,
-          staged: action.staged,
-        },
-      };
-    case ActionType.UpdateTurnState:
-      return {
-        ...state,
-        session: {
-          ...state.session,
-          turnState: action.turnState,
-        },
-      };
-    case ActionType.UpdateComputed:
+const reducer = (
+  state: ZKChessState,
+  { type, arg }: { type: keyof Actions; arg: Actions[typeof type] }
+): ZKChessState => {
+  // note that these guys don't get type validation, since we have partial types
+  switch (type) {
+    case 'updateComputed':
       return {
         ...state,
         computed: {
           ...state.computed,
-          ...action.computed,
+          ...arg,
         },
       };
-    case ActionType.UpdateGame:
+    case 'updateGame':
       return {
         ...state,
         game: {
           ...state.game,
-          ...action.game,
+          ...arg,
         },
       };
-    case ActionType.UpdateSession:
+    case 'updateSession':
       return {
         ...state,
         session: {
           ...state.session,
-          ...action.session,
+          ...arg,
         },
       };
-    case ActionType.UpdateMethods:
+    case 'updateMethods':
       return {
         ...state,
         methods: {
           ...state.methods,
-          ...action.methods,
+          ...arg,
         },
       };
     default:
@@ -201,6 +150,22 @@ const reducer = (state: ZKChessState, action: Action): ZKChessState => {
 const useValue = () => useReducer(reducer, initialState);
 const container = createContainer(useValue);
 const { Provider, useTrackedState, useUpdate: useDispatch } = container;
+
+type DispatchProxy = {
+  [key in keyof Actions]: (arg: Actions[key]) => void;
+};
+
+const getDispatchProxy = (
+  dispatch: ReturnType<typeof useDispatch>
+): DispatchProxy => {
+  const obj: Partial<DispatchProxy> = {};
+  const myKeys = keys<Actions>();
+  for (const key of myKeys) {
+    obj[key] = (arg: Actions[typeof key]) => dispatch({ type: key, arg });
+  }
+
+  return obj as DispatchProxy;
+};
 
 /* define hooks */
 
@@ -213,7 +178,7 @@ type ZKChessSetters = {
 
 // type ZKChessGetters = {};
 
-type ZKChessDispatch = React.Dispatch<Action>;
+type ZKChessDispatch = DispatchProxy;
 
 type ZKChessHook = {
   state: ZKChessState;
@@ -229,19 +194,19 @@ const useZKChessState = (): ZKChessHook => {
   const dispatch = useDispatch();
   const gameManager = useGameManager();
 
-  const updateGame = (newState: ChessGame) =>
-    dispatch({ type: ActionType.UpdateGameState, game: newState });
+  const updateGame = (gameState: ChessGame) =>
+    dispatch({ type: 'updateGame', arg: { gameState } });
 
-  const updateSelected = (obj: Selectable | null) => {
-    dispatch({ type: ActionType.UpdateSelected, object: obj });
+  const updateSelected = (selected: Selectable | null) => {
+    dispatch({ type: 'updateSession', arg: { selected } });
   };
 
   const updateStaged = (staged: StagedLoc | null) => {
-    dispatch({ type: ActionType.UpdateStaged, staged });
+    dispatch({ type: 'updateSession', arg: { staged } });
   };
 
   const updateTurnState = (turnState: TurnState) => {
-    dispatch({ type: ActionType.UpdateTurnState, turnState });
+    dispatch({ type: 'updateSession', arg: { turnState } });
   };
 
   return {
@@ -253,14 +218,12 @@ const useZKChessState = (): ZKChessHook => {
       updateTurnState,
     },
     // getters: {},
-    dispatch,
+    dispatch: getDispatchProxy(dispatch),
     gameManager,
   };
 };
 
-const GameManagerContext = React.createContext<AbstractGameManager | null>(
-  null
-);
+const GameManagerContext = createContext<AbstractGameManager | null>(null);
 const useGameManager = () =>
   useContext<AbstractGameManager | null>(GameManagerContext);
 

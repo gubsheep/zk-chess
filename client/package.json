@@ -36,6 +36,7 @@
     "snarkjs": "^0.3.33",
     "socket.io-client": "^2.3.0",
     "styled-components": "^5.0.1",
+    "ts-transformer-keys": "^0.4.2",
     "websnark": "0.0.5",
     "yargs": "^15.1.0"
   },
