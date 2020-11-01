@@ -3,6 +3,7 @@ const fs = require("fs");
 const rawExec = util.promisify(require("child_process").exec);
 
 const ZKChessGame = artifacts.require("ZKChessGame");
+const ZKChessGameFactory = artifacts.require("ZKChessGameFactory");
 const ZKChessUtils = artifacts.require("ZKChessUtils");
 const Verifier = artifacts.require("Verifier");
 const Hasher = artifacts.require("Hasher");
@@ -39,13 +40,9 @@ module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(ZKChessGame);
   const coreContract = await ZKChessGame.deployed();
   await coreContract.initialize(false);
-  console.log(`ZKChessGame's address is ${coreContract.address}`);
+  console.log(`ZKChessGame impl address is ${coreContract.address}`);
 
-  await exec("mkdir -p ../client/src/utils");
-  fs.writeFileSync(
-    "../client/src/utils/local_contract_addr.ts",
-    `export const contractAddress = '${coreContract.address}'\n`
-  );
-  await exec("mkdir -p ../client/public/contracts");
-  await exec("cp build/contracts/ZKChessGame.json ../client/public/contracts/");
+  await deployer.deploy(ZKChessGameFactory, coreContract.address);
+  const factory = await ZKChessGameFactory.deployed();
+  await factory.createGame();
 };
