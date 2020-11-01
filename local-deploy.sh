@@ -5,7 +5,6 @@ cd eth
 
 (
   sleep 1
-  truffle compile
   truffle migrate
 ) &
 

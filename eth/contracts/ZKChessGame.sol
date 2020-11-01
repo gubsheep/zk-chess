@@ -1,11 +1,12 @@
 pragma solidity ^0.6.7;
 pragma experimental ABIEncoderV2;
 
+import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
 import "./ZKChessTypes.sol";
+import "./ZKChessUtils.sol";
 import "./Verifier.sol";
-import "./Hasher.sol";
 
-contract ZKChessCore {
+contract ZKChessGame is Initializable {
     uint256
         public constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
     uint256
@@ -35,7 +36,7 @@ contract ZKChessCore {
 
     uint256 pfsVerified;
 
-    constructor(bool _disableZKCheck) public {
+    function initialize(bool _disableZKCheck) public {
         DISABLE_ZK_CHECK = _disableZKCheck;
         gameState = GameState.WAITING_FOR_PLAYERS;
 
@@ -205,24 +206,6 @@ contract ZKChessCore {
     //////////////
     /// Helper ///
     //////////////
-
-    function hashTriple(
-        uint256 val1,
-        uint256 val2,
-        uint256 val3
-    ) public pure returns (uint256) {
-        uint256 R = 0;
-        uint256 C = 0;
-
-        R = addmod(R, val1, FIELD_SIZE);
-        (R, C) = Hasher.MiMCSponge(R, C, 0);
-        R = addmod(R, val2, FIELD_SIZE);
-        (R, C) = Hasher.MiMCSponge(R, C, 0);
-        R = addmod(R, val3, FIELD_SIZE);
-        (R, C) = Hasher.MiMCSponge(R, C, 0);
-
-        return R;
-    }
 
     function isValidMove(
         Piece memory piece,
@@ -413,7 +396,8 @@ contract ZKChessCore {
         require(piece.pieceType == PieceType.GHOST, "Piece must be a ghost");
         require(piece.owner == msg.sender, "You don't own that piece");
         require(
-            hashTriple(row, col, salt) == piece.commitment,
+            ZKChessUtils.hashTriple(row, col, salt, FIELD_SIZE) ==
+                piece.commitment,
             "Invalid reveal"
         );
         Piece storage theirPiece = pieces[boardPieces[row][col]];

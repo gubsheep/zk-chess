@@ -23,7 +23,7 @@ enum InitState {
   TERMINATED,
 }
 
-const MOCK_GAME = true;
+const MOCK_GAME = false;
 
 export function LandingPage() {
   const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
@@ -73,7 +73,8 @@ export function LandingPage() {
       setGameManager(newGameManager);
     }
     if (
-      newGameManager.getGameState().gameStatus !== GameStatus.WAITING_FOR_PLAYERS
+      newGameManager.getGameState().gameStatus !==
+      GameStatus.WAITING_FOR_PLAYERS
     ) {
       setInitState(InitState.COMPLETE);
     } else {
