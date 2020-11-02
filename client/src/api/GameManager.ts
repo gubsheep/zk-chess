@@ -2,9 +2,7 @@ import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
-  Color,
   EthAddress,
-  GameStatus,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -17,6 +15,7 @@ import {
   EthTxType,
   SubmittedTx,
   UnsubmittedAction,
+  UnsubmittedCreateGame,
   UnsubmittedGhostAttack,
   UnsubmittedGhostMove,
   UnsubmittedJoin,
@@ -27,31 +26,34 @@ import {getRandomActionId} from '../utils/Utils';
 import {BigInteger} from 'big-integer';
 import bigInt from 'big-integer';
 import mimcHash from '../hash/mimc';
+import {LOCATION_ID_UB} from '../utils/constants';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
+  private gameIds: string[];
 
   private readonly contractsAPI: ContractsAPI;
   private readonly snarkHelper: SnarkHelper;
 
-  private gameState: ChessGame;
+  private gameState: ChessGame | null;
   private ghostCommitmentsMap: Map<string, [number, number, BigInteger]>;
 
   private constructor(
     account: EthAddress | null,
+    gameIds: string[],
     contractsAPI: ContractsAPI,
     snarkHelper: SnarkHelper,
-    gameState: ChessGame,
     ghostCommitmentsMap: Map<string, [number, number, BigInteger]>
   ) {
     super();
 
     this.account = account;
+    this.gameIds = gameIds;
 
     this.contractsAPI = contractsAPI;
     this.snarkHelper = snarkHelper;
 
-    this.gameState = gameState;
+    this.gameState = null;
     this.ghostCommitmentsMap = ghostCommitmentsMap;
   }
 
@@ -59,41 +61,26 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     // initialize dependencies according to a DAG
 
     const contractsAPI = await ContractsAPI.create();
+    const gameIds = await contractsAPI.getAllGameIds();
     const account = contractsAPI.account;
-    const contractGameState = await contractsAPI.getGameState();
     const snarkHelper = SnarkHelper.create();
     const ghostCommitmentsMap = new Map<string, [number, number, BigInteger]>();
     ghostCommitmentsMap.set(mimcHash(3, 3, 0).toString(), [3, 3, bigInt(0)]);
-    let salt = '0';
-    let location: BoardLocation = [3, 3];
-    const commitmentsMapEntry = ghostCommitmentsMap.get(
-      contractGameState.myContractGhost.commitment
-    );
-    if (commitmentsMapEntry) {
-      location = [commitmentsMapEntry[0], commitmentsMapEntry[1]];
-      salt = commitmentsMapEntry[2].toString();
-    }
-    const gameState = {
-      ...contractGameState,
-      myGhost: {
-        ...contractGameState.myContractGhost,
-        location,
-        salt,
-      },
-    };
 
     // get data from the contract
     const gameManager = new GameManager(
       account,
+      gameIds,
       contractsAPI,
       snarkHelper,
-      gameState,
       ghostCommitmentsMap
     );
 
     // set up listeners: whenever ContractsAPI reports some game state update, do some logic
-    contractsAPI.on(ContractsAPIEvent.ProofVerified, () => {
-      console.log('proof verified');
+    contractsAPI.on(ContractsAPIEvent.CreatedGame, async (gameId: number) => {
+      console.log('created game');
+      await gameManager.refreshGameIdList();
+      gameManager.emit(GameManagerEvent.CreatedGame, gameId);
     });
     contractsAPI.on(ContractsAPIEvent.GameStart, async () => {
       console.log('game started');
@@ -152,7 +139,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   public destroy(): void {
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.ProofVerified);
+    this.contractsAPI.removeAllListeners(ContractsAPIEvent.CreatedGame);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.GameStart);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.MoveMade);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.GameFinished);
@@ -175,11 +162,20 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     return emptyAddress;
   }
 
+  async refreshGameIdList(): Promise<void> {
+    this.gameIds = await this.contractsAPI.getAllGameIds();
+  }
+
+  getAllGameIds(): string[] {
+    return this.gameIds;
+  }
+
   getGameAddr(): EthAddress | null {
-    return this.contractsAPI.getContractAddress();
+    return this.contractsAPI.getGameAddress();
   }
 
   getGameState(): ChessGame {
+    if (!this.gameState) throw new Error('no game set');
     return this.gameState;
   }
 
@@ -205,6 +201,23 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     return this.gameState;
   }
 
+  async setGame(gameId: string): Promise<void> {
+    await this.contractsAPI.setGame(gameId);
+    await this.refreshGameState();
+  }
+
+  createGame(): Promise<void> {
+    const unsubmittedCreateGame: UnsubmittedCreateGame = {
+      actionId: getRandomActionId(),
+      gameId: Math.floor(Math.random() * 1000000),
+      type: EthTxType.CREATE_GAME,
+    };
+    console.log('creating game');
+    this.contractsAPI.onTxInit(unsubmittedCreateGame);
+    this.contractsAPI.createGame(unsubmittedCreateGame);
+    return Promise.resolve();
+  }
+
   joinGame(): Promise<void> {
     const unsubmittedJoin: UnsubmittedJoin = {
       actionId: getRandomActionId(),
@@ -223,13 +236,13 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       to,
     };
     this.contractsAPI.onTxInit(unsubmittedMove);
-    this.contractsAPI.movePiece(pieceId, to[1], to[0], unsubmittedMove);
+    this.contractsAPI.movePiece(unsubmittedMove);
     return Promise.resolve();
   }
 
   moveGhost(ghostId: number, to: BoardLocation): Promise<void> {
-    // const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
-    const newSalt = '0';
+    if (!this.gameState) throw new Error('no game set');
+    const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
     this.ghostCommitmentsMap.set(mimcHash(to[1], to[0], newSalt).toString(), [
       to[1],
       to[0],
@@ -257,12 +270,13 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       )
       .then((args) => {
         console.log(args);
-        this.contractsAPI.moveGhost(args, ghostId, unsubmittedGhostMove);
+        this.contractsAPI.moveGhost(args, unsubmittedGhostMove);
       });
     return Promise.resolve();
   }
 
   ghostAttack(): Promise<void> {
+    if (!this.gameState) throw new Error('no game set');
     const {myGhost} = this.gameState;
     const pieceId = myGhost.id;
     const attackAt = myGhost.location;
@@ -271,15 +285,10 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       type: EthTxType.GHOST_ATTACK,
       pieceId,
       at: attackAt,
+      salt: myGhost.salt,
     };
     this.contractsAPI.onTxInit(unsubmittedGhostAttack);
-    this.contractsAPI.ghostAttack(
-      pieceId,
-      attackAt[1],
-      attackAt[0],
-      myGhost.salt,
-      unsubmittedGhostAttack
-    );
+    this.contractsAPI.ghostAttack(unsubmittedGhostAttack);
     return Promise.resolve();
   }
 }

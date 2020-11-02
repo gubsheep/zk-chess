@@ -10,7 +10,7 @@ import {
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
 // in particular, the below is bad!
 // import {TransactionReceipt, Provider, TransactionResponse, Web3Provider} from "ethers/providers";
-import {Contract, providers} from 'ethers';
+import {Contract, providers, BigNumber as EthersBN} from 'ethers';
 import _ from 'lodash';
 
 import {address, emptyAddress} from '../utils/CheckedTypeUtils';
@@ -19,15 +19,14 @@ import {
   ContractsAPIEvent,
   SubmittedTx,
   ContractEvent,
-  ProofArgs,
   RawPiece,
   RawObjective,
   UnsubmittedMove,
-  UnsubmittedProve,
   UnsubmittedJoin,
   UnsubmittedGhostAttack,
   GhostMoveArgs,
   UnsubmittedGhostMove,
+  UnsubmittedCreateGame,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -126,71 +125,90 @@ class TxExecutor extends EventEmitter {
 
 class ContractsAPI extends EventEmitter {
   readonly account: EthAddress;
-  private coreContract: Contract;
+  private factoryContract: Contract;
+  private gameContract: Contract | null;
   private readonly txRequestExecutor: TxExecutor;
   private unminedTxs: Map<string, UnsubmittedAction>;
 
   private constructor(
     account: EthAddress,
-    coreContract: Contract,
+    factoryContract: Contract,
     nonce: number
   ) {
     super();
     this.account = account;
-    this.coreContract = coreContract;
+    this.factoryContract = factoryContract;
+    this.gameContract = null;
     this.txRequestExecutor = new TxExecutor(nonce);
     this.unminedTxs = new Map<string, UnsubmittedAction>();
   }
 
   static async create(): Promise<ContractsAPI> {
     const ethConnection = EthereumAccountManager.getInstance();
-    const contract: Contract = await ethConnection.loadCoreContract();
+    const factoryContract: Contract = await ethConnection.loadFactoryContract();
 
     const account: EthAddress = ethConnection.getAddress();
     const nonce: number = await ethConnection.getNonce();
 
     const contractsAPI: ContractsAPI = new ContractsAPI(
       account,
-      contract,
+      factoryContract,
       nonce
     );
     ethConnection.on('ChangedRPCEndpoint', async () => {
-      contractsAPI.coreContract = await ethConnection.loadCoreContract();
+      contractsAPI.factoryContract = await ethConnection.loadFactoryContract();
+      if (contractsAPI.gameContract) {
+        const gameAddress = contractsAPI.gameContract.address;
+        contractsAPI.gameContract = await ethConnection.loadGameContract(
+          gameAddress
+        );
+      }
     });
-    contractsAPI.setupContractEventListeners();
+
+    factoryContract.on(
+      ContractEvent.CreatedGame,
+      async (rawGameId: EthersBN) => {
+        contractsAPI.emit(ContractsAPIEvent.CreatedGame, rawGameId.toNumber());
+      }
+    );
 
     return contractsAPI;
   }
 
   destroy(): void {
-    this.removeEventListeners();
+    this.removeGameContractListeners();
+    this.factoryContract.removeAllListeners();
   }
 
-  private setupContractEventListeners(): void {
-    this.coreContract.on(
-      ContractEvent.ProofVerified,
-      async (pfsVerified, _: Event) => {
-        console.log(pfsVerified);
-        this.emit(ContractsAPIEvent.ProofVerified);
-      }
-    );
-    this.coreContract.on(ContractEvent.GameStart, () => {
-      this.emit(ContractsAPIEvent.GameStart);
-    });
-    this.coreContract.on(ContractEvent.MoveMade, () => {
-      this.emit(ContractsAPIEvent.MoveMade);
-    });
-    this.coreContract.on(ContractEvent.GameFinished, () => {
-      this.emit(ContractsAPIEvent.GameFinished);
-    });
+  private setupGameContractListeners(): void {
+    if (this.gameContract) {
+      this.gameContract.on(ContractEvent.GameStart, () => {
+        this.emit(ContractsAPIEvent.GameStart);
+      });
+      this.gameContract.on(ContractEvent.MoveMade, () => {
+        this.emit(ContractsAPIEvent.MoveMade);
+      });
+      this.gameContract.on(ContractEvent.GameFinished, () => {
+        this.emit(ContractsAPIEvent.GameFinished);
+      });
+    }
   }
 
-  removeEventListeners(): void {
-    this.coreContract.removeAllListeners(ContractEvent.ProofVerified);
+  removeGameContractListeners(): void {
+    if (this.gameContract) {
+      this.gameContract.removeAllListeners();
+    }
   }
 
-  public getContractAddress(): EthAddress {
-    return address(this.coreContract.address);
+  public getGameAddress(): EthAddress | null {
+    if (this.gameContract) {
+      return address(this.gameContract.address);
+    }
+    return null;
+  }
+
+  public getFactoryAddress(): EthAddress {
+    return address(this.factoryContract.address);
   }
 
   public onTxInit(unminedTx: UnsubmittedAction): void {
@@ -220,8 +238,17 @@ class ContractsAPI extends EventEmitter {
     else this.emit(ContractsAPIEvent.TxFailed, new Error('tx reverted'));
   }
 
+  public async getAllGameIds(): Promise<string[]> {
+    const factory = this.factoryContract;
+    return (await factory.getAllGameIds()).map((id: EthersBN) => id.toString());
+  }
+
   public async getGameState(): Promise<ChessGameContractData> {
-    const contract = this.coreContract;
+    const contract = this.gameContract;
+    if (!contract) {
+      throw new Error('no contract set');
+    }
+    const gameId = (await contract.gameId()).toNumber();
     const player1Addr = address(await contract.player1());
     const player2Addr = address(await contract.player2());
     const rawPieces: RawPiece[] = await contract.getPieces();
@@ -264,6 +291,8 @@ class ContractsAPI extends EventEmitter {
     }
 
     return {
+      gameAddress: address(contract.address),
+      gameId,
       myAddress: this.account,
       player1: {address: player1Addr},
       player2: {address: player2Addr},
@@ -276,9 +305,51 @@ class ContractsAPI extends EventEmitter {
     };
   }
 
+  public async setGame(gameId: string): Promise<void> {
+    const ethConnection = EthereumAccountManager.getInstance();
+    const contract = this.factoryContract;
+    const gameAddr = address(await contract.gameIdToAddr(gameId));
+    if (gameAddr === emptyAddress) {
+      throw new Error('not a valid game');
+    }
+    const gameContract: Contract = await ethConnection.loadGameContract(
+      gameAddr
+    );
+    this.removeGameContractListeners();
+    this.gameContract = gameContract;
+    this.setupGameContractListeners();
+  }
+
+  public async createGame(
+    action: UnsubmittedCreateGame
+  ): Promise<providers.TransactionReceipt> {
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+    console.log('creating game');
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        actionId: action.actionId,
+        contract: this.factoryContract,
+        method: 'createGame',
+        args: [action.gameId],
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      this.onTxSubmit(action, tx.hash);
+    }
+    return tx.wait();
+  }
+
   public async joinGame(
     action: UnsubmittedJoin
   ): Promise<providers.TransactionReceipt> {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
     const overrides: providers.TransactionRequest = {
       gasPrice: 1000000000,
       gasLimit: 2000000,
@@ -286,7 +357,7 @@ class ContractsAPI extends EventEmitter {
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
         actionId: action.actionId,
-        contract: this.coreContract,
+        contract: this.gameContract,
         method: 'joinGame',
         args: [],
         overrides,
@@ -300,11 +371,11 @@ class ContractsAPI extends EventEmitter {
   }
 
   public async movePiece(
-    pieceId: number,
-    toRow: number,
-    toCol: number,
     action: UnsubmittedMove
   ): Promise<providers.TransactionReceipt> {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
     const overrides: providers.TransactionRequest = {
       gasPrice: 1000000000,
       gasLimit: 2000000,
@@ -312,9 +383,13 @@ class ContractsAPI extends EventEmitter {
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
         actionId: action.actionId,
-        contract: this.coreContract,
+        contract: this.gameContract,
         method: 'movePiece',
-        args: [pieceId.toString(), toRow.toString(), toCol.toString()],
+        args: [
+          action.pieceId.toString(),
+          action.to[1].toString(),
+          action.to[0].toString(),
+        ],
         overrides,
       }
     );
@@ -326,13 +401,11 @@ class ContractsAPI extends EventEmitter {
   }
 
   public async ghostAttack(
-    pieceId: number,
-    row: number,
-    col: number,
-    salt: string,
     action: UnsubmittedGhostAttack
   ): Promise<providers.TransactionReceipt> {
-    console.log(row, col, salt);
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
     const overrides: providers.TransactionRequest = {
       gasPrice: 1000000000,
       gasLimit: 2000000,
@@ -340,9 +413,14 @@ class ContractsAPI extends EventEmitter {
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
         actionId: action.actionId,
-        contract: this.coreContract,
+        contract: this.gameContract,
         method: 'ghostAttack',
-        args: [pieceId.toString(), row.toString(), col.toString(), salt],
+        args: [
+          action.pieceId.toString(),
+          action.at[1].toString(),
+          action.at[0].toString(),
+          action.salt,
+        ],
         overrides,
       }
     );
@@ -353,11 +431,10 @@ class ContractsAPI extends EventEmitter {
     return tx.wait();
   }
 
-  public async moveGhost(
-    args: GhostMoveArgs,
-    pieceId: number,
-    action: UnsubmittedGhostMove
-  ) {
+  public async moveGhost(args: GhostMoveArgs, action: UnsubmittedGhostMove) {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
     const overrides: providers.TransactionRequest = {
       gasPrice: 1000000000,
       gasLimit: 2000000,
@@ -366,9 +443,9 @@ class ContractsAPI extends EventEmitter {
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
         actionId: action.actionId,
-        contract: this.coreContract,
+        contract: this.gameContract,
         method: 'moveGhost',
-        args: [...args, pieceId],
+        args: [...args, action.pieceId.toString()],
         overrides,
       }
     );

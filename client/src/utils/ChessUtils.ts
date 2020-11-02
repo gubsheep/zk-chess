@@ -12,8 +12,8 @@ import {
   GameStatus,
   PlayerInfo,
 } from '../_types/global/GlobalTypes';
-import { almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
-import { SIZE } from './constants';
+import {address, almostEmptyAddress, emptyAddress} from './CheckedTypeUtils';
+import {SIZE} from './constants';
 
 const transpose = (board: ChessBoard): ChessBoard => {
   return board.map((_, colIndex) => board.map((row) => row[colIndex]));
@@ -106,7 +106,7 @@ export const getCanMove = (obj: Piece | Ghost | null): BoardLocation[] => {
 export const boardFromGame = (game: ChessGame | null): ChessBoard => {
   if (!game) return [];
   const allPieces = game.player1pieces.concat(game.player2pieces);
-  const { myGhost, objectives } = game;
+  const {myGhost, objectives} = game;
 
   const tempBoard: ChessCell[][] = Array(SIZE)
     .fill(null)
@@ -179,8 +179,8 @@ export const getScores = (game: ChessGame): [ScoreEntry, ScoreEntry] => {
   }
 
   return [
-    { player: game.player1, score: p1score },
-    { player: game.player2, score: p2score },
+    {player: game.player1, score: p1score},
+    {player: game.player2, score: p2score},
   ];
 };
 
@@ -218,9 +218,11 @@ export const enemyGhostMoved = (
 };
 
 export const sampleGame: ChessGame = {
+  gameAddress: emptyAddress,
+  gameId: '0',
   myAddress: emptyAddress,
-  player1: { address: emptyAddress },
-  player2: { address: almostEmptyAddress },
+  player1: {address: emptyAddress},
+  player2: {address: almostEmptyAddress},
   turnNumber: 0,
   gameStatus: GameStatus.P1_TO_MOVE,
   player1pieces: [

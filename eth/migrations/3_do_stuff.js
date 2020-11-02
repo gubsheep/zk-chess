@@ -25,8 +25,11 @@ module.exports = async function (deployer, network, accounts) {
   await exec("mkdir -p ../client/src/utils");
   fs.writeFileSync(
     "../client/src/utils/local_contract_addr.ts",
-    `export const contractAddress = '${gameAddr}'\n`
+    `export const contractAddress = '${factory.address}'\n`
   );
   await exec("mkdir -p ../client/public/contracts");
   await exec("cp build/contracts/ZKChessGame.json ../client/public/contracts/");
+  await exec(
+    "cp build/contracts/ZKChessGameFactory.json ../client/public/contracts/"
+  );
 };

@@ -12,6 +12,7 @@ export enum GameManagerEvent {
   TxFailed = 'TxFailed', // args: (unminedTx: SubmittedTx, error: Error)
   TxConfirmed = 'TxConfirmed', // args: (unminedTx: SubmittedTx)
 
+  CreatedGame = 'CreatedGame', // args: (gameId: number)
   GameStart = 'GameStart', // args: (updatedGameState: ChessGame)
   MoveMade = 'MoveMade', // args: (updatedGameState: ChessGame)
   GameFinished = 'GameFinished', // args: (updatedGameState: ChessGame)
@@ -23,12 +24,16 @@ export default interface AbstractGameManager extends EventEmitter {
   getAccount(): EthAddress | null;
   getEnemyAccount(): EthAddress | null;
 
+  refreshGameIdList(): Promise<void>;
+  getAllGameIds(): string[];
   getGameAddr(): EthAddress | null;
   getGameState(): ChessGame;
   refreshGameState(): Promise<ChessGame>;
+  setGame(gameId: string): Promise<void>;
 
-  joinGame(): void;
-  movePiece(pieceId: number, to: BoardLocation): void;
-  moveGhost(ghostId: number, to: BoardLocation): void;
-  ghostAttack(): void;
+  createGame(): Promise<void>;
+  joinGame(): Promise<void>;
+  movePiece(pieceId: number, to: BoardLocation): Promise<void>;
+  moveGhost(ghostId: number, to: BoardLocation): Promise<void>;
+  ghostAttack(): Promise<void>;
 }

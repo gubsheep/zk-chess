@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
-import { Dispatch } from 'react';
-import { SetStateAction } from 'react';
+import {EventEmitter} from 'events';
+import {Dispatch} from 'react';
+import {SetStateAction} from 'react';
 
 interface WindowEthereumObject extends EventEmitter {
   enable: () => void;
@@ -79,6 +79,9 @@ export enum GameStatus {
 }
 
 export type ChessGameContractData = {
+  gameAddress: EthAddress;
+  gameId: string;
+
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
@@ -94,6 +97,9 @@ export type ChessGameContractData = {
 };
 
 export type ChessGame = {
+  gameAddress: EthAddress;
+  gameId: string;
+
   myAddress: EthAddress;
   player1: Player;
   player2: Player;

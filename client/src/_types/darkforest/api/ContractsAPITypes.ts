@@ -21,14 +21,18 @@ export enum GhostMoveArgIdxs {
 }
 
 export enum ContractEvent {
-  ProofVerified = 'ProofVerified',
+  // TODO this should be 2 enums. one for game events, one for factory events
+  CreatedGame = 'CreatedGame',
   GameStart = 'GameStart',
   MoveMade = 'MoveMade',
   GameFinished = 'GameFinished',
 }
 
 export enum ContractsAPIEvent {
-  ProofVerified = 'ProofVerified',
+  // TODO this should be 3 enums
+  // one for factory events, one for game events, one for tx status changes
+  CreatedGame = 'CreatedGame', // args: (gameId: EthersBN)
+
   GameStart = 'GameStart', // args: ()
   MoveMade = 'MoveMade', // args: ()
   GameFinished = 'GameFinished', // args: ()
@@ -108,7 +112,7 @@ export type RawObjective = {
 };
 
 export enum EthTxType {
-  PROVE = 'PROVE',
+  CREATE_GAME = 'CREATE_GAME',
   JOIN_GAME = 'JOIN_GAME',
   MOVE = 'MOVE',
   GHOST_ATTACK = 'GHOST_ATTACK',
@@ -128,18 +132,18 @@ export type SubmittedTx = UnsubmittedAction & {
   sentAtTimestamp: number;
 };
 
+export type UnsubmittedCreateGame = UnsubmittedAction & {
+  type: EthTxType.CREATE_GAME;
+  gameId: number;
+};
+
+export type SubmtitedCreateGame = UnsubmittedCreateGame & SubmittedTx;
+
 export type UnsubmittedJoin = UnsubmittedAction & {
   type: EthTxType.JOIN_GAME;
 };
 
 export type SubmittedJoin = UnsubmittedJoin & SubmittedTx;
-
-export type UnsubmittedProve = UnsubmittedAction & {
-  type: EthTxType.PROVE;
-  output: string;
-};
-
-export type SubmittedProve = UnsubmittedProve & SubmittedTx;
 
 export type UnsubmittedMove = UnsubmittedAction & {
   type: EthTxType.MOVE;
@@ -153,6 +157,7 @@ export type UnsubmittedGhostAttack = UnsubmittedAction & {
   type: EthTxType.GHOST_ATTACK;
   pieceId: number;
   at: BoardLocation;
+  salt: string;
 };
 
 export type SubmittedGhostAttack = UnsubmittedGhostAttack & SubmittedTx;

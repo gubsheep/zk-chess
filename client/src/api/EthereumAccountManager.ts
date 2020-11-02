@@ -84,9 +84,18 @@ class EthereumAccountManager extends EventEmitter {
     }
   }
 
-  public async loadCoreContract(): Promise<Contract> {
+  public async loadGameContract(contractAddress: string): Promise<Contract> {
     const contractABI = (
-      await fetch('/public/contracts/ZKChessCore.json').then((x) => x.json())
+      await fetch('/public/contracts/ZKChessGame.json').then((x) => x.json())
+    ).abi;
+    return this.loadContract(contractAddress, contractABI);
+  }
+
+  public async loadFactoryContract(): Promise<Contract> {
+    const contractABI = (
+      await fetch('/public/contracts/ZKChessGameFactory.json').then((x) =>
+        x.json()
+      )
     ).abi;
 
     const isProd = process.env.NODE_ENV === 'production';

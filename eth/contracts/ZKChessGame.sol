@@ -13,7 +13,7 @@ contract ZKChessGame is Initializable {
         public constant GHOST_START_COMMITMENT = 7374563847362678215915084925243633004703986452179446109135597066279732561698;
     uint256 public constant BOARD_SIZE = 7;
 
-    uint256 gameId;
+    uint256 public gameId;
 
     uint8 public turnNumber;
     GameState public gameState;

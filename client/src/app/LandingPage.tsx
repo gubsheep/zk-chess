@@ -1,4 +1,4 @@
-import React, {createContext} from 'react';
+import React from 'react';
 import {useState} from 'react';
 import AbstractGameManager, {
   GameManagerEvent,
@@ -7,6 +7,7 @@ import EthereumAccountManager from '../api/EthereumAccountManager';
 import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
 import {ZKChessStateProvider} from '../api/UIStateManager';
+import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
 import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
 import {Game} from './Game';
 
@@ -14,10 +15,10 @@ enum InitState {
   NONE,
   DISPLAY_LOGIN_OPTIONS,
   DISPLAY_ACCOUNTS,
-  // GENERATE_ACCOUNT,
-  ASKING_GAME_ADDR,
   FETCHING_ETH_DATA,
   FETCHED_ETH_DATA,
+  DISPLAY_GAMES,
+  GAME_SELECTED,
   WAITING_FOR_PLAYERS,
   COMPLETE,
   TERMINATED,
@@ -30,6 +31,7 @@ export function LandingPage() {
     null
   );
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
+  const [gameIds, setGameIds] = useState<string[]>([]);
   const [initState, setInitState] = useState<InitState>(InitState.NONE);
 
   const startGame = async () => {
@@ -72,14 +74,48 @@ export function LandingPage() {
       newGameManager = await GameManager.create();
       setGameManager(newGameManager);
     }
-    if (
-      newGameManager.getGameState().gameStatus !==
-      GameStatus.WAITING_FOR_PLAYERS
-    ) {
-      setInitState(InitState.COMPLETE);
-    } else {
-      setInitState(InitState.FETCHED_ETH_DATA);
+    setGameIds(newGameManager.getAllGameIds());
+    newGameManager.on(ContractEvent.CreatedGame, () => {
+      setGameIds(newGameManager.getAllGameIds());
+    });
+    setInitState(InitState.DISPLAY_GAMES);
+  };
+
+  const selectGame = (id: string) => async () => {
+    if (!gameManager) {
+      return;
     }
+    await gameManager.setGame(id);
+    const {
+      myAddress,
+      player1,
+      player2,
+      gameStatus,
+    } = gameManager.getGameState();
+    if (gameStatus === GameStatus.WAITING_FOR_PLAYERS) {
+      if (player1.address === myAddress || player2.address === myAddress) {
+        // i'm in the game, but game hasn't started
+        setInitState(InitState.WAITING_FOR_PLAYERS);
+      } else {
+        // i'm not in the game yet, game is waiting for players, i can join
+        setInitState(InitState.GAME_SELECTED);
+      }
+    } else {
+      if (player1.address === myAddress || player2.address === myAddress) {
+        // game has started, i'm in the game
+        setInitState(InitState.COMPLETE);
+      }
+      // game has started but i'm not in it. don't change initstate
+    }
+  };
+
+  const createGame = async () => {
+    console.log('create game clicked');
+    if (!gameManager) {
+      console.log('no game manager');
+      return;
+    }
+    await gameManager.createGame();
   };
 
   const joinGame = async () => {
@@ -121,7 +157,19 @@ export function LandingPage() {
         <p>Fetching data...</p>
       </div>
     );
-  } else if (initState === InitState.FETCHED_ETH_DATA) {
+  } else if (initState === InitState.DISPLAY_GAMES) {
+    return (
+      <div>
+        <p>Games List</p>
+        {gameIds.map((id) => (
+          <p key={id} onClick={selectGame(id)}>
+            {id}
+          </p>
+        ))}
+        <p onClick={createGame}>New Game</p>
+      </div>
+    );
+  } else if (initState === InitState.GAME_SELECTED) {
     return (
       <div>
         <p onClick={joinGame}>Join Game</p>

@@ -1,28 +1,18 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
-  Color,
   EthAddress,
-  PlayerMap,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
+import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 
-import {
-  ContractsAPIEvent,
-  EthTxType,
-  ProveArgIdx,
-  UnsubmittedProve,
-  ZKArgIdx,
-} from '../_types/darkforest/api/ContractsAPITypes';
-import { almostEmptyAddress, emptyAddress } from '../utils/CheckedTypeUtils';
-import { compareLoc, sampleGame } from '../utils/ChessUtils';
+import {almostEmptyAddress, emptyAddress} from '../utils/CheckedTypeUtils';
+import {compareLoc, sampleGame} from '../utils/ChessUtils';
 import autoBind from 'auto-bind';
-import { getRandomActionId } from '../utils/Utils';
 
 class FakeGameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -41,7 +31,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
   public destroy(): void {
     // removes singletons of ContractsAPI, LocalStorageManager, MinerManager
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.ProofVerified);
+    this.contractsAPI.removeAllListeners();
 
     this.contractsAPI.destroy();
     this.snarkHelper.destroy();
@@ -73,12 +63,28 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     return this.gameState;
   }
 
+  refreshGameIdList(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  getAllGameIds(): string[] {
+    return [];
+  }
+
   refreshGameState(): Promise<ChessGame> {
     return Promise.resolve(this.gameState);
   }
 
-  joinGame(): void {
-    return;
+  async setGame(gameId: string): Promise<void> {
+    return Promise.resolve();
+  }
+
+  createGame(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  joinGame(): Promise<void> {
+    return Promise.resolve();
   }
 
   movePiece(pieceId: number, to: BoardLocation): Promise<void> {
