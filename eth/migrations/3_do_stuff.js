@@ -19,7 +19,7 @@ const exec = async (command) => {
 module.exports = async function (deployer, network, accounts) {
   const factory = await ZKChessGameFactory.deployed();
 
-  const gameAddr = await factory.cloneAddress();
+  const gameAddr = await factory.gameIdToAddr(69);
   console.log(gameAddr);
 
   await exec("mkdir -p ../client/src/utils");

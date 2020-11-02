@@ -39,10 +39,9 @@ module.exports = async function (deployer, network, accounts) {
 
   await deployer.deploy(ZKChessGame);
   const coreContract = await ZKChessGame.deployed();
-  await coreContract.initialize(false);
   console.log(`ZKChessGame impl address is ${coreContract.address}`);
 
   await deployer.deploy(ZKChessGameFactory, coreContract.address);
   const factory = await ZKChessGameFactory.deployed();
-  await factory.createGame();
+  await factory.createGame(69);
 };

@@ -13,6 +13,8 @@ contract ZKChessGame is Initializable {
         public constant GHOST_START_COMMITMENT = 7374563847362678215915084925243633004703986452179446109135597066279732561698;
     uint256 public constant BOARD_SIZE = 7;
 
+    uint256 gameId;
+
     uint8 public turnNumber;
     GameState public gameState;
     uint8[BOARD_SIZE][BOARD_SIZE] public boardPieces; // board[row][col]
@@ -36,7 +38,8 @@ contract ZKChessGame is Initializable {
 
     uint256 pfsVerified;
 
-    function initialize(bool _disableZKCheck) public {
+    function initialize(uint256 _gameId, bool _disableZKCheck) public {
+        gameId = _gameId;
         DISABLE_ZK_CHECK = _disableZKCheck;
         gameState = GameState.WAITING_FOR_PLAYERS;
 
