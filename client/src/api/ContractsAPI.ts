@@ -29,6 +29,7 @@ import {
   UnsubmittedCreateGame,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
+import mimcHash from '../hash/mimc';
 
 type QueuedTxRequest = {
   actionId: string;
@@ -261,7 +262,7 @@ class ContractsAPI extends EventEmitter {
     let myContractGhost: ContractGhost = {
       id: -1,
       owner: null,
-      commitment: '',
+      commitment: mimcHash(3, 3, '0').toString(),
     }; // dummy value
     for (const rawPiece of rawPieces) {
       const piece = this.rawPieceToPiece(rawPiece);

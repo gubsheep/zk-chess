@@ -36,14 +36,12 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly snarkHelper: SnarkHelper;
 
   private gameState: ChessGame | null;
-  private ghostCommitmentsMap: Map<string, [number, number, BigInteger]>;
 
   private constructor(
     account: EthAddress | null,
     gameIds: string[],
     contractsAPI: ContractsAPI,
-    snarkHelper: SnarkHelper,
-    ghostCommitmentsMap: Map<string, [number, number, BigInteger]>
+    snarkHelper: SnarkHelper
   ) {
     super();
 
@@ -54,7 +52,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     this.snarkHelper = snarkHelper;
 
     this.gameState = null;
-    this.ghostCommitmentsMap = ghostCommitmentsMap;
   }
 
   static async create(): Promise<GameManager> {
@@ -64,16 +61,17 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     const gameIds = await contractsAPI.getAllGameIds();
     const account = contractsAPI.account;
     const snarkHelper = SnarkHelper.create();
-    const ghostCommitmentsMap = new Map<string, [number, number, BigInteger]>();
-    ghostCommitmentsMap.set(mimcHash(3, 3, 0).toString(), [3, 3, bigInt(0)]);
+    localStorage.setItem(
+      `COMMIT_${mimcHash(3, 3, 0).toString()}`,
+      JSON.stringify([3, 3, '0'])
+    );
 
     // get data from the contract
     const gameManager = new GameManager(
       account,
       gameIds,
       contractsAPI,
-      snarkHelper,
-      ghostCommitmentsMap
+      snarkHelper
     );
 
     // set up listeners: whenever ContractsAPI reports some game state update, do some logic
@@ -181,15 +179,19 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   async refreshGameState(): Promise<ChessGame> {
     const contractGameState = await this.contractsAPI.getGameState();
-    let salt = '0';
-    let location: BoardLocation = [3, 3];
-    const commitmentsMapEntry = this.ghostCommitmentsMap.get(
-      contractGameState.myContractGhost.commitment
-    );
-    if (commitmentsMapEntry) {
-      location = [commitmentsMapEntry[0], commitmentsMapEntry[1]];
-      salt = commitmentsMapEntry[2].toString();
+    const {commitment} = contractGameState.myContractGhost;
+    const commitmentDataStr = localStorage.getItem(`COMMIT_${commitment}`);
+    console.log(contractGameState);
+    if (!commitmentDataStr) {
+      throw new Error("Couldn't find commitment data");
     }
+    const commitData = JSON.parse(commitmentDataStr) as [
+      number,
+      number,
+      string
+    ];
+    const location: BoardLocation = [commitData[0], commitData[1]];
+    const salt = commitData[2];
     this.gameState = {
       ...contractGameState,
       myGhost: {
@@ -243,11 +245,11 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   moveGhost(ghostId: number, to: BoardLocation): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
     const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
-    this.ghostCommitmentsMap.set(mimcHash(to[1], to[0], newSalt).toString(), [
-      to[1],
-      to[0],
-      bigInt(newSalt),
-    ]);
+    const commit = mimcHash(to[1], to[0], newSalt);
+    localStorage.setItem(
+      `COMMIT_${commit}`,
+      JSON.stringify([to[1], to[0], newSalt])
+    );
     const unsubmittedGhostMove: UnsubmittedGhostMove = {
       actionId: getRandomActionId(),
       type: EthTxType.GHOST_MOVE,
