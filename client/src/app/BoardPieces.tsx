@@ -132,6 +132,11 @@ export const ChessPiece = React.forwardRef(
           : whitePieceUrls[chessPiece.pieceType];
     }
 
+    // todo make this not shitty
+    if ((piece as Piece).captured === true) {
+      return <></>;
+    }
+
     return (
       <StyledPieceWrapper
         pos={pos || PiecePos.normal}
