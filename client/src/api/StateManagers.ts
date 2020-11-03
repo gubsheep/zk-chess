@@ -49,8 +49,6 @@ export const useInitGame = (): void => {
       color: colors[1],
     };
     dispatch.updateGame({ enemyPlayer });
-
-    console.log('set colors:', colors);
   }, [state.game.gameState?.player1, state.game.gameState?.player2]);
 };
 
