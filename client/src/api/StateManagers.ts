@@ -133,7 +133,7 @@ export const useComputed = (): void => {
         // check for out of bounds
         if (inBounds(loc, SIZE)) {
           const cell: ChessCell | undefined = board[loc[0]][loc[1]];
-          if (cell && cell.piece) {
+          if (cell && cell.piece && !cell.piece.captured) {
             canMove.splice(i--, 1);
           }
         }
