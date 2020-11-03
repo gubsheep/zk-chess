@@ -62,7 +62,7 @@ const StyledPieceWrapper = styled.div<{
     !nohover &&
     `
     &:hover {
-      background: #eee;
+      background: rgba(120, 120, 120, 0.4);
     }
   `}
 `;

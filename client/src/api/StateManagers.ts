@@ -81,7 +81,11 @@ export const useSyncGame = (): void => {
   useEffect(() => {
     if (!gm) return;
     const onConfirm = () => {
-      dispatch.updateSession({ turnState: TurnState.Waiting });
+      dispatch.updateSession({
+        turnState: TurnState.Waiting,
+        staged: null,
+        selected: null,
+      });
     };
     gm.addListener(GameManagerEvent.TxConfirmed, onConfirm);
 
