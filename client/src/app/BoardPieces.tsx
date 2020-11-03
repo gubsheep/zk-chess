@@ -56,7 +56,7 @@ const StyledPieceWrapper = styled.div<{
     pos !== PiecePos.normal ? 'z-index: 2;' : PiecePos.topLeft && 'z-index: 1;'}
 
   // shitty but whatever
-  ${({ selected }) => (selected ? 'background: #aaa !important;' : 'none')};
+  ${({ selected }) => selected && 'background: #ccc !important;'}
 
   ${({ nohover }) =>
     !nohover &&
