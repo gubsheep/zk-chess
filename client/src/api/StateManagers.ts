@@ -7,8 +7,10 @@ import {
   compareLoc,
   enemyGhostMoved,
   getCanMove,
+  inBounds,
   isGhost,
 } from '../utils/ChessUtils';
+import { SIZE } from '../utils/constants';
 import {
   ChessCell,
   ChessGame,
@@ -129,9 +131,11 @@ export const useComputed = (): void => {
         const loc = canMove[i];
 
         // check for out of bounds
-        const cell: ChessCell | undefined = board[loc[0]][loc[1]];
-        if (cell && cell.piece) {
-          canMove.splice(i--, 1);
+        if (inBounds(loc, SIZE)) {
+          const cell: ChessCell | undefined = board[loc[0]][loc[1]];
+          if (cell && cell.piece) {
+            canMove.splice(i--, 1);
+          }
         }
       }
     }

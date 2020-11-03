@@ -64,6 +64,10 @@ export const hasLoc = (arr: BoardLocation[], loc: BoardLocation): boolean => {
   return false;
 };
 
+export const inBounds = (loc: BoardLocation, size: number): boolean => {
+  return loc[0] >= 0 && loc[1] < size && loc[1] >= 0 && loc[0] < size;
+};
+
 export const getCanMoveLoc = (
   loc: BoardLocation,
   pieceType: PieceType
