@@ -46,17 +46,22 @@ const StyledGameCell = styled.div<{ canMove: boolean }>`
   background: ${(props) => (props.canMove ? '#f2f2f2' : 'none')};
 `;
 
-const GameCell = memo(function ({ location }: { location: BoardLocation }) {
+const GameCell = memo(function ({
+  location,
+  cell,
+}: {
+  location: BoardLocation;
+  cell: ChessCell;
+}) {
   const { state } = useZKChessState();
   const {
     session: { selected, staged },
-    computed: { gamePaused, board, canMove: canMoveArr },
-    game: { player, enemyPlayer },
+    computed: { gamePaused, canMove: canMoveArr },
+    game: { player },
     methods: { setSelected, setStaged },
   } = state;
 
   const canMove = hasLoc(canMoveArr, location);
-  const cell = board[location[0]][location[1]];
 
   const isEmpty = !cell.piece && !cell.ghost;
 
@@ -131,8 +136,15 @@ export function GameBoard() {
         {transform(board).map((row: ChessCell[], i: number) => (
           <tr key={i}>
             {row.map((_cell: ChessCell, j: number) => {
-              const loc: BoardLocation = locMap([i, j]);
-              return <GameCell key={JSON.stringify(loc)} location={loc} />;
+              const loc = locMap([i, j]);
+              const cell = board[loc[0]][loc[1]];
+              return (
+                <GameCell
+                  key={JSON.stringify(loc)}
+                  location={loc}
+                  cell={cell}
+                />
+              );
             })}
           </tr>
         ))}

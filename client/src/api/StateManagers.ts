@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { useLayoutEffect, useState } from 'react';
 import { useCallback, useEffect } from 'react';
-import { TurnState } from '../app/Game';
+import { Game, TurnState } from '../app/Game';
 import {
   boardFromGame,
   compareLoc,
@@ -77,6 +77,18 @@ export const useSyncGame = (): void => {
       gm.removeAllListeners(GameManagerEvent.GameStart);
       gm.removeAllListeners(GameManagerEvent.MoveMade);
       gm.removeAllListeners(GameManagerEvent.GameFinished);
+    };
+  }, [gm]);
+
+  useEffect(() => {
+    if (!gm) return;
+    const onConfirm = () => {
+      dispatch.updateSession({ turnState: TurnState.Waiting });
+    };
+    gm.addListener(GameManagerEvent.TxConfirmed, onConfirm);
+
+    return () => {
+      gm.removeAllListeners(GameManagerEvent.TxConfirmed);
     };
   }, [gm]);
 };
@@ -197,17 +209,17 @@ export const useComputed = (): void => {
 export const useInitMethods = () => {
   const { state, gameManager: gm, dispatch } = useZKChessState();
   const {
-    game: { player, enemyPlayer },
+    game: { gameState },
     session: { selected, staged },
   } = state;
 
   const getColor = useCallback(
     (addr: EthAddress | null): Color | null => {
-      if (player?.account === addr) return Color.WHITE;
-      if (enemyPlayer?.account === addr) return Color.BLACK;
+      if (gameState?.player1.address === addr) return Color.WHITE;
+      if (gameState?.player2.address === addr) return Color.BLACK;
       return null;
     },
-    [gm, player, enemyPlayer]
+    [gm, gameState]
   );
 
   const setStaged = useCallback(

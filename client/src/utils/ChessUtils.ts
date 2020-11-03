@@ -12,8 +12,8 @@ import {
   GameStatus,
   PlayerInfo,
 } from '../_types/global/GlobalTypes';
-import {address, almostEmptyAddress, emptyAddress} from './CheckedTypeUtils';
-import {SIZE} from './constants';
+import { address, almostEmptyAddress, emptyAddress } from './CheckedTypeUtils';
+import { SIZE } from './constants';
 
 const transpose = (board: ChessBoard): ChessBoard => {
   return board.map((_, colIndex) => board.map((row) => row[colIndex]));
@@ -23,9 +23,9 @@ const rot180 = (board: ChessBoard): ChessBoard => {
   return board.map((row) => row.reverse()).reverse();
 };
 
-const whiteTransform = (board: ChessBoard): ChessBoard => transpose(board);
+const blackTransform = (board: ChessBoard): ChessBoard => transpose(board);
 
-const blackTransform = (board: ChessBoard): ChessBoard =>
+const whiteTransform = (board: ChessBoard): ChessBoard =>
   rot180(transpose(board));
 
 export const boardMap = (
@@ -33,8 +33,8 @@ export const boardMap = (
 ): ((b: ChessBoard) => ChessBoard) =>
   player?.color === Color.WHITE ? whiteTransform : blackTransform;
 
-const whiteBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [j, i];
-const blackBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [
+const blackBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [j, i];
+const whiteBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [
   6 - j,
   6 - i,
 ];
@@ -106,7 +106,7 @@ export const getCanMove = (obj: Piece | Ghost | null): BoardLocation[] => {
 export const boardFromGame = (game: ChessGame | null): ChessBoard => {
   if (!game) return [];
   const allPieces = game.player1pieces.concat(game.player2pieces);
-  const {myGhost, objectives} = game;
+  const { myGhost, objectives } = game;
 
   const tempBoard: ChessCell[][] = Array(SIZE)
     .fill(null)
@@ -179,8 +179,8 @@ export const getScores = (game: ChessGame): [ScoreEntry, ScoreEntry] => {
   }
 
   return [
-    {player: game.player1, score: p1score},
-    {player: game.player2, score: p2score},
+    { player: game.player1, score: p1score },
+    { player: game.player2, score: p2score },
   ];
 };
 
@@ -221,8 +221,8 @@ export const sampleGame: ChessGame = {
   gameAddress: emptyAddress,
   gameId: '0',
   myAddress: emptyAddress,
-  player1: {address: emptyAddress},
-  player2: {address: almostEmptyAddress},
+  player1: { address: emptyAddress },
+  player2: { address: almostEmptyAddress },
   turnNumber: 0,
   gameStatus: GameStatus.P1_TO_MOVE,
   player1pieces: [
