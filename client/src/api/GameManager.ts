@@ -23,7 +23,6 @@ import {
 } from '../_types/darkforest/api/ContractsAPITypes';
 import {emptyAddress} from '../utils/CheckedTypeUtils';
 import {getRandomActionId} from '../utils/Utils';
-import {BigInteger} from 'big-integer';
 import bigInt from 'big-integer';
 import mimcHash from '../hash/mimc';
 import {LOCATION_ID_UB} from '../utils/constants';
@@ -248,7 +247,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     const commit = mimcHash(to[1], to[0], newSalt);
     localStorage.setItem(
       `COMMIT_${commit}`,
-      JSON.stringify([to[1], to[0], newSalt])
+      JSON.stringify([to[0], to[1], newSalt])
     );
     const unsubmittedGhostMove: UnsubmittedGhostMove = {
       actionId: getRandomActionId(),
