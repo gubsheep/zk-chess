@@ -219,7 +219,7 @@ contract ZKChessGame is Initializable {
             // must be in the range [0, SIZE - 1]
             return false;
         }
-        if (boardPieces[toRow][toCol] > 0) {
+        if (boardPieces[toRow][toCol] > 0 && !boardPieces[toRow][toCol].dead) {
             // a piece already exists there
             return false;
         }
