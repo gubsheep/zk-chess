@@ -383,6 +383,7 @@ class ContractsAPI extends EventEmitter {
         method: 'act',
         args: [
           [
+            action.turnNumber,
             action.pieceId,
             action.doesMove,
             action.moveToRow,
@@ -390,8 +391,8 @@ class ContractsAPI extends EventEmitter {
             action.doesAttack,
             action.attackRow,
             action.attackCol,
-            action.moveZkp,
-            action.attackZkp,
+            await action.moveZkp,
+            await action.attackZkp,
           ],
         ],
         overrides,

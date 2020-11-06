@@ -8,7 +8,7 @@ import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
+import AbstractGameManager from './AbstractGameManager';
 
 import {almostEmptyAddress, emptyAddress} from '../utils/CheckedTypeUtils';
 import {compareLoc, sampleGame} from '../utils/ChessUtils';

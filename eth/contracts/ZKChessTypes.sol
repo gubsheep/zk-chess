@@ -37,6 +37,7 @@ struct AttackZKP {
 }
 
 struct Action {
+    uint8 turnNumber;
     uint8 pieceId;
     bool doesMove;
     uint8[] moveToRow;

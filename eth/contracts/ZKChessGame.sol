@@ -330,6 +330,7 @@ contract ZKChessGame is Initializable {
         if (msg.sender == player2) {
             require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
         }
+        require(action.turnNumber == turnNumber, "Wrong turn number");
         Piece storage piece = pieces[action.pieceId];
         require(
             piece.owner != msg.sender && piece.owner != address(0),

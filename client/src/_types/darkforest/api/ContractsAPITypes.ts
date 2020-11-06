@@ -151,6 +151,7 @@ export type SubmittedJoin = UnsubmittedJoin & SubmittedTx;
 
 export type UnsubmittedAction = TxIntent & {
   type: EthTxType.ACTION;
+  turnNumber: number;
   pieceId: number;
   doesMove: boolean;
   moveToRow: number[];
@@ -158,12 +159,14 @@ export type UnsubmittedAction = TxIntent & {
   doesAttack: boolean;
   attackRow: number;
   attackCol: number;
-  moveZkp: GhostMoveArgs;
-  attackZkp: GhostAttackArgs;
+  isZk: boolean;
+  moveZkp: Promise<GhostMoveArgs>;
+  attackZkp: Promise<GhostAttackArgs>;
 };
 
 export const createEmptyAction = (): UnsubmittedAction => ({
   txIntentId: '',
+  turnNumber: 0,
   type: EthTxType.ACTION,
   pieceId: 0,
   doesMove: false,
@@ -172,7 +175,8 @@ export const createEmptyAction = (): UnsubmittedAction => ({
   doesAttack: false,
   attackRow: 0,
   attackCol: 0,
-  moveZkp: [
+  isZk: false,
+  moveZkp: Promise.resolve([
     ['0', '0'],
     [
       ['0', '0'],
@@ -180,8 +184,8 @@ export const createEmptyAction = (): UnsubmittedAction => ({
     ],
     ['0', '0'],
     ['0', '0'],
-  ],
-  attackZkp: [
+  ]),
+  attackZkp: Promise.resolve([
     ['0', '0'],
     [
       ['0', '0'],
@@ -189,7 +193,7 @@ export const createEmptyAction = (): UnsubmittedAction => ({
     ],
     ['0', '0'],
     ['0', '0', '0', '0'],
-  ],
+  ]),
 });
 
 export type UnsubmittedMove = TxIntent & {

@@ -316,6 +316,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     if (!path) throw new Error('no path found');
     const unsubmittedAction: UnsubmittedAction = {
       ...createEmptyAction(),
+      turnNumber: this.gameState.turnNumber,
       pieceId,
       doesMove: true,
       moveToRow: path.map((loc) => loc[1]),
@@ -336,14 +337,12 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       `COMMIT_${commit}`,
       JSON.stringify([to[0], to[1], newSalt])
     );
-    const unsubmittedGhostMove: UnsubmittedGhostMove = {
-      txIntentId: getRandomActionId(),
-      type: EthTxType.GHOST_MOVE,
+    const unsubmittedAction: UnsubmittedAction = {
+      ...createEmptyAction(),
       pieceId: ghostId,
-      to,
-      newSalt,
+      doesMove: true,
     };
-    this.contractsAPI.onTxInit(unsubmittedGhostMove);
+    this.contractsAPI.onTxInit(unsubmittedAction);
 
     const {myGhost} = this.gameState;
     const oldLoc = myGhost.location;
