@@ -53,7 +53,7 @@ contract ZKChessGame is Initializable {
             owner: address(0),
             row: 0,
             col: 1,
-            dead: false,
+            alive: true,
             commitment: 0
         });
         boardPieces[0][1] = 1;
@@ -63,7 +63,7 @@ contract ZKChessGame is Initializable {
             owner: address(0),
             row: 0,
             col: 3,
-            dead: false,
+            alive: true,
             commitment: 0
         });
         boardPieces[0][3] = 2;
@@ -73,7 +73,7 @@ contract ZKChessGame is Initializable {
             owner: address(0),
             row: 0,
             col: 5,
-            dead: false,
+            alive: true,
             commitment: 0
         });
         boardPieces[0][5] = 3;
@@ -83,7 +83,7 @@ contract ZKChessGame is Initializable {
             owner: address(0),
             row: 0,
             col: 0,
-            dead: false,
+            alive: true,
             commitment: GHOST_START_COMMITMENT
         });
         pieces[5] = Piece({
@@ -92,7 +92,7 @@ contract ZKChessGame is Initializable {
             owner: address(0),
             row: 6,
             col: 1,
-            dead: false,
+            alive: true,
             commitment: 0
         });
         boardPieces[6][1] = 5;
@@ -102,7 +102,7 @@ contract ZKChessGame is Initializable {
             owner: address(0),
             row: 6,
             col: 3,
-            dead: false,
+            alive: true,
             commitment: 0
         });
         boardPieces[6][3] = 6;
@@ -112,7 +112,7 @@ contract ZKChessGame is Initializable {
             owner: address(0),
             row: 6,
             col: 5,
-            dead: false,
+            alive: true,
             commitment: 0
         });
         boardPieces[6][5] = 7;
@@ -122,7 +122,7 @@ contract ZKChessGame is Initializable {
             owner: address(0),
             row: 6,
             col: 0,
-            dead: false,
+            alive: true,
             commitment: GHOST_START_COMMITMENT
         });
 
@@ -212,45 +212,49 @@ contract ZKChessGame is Initializable {
 
     function isValidMove(
         Piece memory piece,
-        uint8 toRow,
-        uint8 toCol
+        uint8[] memory toRow,
+        uint8[] memory toCol
     ) public view returns (bool) {
-        if (toRow >= BOARD_SIZE || toCol >= BOARD_SIZE) {
-            // must be in the range [0, SIZE - 1]
-            return false;
-        }
-        if (boardPieces[toRow][toCol] > 0 && !boardPieces[toRow][toCol].dead) {
-            // a piece already exists there
-            return false;
-        }
-        if (piece.pieceType == PieceType.GHOST) {
-            return false;
-        } else if (piece.pieceType == PieceType.KING) {
-            if (piece.row == toRow && piece.col == toCol) {
-                return false;
-            }
-            int16 rowDiff = int16(piece.row) - int16(toRow);
-            if (rowDiff > 1 || rowDiff < -1) {
-                return false;
-            }
-            int16 colDiff = int16(piece.col) - int16(toCol);
-            if (colDiff > 1 || colDiff < -1) {
-                return false;
-            }
+        uint8 currentRow = piece.row;
+        uint8 currentCol = piece.col;
+        require(toRow.length == toCol.length, "invalid move");
+        uint8 moveRange = 0;
+        if (piece.pieceType == PieceType.KING) {
+            moveRange = 1;
         } else if (piece.pieceType == PieceType.KNIGHT) {
-            int16 rowDiff = int16(piece.row) - int16(toRow);
-            int16 colDiff = int16(piece.col) - int16(toCol);
-            if (rowDiff == 2 || rowDiff == -2) {
-                if (colDiff != 1 && colDiff != -1) {
-                    return false;
-                }
-            } else if (rowDiff == 1 || rowDiff == -1) {
-                if (colDiff != 2 && colDiff != -2) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+            moveRange = 2;
+        }
+        require(
+            toRow.length <= moveRange,
+            "tried to move piece further than range allows"
+        );
+
+        for (uint256 i = 0; i < toRow.length; i++) {
+            uint8 nextRow = toRow[i];
+            uint8 nextCol = toCol[i];
+            // must be in range [0, SIZE - 1]
+            require(
+                nextRow < BOARD_SIZE || nextCol < BOARD_SIZE,
+                "tried to move out of bounds"
+            );
+            // (nextRow, nextCol) must be adjacent to (currentRow, currentCol)
+            require(
+                (nextRow == currentRow || nextCol == currentCol) &&
+                    (nextRow - currentRow == 1 ||
+                        currentRow - nextRow == 1 ||
+                        nextCol - currentCol == 1 ||
+                        currentCol - nextCol == 1),
+                "invalid move"
+            );
+            // can't move through or onto a square with a piece on it
+            uint8 pieceIdAtNextTile = boardPieces[nextRow][nextCol];
+            Piece storage pieceAtNextTile = pieces[pieceIdAtNextTile];
+            require(
+                !pieceAtNextTile.alive,
+                "tried to move through an existing piece"
+            );
+            currentRow = nextRow;
+            currentCol = nextCol;
         }
         return true;
     }
@@ -259,7 +263,7 @@ contract ZKChessGame is Initializable {
         // check if game is over: no pieces left, OR no objectives left
         bool noPiecesLeft = true;
         for (uint8 i = 0; i < pieceIds.length; i++) {
-            if (!pieces[pieceIds[i]].dead) {
+            if (pieces[pieceIds[i]].alive) {
                 noPiecesLeft = false;
                 break;
             }
@@ -318,11 +322,7 @@ contract ZKChessGame is Initializable {
         emit GameStart(player1, player2);
     }
 
-    function movePiece(
-        uint8 pieceId,
-        uint8 toRow,
-        uint8 toCol
-    ) public {
+    function act(Action memory action) public {
         require(gameState != GameState.COMPLETE, "Game is ended");
         if (msg.sender == player1) {
             require(gameState == GameState.P1_TO_MOVE, "Not p1's turn");
@@ -330,89 +330,64 @@ contract ZKChessGame is Initializable {
         if (msg.sender == player2) {
             require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
         }
-        require(turnNumber > 0, "Must move ghost on first turn");
-        Piece storage piece = pieces[pieceId];
-        require(piece.owner == msg.sender, "You don't own that piece");
-        require(!piece.dead, "Piece is dead");
-        require(isValidMove(piece, toRow, toCol), "Invalid move");
+        Piece storage piece = pieces[action.pieceId];
+        require(
+            piece.owner != msg.sender && piece.owner != address(0),
+            "can't move opponent's piece"
+        );
 
-        boardPieces[piece.row][piece.col] = 0;
-        boardPieces[toRow][toCol] = piece.id;
-        piece.row = toRow;
-        piece.col = toCol;
-        if (
-            objectives[boardObjectives[toRow][toCol]].value > 0 &&
-            objectives[boardObjectives[toRow][toCol]].capturedBy == address(0)
-        ) {
-            if (msg.sender == player1) {
-                p1CurrentlyCapturing = boardObjectives[toRow][toCol];
+        if (action.pieceId == 0) {
+            // TODO: creating a new piece
+            return;
+        } else {
+            // moving an existing piece
+            require(piece.alive, "Piece is dead");
+
+            if (piece.pieceType == PieceType.GHOST) {
+                require(
+                    piece.commitment == action.moveZkp.input[0],
+                    "ZK Proof invalid"
+                );
+                if (!DISABLE_ZK_CHECK) {
+                    require(
+                        Verifier.verifyMoveProof(
+                            action.moveZkp.a,
+                            action.moveZkp.b,
+                            action.moveZkp.c,
+                            action.moveZkp.input
+                        ),
+                        "Failed zk move check"
+                    );
+                }
+                piece.commitment = action.moveZkp.input[1];
             } else {
-                p2CurrentlyCapturing = boardObjectives[toRow][toCol];
+                if (action.doesMove) {
+                    uint8[] memory moveToRow = action.moveToRow;
+                    uint8[] memory moveToCol = action.moveToCol;
+                    require(
+                        isValidMove(piece, moveToRow, moveToCol),
+                        "Invalid move"
+                    );
+                    uint8 toRow = moveToRow[moveToRow.length - 1];
+                    uint8 toCol = moveToCol[moveToCol.length - 1];
+                    boardPieces[piece.row][piece.col] = 0;
+                    boardPieces[toRow][toCol] = piece.id;
+                    piece.row = toRow;
+                    piece.col = toCol;
+                    if (
+                        objectives[boardObjectives[toRow][toCol]].value > 0 &&
+                        objectives[boardObjectives[toRow][toCol]].capturedBy ==
+                        address(0)
+                    ) {
+                        if (msg.sender == player1) {
+                            p1CurrentlyCapturing = boardObjectives[toRow][toCol];
+                        } else {
+                            p2CurrentlyCapturing = boardObjectives[toRow][toCol];
+                        }
+                    }
+                }
             }
         }
-        completeTurn();
-    }
-
-    function moveGhost(
-        uint256[2] memory _a,
-        uint256[2][2] memory _b,
-        uint256[2] memory _c,
-        uint256[2] memory _input,
-        uint8 pieceId
-    ) public {
-        require(gameState != GameState.COMPLETE, "Game is ended");
-        if (msg.sender == player1) {
-            require(gameState == GameState.P1_TO_MOVE, "Not p1's turn");
-        }
-        if (msg.sender == player2) {
-            require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
-        }
-        Piece storage piece = pieces[pieceId];
-        require(piece.pieceType == PieceType.GHOST, "Piece must be a ghost");
-        require(piece.owner == msg.sender, "You don't own that piece");
-        require(piece.commitment == _input[0], "ZK Proof invalid");
-        if (!DISABLE_ZK_CHECK) {
-            require(
-                Verifier.verifyMoveProof(_a, _b, _c, _input),
-                "Failed zk move check"
-            );
-        }
-        piece.commitment = _input[1];
-        completeTurn();
-    }
-
-    function ghostAttack(
-        uint8 pieceId,
-        uint256 row,
-        uint256 col,
-        uint256 salt
-    ) public {
-        require(gameState != GameState.COMPLETE, "Game is ended");
-        if (msg.sender == player1) {
-            require(gameState == GameState.P1_TO_MOVE, "Not p1's turn");
-        }
-        if (msg.sender == player2) {
-            require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
-        }
-        require(turnNumber > 0, "Must move ghost on first turn");
-        Piece storage piece = pieces[pieceId];
-        require(piece.pieceType == PieceType.GHOST, "Piece must be a ghost");
-        require(piece.owner == msg.sender, "You don't own that piece");
-        require(
-            ZKChessUtils.hashTriple(row, col, salt, FIELD_SIZE) ==
-                piece.commitment,
-            "Invalid reveal"
-        );
-        Piece storage theirPiece = pieces[boardPieces[row][col]];
-        address opponent = player1;
-        if (msg.sender == player1) {
-            opponent = player2;
-        }
-        require(
-            theirPiece.owner == opponent,
-            "can only reveal to capture opposing piece"
-        );
-        theirPiece.dead = true;
         completeTurn();
     }
 
@@ -424,7 +399,7 @@ contract ZKChessGame is Initializable {
                 // is an uncaptured objective
                 Piece storage onObjective = pieces[boardPieces[capturing
                     .row][capturing.col]];
-                if (onObjective.owner == player2 && !onObjective.dead) {
+                if (onObjective.owner == player2 && onObjective.alive) {
                     // p2's live piece is stationed on top
                     capturing.capturedBy = player2;
                     player2Score += capturing.value;
@@ -440,7 +415,7 @@ contract ZKChessGame is Initializable {
                 // is an uncaptured objective
                 Piece storage onObjective = pieces[boardPieces[capturing
                     .row][capturing.col]];
-                if (onObjective.owner == player1 && !onObjective.dead) {
+                if (onObjective.owner == player1 && onObjective.alive) {
                     // p1's live piece is stationed on top
                     capturing.capturedBy = player1;
                     player1Score += capturing.value;

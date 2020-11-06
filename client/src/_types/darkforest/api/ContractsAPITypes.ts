@@ -44,19 +44,6 @@ export enum ContractsAPIEvent {
   TxConfirmed = 'TxConfirmed', // args: (unminedTx: SubmittedTx)
 }
 
-export type ProofArgs = [
-  [string, string], // proofA
-  [
-    // proofB
-    [string, string],
-    [string, string]
-  ],
-  [string, string], // proofC
-  [
-    string // hash
-  ]
-];
-
 export type GhostMoveArgs = [
   [string, string], // proofA
   [
@@ -68,6 +55,22 @@ export type GhostMoveArgs = [
   [
     string, // old commit
     string // new commit
+  ]
+];
+
+export type GhostAttackArgs = [
+  [string, string], // proofA
+  [
+    // proofB
+    [string, string],
+    [string, string]
+  ],
+  [string, string], // proofC
+  [
+    string, // old commit
+    string, // attack row
+    string, // attack col
+    string // dist
   ]
 ];
 
@@ -88,7 +91,7 @@ export type RawPiece = {
   col?: number;
 
   5: boolean;
-  dead?: boolean;
+  alive?: boolean;
 
   6: EthersBN;
   commitment?: EthersBN;
@@ -114,38 +117,82 @@ export type RawObjective = {
 export enum EthTxType {
   CREATE_GAME = 'CREATE_GAME',
   JOIN_GAME = 'JOIN_GAME',
+  ACTION = 'ACTION',
   MOVE = 'MOVE',
   GHOST_ATTACK = 'GHOST_ATTACK',
   GHOST_MOVE = 'GHOST_MOVE',
 }
 
-export type UnsubmittedAction = {
+export type TxIntent = {
   // an intent to submit a transaction
   // we generate an ID so we can reference the tx
   // before it is submitted to chain and given a txHash
-  actionId: string;
+  txIntentId: string;
   type: EthTxType;
 };
 
-export type SubmittedTx = UnsubmittedAction & {
+export type SubmittedTx = TxIntent & {
   txHash: string;
   sentAtTimestamp: number;
 };
 
-export type UnsubmittedCreateGame = UnsubmittedAction & {
+export type UnsubmittedCreateGame = TxIntent & {
   type: EthTxType.CREATE_GAME;
   gameId: number;
 };
 
 export type SubmtitedCreateGame = UnsubmittedCreateGame & SubmittedTx;
 
-export type UnsubmittedJoin = UnsubmittedAction & {
+export type UnsubmittedJoin = TxIntent & {
   type: EthTxType.JOIN_GAME;
 };
 
 export type SubmittedJoin = UnsubmittedJoin & SubmittedTx;
 
-export type UnsubmittedMove = UnsubmittedAction & {
+export type UnsubmittedAction = TxIntent & {
+  type: EthTxType.ACTION;
+  pieceId: number;
+  doesMove: boolean;
+  moveToRow: number[];
+  moveToCol: number[];
+  doesAttack: boolean;
+  attackRow: number;
+  attackCol: number;
+  moveZkp: GhostMoveArgs;
+  attackZkp: GhostAttackArgs;
+};
+
+export const createEmptyAction = (): UnsubmittedAction => ({
+  txIntentId: '',
+  type: EthTxType.ACTION,
+  pieceId: 0,
+  doesMove: false,
+  moveToRow: [],
+  moveToCol: [],
+  doesAttack: false,
+  attackRow: 0,
+  attackCol: 0,
+  moveZkp: [
+    ['0', '0'],
+    [
+      ['0', '0'],
+      ['0', '0'],
+    ],
+    ['0', '0'],
+    ['0', '0'],
+  ],
+  attackZkp: [
+    ['0', '0'],
+    [
+      ['0', '0'],
+      ['0', '0'],
+    ],
+    ['0', '0'],
+    ['0', '0', '0', '0'],
+  ],
+});
+
+export type UnsubmittedMove = TxIntent & {
   type: EthTxType.MOVE;
   pieceId: number;
   to: BoardLocation;
@@ -153,7 +200,7 @@ export type UnsubmittedMove = UnsubmittedAction & {
 
 export type SubmittedMove = UnsubmittedMove & SubmittedTx;
 
-export type UnsubmittedGhostAttack = UnsubmittedAction & {
+export type UnsubmittedGhostAttack = TxIntent & {
   type: EthTxType.GHOST_ATTACK;
   pieceId: number;
   at: BoardLocation;
@@ -162,7 +209,7 @@ export type UnsubmittedGhostAttack = UnsubmittedAction & {
 
 export type SubmittedGhostAttack = UnsubmittedGhostAttack & SubmittedTx;
 
-export type UnsubmittedGhostMove = UnsubmittedAction & {
+export type UnsubmittedGhostMove = TxIntent & {
   type: EthTxType.GHOST_MOVE;
   pieceId: number;
   to: BoardLocation;

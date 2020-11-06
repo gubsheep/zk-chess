@@ -86,8 +86,7 @@ export type ChessGameContractData = {
   player1: Player;
   player2: Player;
 
-  player1pieces: Piece[];
-  player2pieces: Piece[];
+  pieces: Piece[]; // non-ghost pieces
 
   turnNumber: number;
   gameStatus: GameStatus;
@@ -104,8 +103,7 @@ export type ChessGame = {
   player1: Player;
   player2: Player;
 
-  player1pieces: Piece[];
-  player2pieces: Piece[];
+  pieces: Piece[]; // non-ghost pieces
 
   turnNumber: number;
   gameStatus: GameStatus;

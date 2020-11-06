@@ -91,10 +91,10 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     console.log(`moved piece ${pieceId} to ${to}!`);
 
     const newState = _.cloneDeep(this.gameState);
-    for (let i = 0; i < newState.player1pieces.length; i++) {
-      if (newState.player1pieces[i].id === pieceId) {
+    for (let i = 0; i < newState.pieces.length; i++) {
+      if (newState.pieces[i].id === pieceId) {
         console.log('found a piece!');
-        newState.player1pieces[i].location = to;
+        newState.pieces[i].location = to;
       }
     }
 
@@ -119,10 +119,10 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
     const newState = _.cloneDeep(this.gameState);
     const loc = newState.myGhost.location;
-    for (let i = 0; i < newState.player2pieces.length; i++) {
+    for (let i = 0; i < newState.pieces.length; i++) {
       // if my ghost is overlapping
-      if (compareLoc(newState.player2pieces[i].location, loc)) {
-        newState.player2pieces.splice(i, 1);
+      if (compareLoc(newState.pieces[i].location, loc)) {
+        newState.pieces.splice(i, 1);
         break;
       }
     }
@@ -133,17 +133,21 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
   // AI functions
   opponentMove(): void {
+    /*
     this.gameState.player2pieces[1].location = [4, 2];
     this.gameState.turnNumber = 0;
     this.emit(GameManagerEvent.MoveMade);
+    */
   }
 
   opponentAttack(): void {
+    /*
     const newState = _.cloneDeep(this.gameState);
     newState.player1pieces.splice(0, 1);
     this.gameState = newState;
     this.gameState.turnNumber = 0;
     this.emit(GameManagerEvent.MoveMade);
+    */
   }
 }
 

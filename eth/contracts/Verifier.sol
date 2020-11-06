@@ -10,7 +10,6 @@
 //      added requiere error messages
 //
 pragma solidity ^0.6.7;
-import "hardhat/console.sol";
 
 library Pairing {
     struct G1Point {
