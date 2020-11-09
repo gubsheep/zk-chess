@@ -10,7 +10,7 @@ struct Piece {
     address owner;
     uint8 row;
     uint8 col;
-    bool dead; // only for non-ghosts
+    bool alive; // only for non-ghosts
     uint256 commitment; // only for ghosts
 }
 
@@ -20,4 +20,34 @@ struct Objective {
     uint8 row;
     uint8 col;
     address capturedBy;
+}
+
+struct MoveZKP {
+    uint256[2] a;
+    uint256[2][2] b;
+    uint256[2] c;
+    uint256[2] input; // start, end
+}
+
+struct AttackZKP {
+    uint256[2] a;
+    uint256[2][2] b;
+    uint256[2] c;
+    uint256[4] input; // start, endRow, endCol, dist
+}
+
+struct Move {
+    uint8 turnNumber;
+    uint8 pieceId;
+    uint8[] moveToRow;
+    uint8[] moveToCol;
+    MoveZKP zkp;
+}
+
+struct Attack {
+    uint8 turnNumber;
+    uint8 pieceId;
+    uint8 attackRow;
+    uint8 attackCol;
+    AttackZKP zkp;
 }

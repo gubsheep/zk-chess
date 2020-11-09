@@ -3,12 +3,14 @@ import {
   BoardLocation,
   ChessGame,
   EthAddress,
+  isKnown,
+  isZKPiece,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
+import AbstractGameManager from './AbstractGameManager';
 
 import {almostEmptyAddress, emptyAddress} from '../utils/CheckedTypeUtils';
 import {compareLoc, sampleGame} from '../utils/ChessUtils';
@@ -91,10 +93,11 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     console.log(`moved piece ${pieceId} to ${to}!`);
 
     const newState = _.cloneDeep(this.gameState);
-    for (let i = 0; i < newState.player1pieces.length; i++) {
-      if (newState.player1pieces[i].id === pieceId) {
+    for (let i = 0; i < newState.pieces.length; i++) {
+      const piece = newState.pieces[i];
+      if (piece.id === pieceId && (!isZKPiece(piece) || isKnown(piece))) {
         console.log('found a piece!');
-        newState.player1pieces[i].location = to;
+        piece.location = to;
       }
     }
 
@@ -104,46 +107,27 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     return Promise.resolve();
   }
 
-  moveGhost(ghostId: number, to: BoardLocation): Promise<void> {
-    console.log(`moved ghost ${ghostId} to ${to}!`);
-
-    const newState = _.cloneDeep(this.gameState);
-    newState.myGhost.location = to;
-    this.gameState = newState;
-
-    return Promise.resolve();
-  }
-
-  ghostAttack(): Promise<void> {
-    console.log('ghost attack!');
-
-    const newState = _.cloneDeep(this.gameState);
-    const loc = newState.myGhost.location;
-    for (let i = 0; i < newState.player2pieces.length; i++) {
-      // if my ghost is overlapping
-      if (compareLoc(newState.player2pieces[i].location, loc)) {
-        newState.player2pieces.splice(i, 1);
-        break;
-      }
-    }
-    this.gameState = newState;
-
+  endTurn(): Promise<void> {
     return Promise.resolve();
   }
 
   // AI functions
   opponentMove(): void {
+    /*
     this.gameState.player2pieces[1].location = [4, 2];
     this.gameState.turnNumber = 0;
     this.emit(GameManagerEvent.MoveMade);
+    */
   }
 
   opponentAttack(): void {
+    /*
     const newState = _.cloneDeep(this.gameState);
     newState.player1pieces.splice(0, 1);
     this.gameState = newState;
     this.gameState.turnNumber = 0;
     this.emit(GameManagerEvent.MoveMade);
+    */
   }
 }
 

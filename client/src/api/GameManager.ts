@@ -3,6 +3,9 @@ import {
   BoardLocation,
   ChessGame,
   EthAddress,
+  isZKPiece,
+  Piece,
+  isKnown,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -12,20 +15,20 @@ import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 
 import {
   ContractsAPIEvent,
+  createEmptyMove,
   EthTxType,
   SubmittedTx,
-  UnsubmittedAction,
+  TxIntent,
   UnsubmittedCreateGame,
-  UnsubmittedGhostAttack,
-  UnsubmittedGhostMove,
+  UnsubmittedEndTurn,
   UnsubmittedJoin,
-  UnsubmittedMove,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import {emptyAddress} from '../utils/CheckedTypeUtils';
-import {getRandomActionId} from '../utils/Utils';
+import {getRandomTxIntentId} from '../utils/Utils';
 import bigInt from 'big-integer';
 import mimcHash from '../hash/mimc';
-import {LOCATION_ID_UB} from '../utils/constants';
+import {LOCATION_ID_UB, SIZE} from '../utils/constants';
+import {getAdjacentTiles} from '../utils/ChessUtils';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -100,13 +103,13 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
     contractsAPI.on(
       ContractsAPIEvent.TxInitialized,
-      async (unminedTx: UnsubmittedAction) => {
+      async (unminedTx: TxIntent) => {
         gameManager.emit(GameManagerEvent.TxInitialized, unminedTx);
       }
     );
     contractsAPI.on(
       ContractsAPIEvent.TxInitFailed,
-      async (unminedTx: UnsubmittedAction, error: Error) => {
+      async (unminedTx: TxIntent, error: Error) => {
         gameManager.emit(GameManagerEvent.TxInitFailed, unminedTx, error);
       }
     );
@@ -178,26 +181,39 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   async refreshGameState(): Promise<ChessGame> {
     const contractGameState = await this.contractsAPI.getGameState();
-    const {commitment} = contractGameState.myContractGhost;
-    const commitmentDataStr = localStorage.getItem(`COMMIT_${commitment}`);
-    console.log(contractGameState);
-    if (!commitmentDataStr) {
-      throw new Error("Couldn't find commitment data");
+    const pieces: Piece[] = [];
+    for (let i = 0; i < contractGameState.pieces.length; i++) {
+      let piece = contractGameState.pieces[i];
+      if (isZKPiece(piece)) {
+        const commitment = piece.commitment;
+        const commitmentDataStr = localStorage.getItem(`COMMIT_${commitment}`);
+        if (commitmentDataStr) {
+          const commitData = JSON.parse(commitmentDataStr) as [
+            number,
+            number,
+            string
+          ];
+          const location: BoardLocation = [commitData[0], commitData[1]];
+          const salt = commitData[2];
+          const knownPiece = {
+            ...piece,
+            location,
+            salt,
+          };
+          // zk piece with known location
+          pieces.push(knownPiece);
+        } else {
+          // zk piece with unknown location
+          pieces.push(piece);
+        }
+      } else {
+        // visible piece
+        pieces.push(piece);
+      }
     }
-    const commitData = JSON.parse(commitmentDataStr) as [
-      number,
-      number,
-      string
-    ];
-    const location: BoardLocation = [commitData[0], commitData[1]];
-    const salt = commitData[2];
     this.gameState = {
       ...contractGameState,
-      myGhost: {
-        ...contractGameState.myContractGhost,
-        location,
-        salt,
-      },
+      pieces,
     };
     return this.gameState;
   }
@@ -209,7 +225,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   createGame(): Promise<void> {
     const unsubmittedCreateGame: UnsubmittedCreateGame = {
-      actionId: getRandomActionId(),
+      txIntentId: getRandomTxIntentId(),
       gameId: Math.floor(Math.random() * 1000000),
       type: EthTxType.CREATE_GAME,
     };
@@ -221,7 +237,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   joinGame(): Promise<void> {
     const unsubmittedJoin: UnsubmittedJoin = {
-      actionId: getRandomActionId(),
+      txIntentId: getRandomTxIntentId(),
       type: EthTxType.JOIN_GAME,
     };
     this.contractsAPI.onTxInit(unsubmittedJoin);
@@ -229,67 +245,136 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     return Promise.resolve();
   }
 
-  movePiece(pieceId: number, to: BoardLocation): Promise<void> {
-    const unsubmittedMove: UnsubmittedMove = {
-      actionId: getRandomActionId(),
-      type: EthTxType.MOVE,
-      pieceId,
-      to,
-    };
-    this.contractsAPI.onTxInit(unsubmittedMove);
-    this.contractsAPI.movePiece(unsubmittedMove);
-    return Promise.resolve();
+  private findPath(
+    from: BoardLocation,
+    to: BoardLocation,
+    ignoreObstacles: boolean = false
+  ): BoardLocation[] | null {
+    if (!this.gameState) {
+      throw new Error('game not set');
+    }
+    const distBoard: number[][] = [];
+    for (let i = 0; i < SIZE; i++) {
+      distBoard.push([]);
+      for (let j = 0; j < SIZE; j++) {
+        distBoard[i].push(-1);
+      }
+    }
+    if (!ignoreObstacles) {
+      for (let piece of this.gameState.pieces) {
+        if (!isZKPiece(piece)) {
+          distBoard[piece.location[1]][piece.location[0]] = -2;
+        }
+      }
+    }
+
+    // floodfill
+    distBoard[from[1]][from[0]] = 0;
+    let current: BoardLocation;
+    const queue: BoardLocation[] = [from];
+    do {
+      current = queue.shift() as BoardLocation; // else typescript mad lol
+      const currentDist = distBoard[current[1]][current[0]];
+
+      for (const loc of getAdjacentTiles(current)) {
+        if (loc[0] >= SIZE || loc[0] < 0 || loc[1] >= SIZE || loc[1] < 0) {
+          continue;
+        }
+        if (distBoard[loc[1]][loc[0]] === -1) {
+          distBoard[loc[1]][loc[0]] = currentDist + 1;
+          queue.push(loc);
+        }
+        if (loc[0] === to[0] && loc[1] === to[1]) {
+          break;
+        }
+      }
+    } while (queue.length > 0);
+
+    if (distBoard[to[1]][to[0]] < 0) {
+      console.log('no path between these two locations');
+      return null;
+    }
+
+    // retrace path
+    const path: BoardLocation[] = [];
+    path.push(to);
+    for (let i = distBoard[to[1]][to[0]] - 1; i > 0; i--) {
+      const current = path[path.length - 1];
+      for (const loc of getAdjacentTiles(current)) {
+        if (
+          loc[0] >= 0 &&
+          loc[0] < SIZE &&
+          loc[1] >= 0 &&
+          loc[1] < SIZE &&
+          distBoard[loc[1]][loc[0]] === i
+        ) {
+          path.push(loc);
+          break;
+        }
+      }
+    }
+    return path.reverse();
   }
 
-  moveGhost(ghostId: number, to: BoardLocation): Promise<void> {
+  movePiece(pieceId: number, to: BoardLocation): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
-    const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
-    const commit = mimcHash(to[1], to[0], newSalt);
-    localStorage.setItem(
-      `COMMIT_${commit}`,
-      JSON.stringify([to[0], to[1], newSalt])
-    );
-    const unsubmittedGhostMove: UnsubmittedGhostMove = {
-      actionId: getRandomActionId(),
-      type: EthTxType.GHOST_MOVE,
-      pieceId: ghostId,
-      to,
-      newSalt,
-    };
-    this.contractsAPI.onTxInit(unsubmittedGhostMove);
-
-    const {myGhost} = this.gameState;
-    const oldLoc = myGhost.location;
-    this.snarkHelper
-      .getGhostMoveProof(
-        oldLoc[1],
-        oldLoc[0],
-        myGhost.salt,
+    let piece: Piece | null = null;
+    for (const p of this.gameState.pieces) {
+      if (p.id === pieceId) piece = p;
+    }
+    if (!piece) throw new Error('piece not found');
+    let unsubmittedMove = createEmptyMove();
+    if (!isZKPiece(piece)) {
+      const path = this.findPath(piece.location, to);
+      if (!path) throw new Error('no path found');
+      unsubmittedMove = {
+        ...unsubmittedMove,
+        turnNumber: this.gameState.turnNumber,
+        pieceId,
+        moveToRow: path.map((loc) => loc[1]),
+        moveToCol: path.map((loc) => loc[0]),
+      };
+    } else {
+      if (!isKnown(piece)) throw new Error('cant find ghost piece');
+      const path = this.findPath(piece.location, to, true);
+      if (!path) throw new Error('unexpected error occurred');
+      const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
+      const zkp = this.snarkHelper.getGhostMoveProof(
+        piece.location[1],
+        piece.location[0],
+        piece.salt,
         to[1],
         to[0],
         newSalt
-      )
-      .then((args) => {
-        console.log(args);
-        this.contractsAPI.moveGhost(args, unsubmittedGhostMove);
-      });
+      );
+      localStorage.setItem(
+        `COMMIT_${mimcHash(to[1], to[0], newSalt).toString()}`,
+        JSON.stringify([to[1], to[0], newSalt])
+      );
+      unsubmittedMove = {
+        ...unsubmittedMove,
+        turnNumber: this.gameState.turnNumber,
+        pieceId,
+        moveToRow: path.map((loc) => loc[1]),
+        moveToCol: path.map((loc) => loc[0]),
+        isZk: true,
+        zkp,
+      };
+    }
+    this.contractsAPI.onTxInit(unsubmittedMove);
+    this.contractsAPI.doMove(unsubmittedMove);
     return Promise.resolve();
   }
 
-  ghostAttack(): Promise<void> {
+  endTurn(): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
-    const {myGhost} = this.gameState;
-    const pieceId = myGhost.id;
-    const attackAt = myGhost.location;
-    const unsubmittedGhostAttack: UnsubmittedGhostAttack = {
-      actionId: getRandomActionId(),
-      type: EthTxType.GHOST_ATTACK,
-      pieceId,
-      at: attackAt,
-      salt: myGhost.salt,
+    const unsubmittedEndTurn: UnsubmittedEndTurn = {
+      txIntentId: getRandomTxIntentId(),
+      type: EthTxType.END_TURN,
+      turnNumber: this.gameState.turnNumber,
     };
-    this.contractsAPI.onTxInit(unsubmittedGhostAttack);
-    this.contractsAPI.ghostAttack(unsubmittedGhostAttack);
+    this.contractsAPI.onTxInit(unsubmittedEndTurn);
+    this.contractsAPI.endTurn(unsubmittedEndTurn);
     return Promise.resolve();
   }
 }

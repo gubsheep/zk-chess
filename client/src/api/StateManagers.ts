@@ -1,35 +1,34 @@
 import _ from 'lodash';
-import { useLayoutEffect, useState } from 'react';
-import { useCallback, useEffect } from 'react';
-import { Game, TurnState } from '../app/Game';
+import {useLayoutEffect, useState} from 'react';
+import {useCallback, useEffect} from 'react';
+import {TurnState} from '../app/Game';
 import {
   boardFromGame,
-  compareLoc,
   enemyGhostMoved,
   getCanMove,
   inBounds,
   isGhost,
 } from '../utils/ChessUtils';
-import { SIZE } from '../utils/constants';
+import {SIZE} from '../utils/constants';
 import {
   ChessCell,
   ChessGame,
   Color,
   EthAddress,
   GameStatus,
+  Piece,
   PlayerInfo,
-  Selectable,
   StagedLoc,
 } from '../_types/global/GlobalTypes';
-import { GameManagerEvent } from './AbstractGameManager';
-import { useZKChessState } from './UIStateManager';
+import {GameManagerEvent} from './AbstractGameManager';
+import {useZKChessState} from './UIStateManager';
 
 export const useInitGame = (): void => {
-  const { state, dispatch } = useZKChessState();
+  const {state, dispatch} = useZKChessState();
 
   useEffect(() => {
     if (!state.game.gameState) return;
-    const { myAddress, player1, player2 } = state.game.gameState;
+    const {myAddress, player1, player2} = state.game.gameState;
     if (!myAddress) return;
 
     let colors = [Color.WHITE, Color.BLACK];
@@ -41,7 +40,7 @@ export const useInitGame = (): void => {
       account: myAddress,
       color: colors[0],
     };
-    dispatch.updateGame({ player });
+    dispatch.updateGame({player});
 
     const enemyAcc =
       myAddress === player1.address ? player2.address : player1.address;
@@ -50,12 +49,12 @@ export const useInitGame = (): void => {
       account: enemyAcc,
       color: colors[1],
     };
-    dispatch.updateGame({ enemyPlayer });
+    dispatch.updateGame({enemyPlayer});
   }, [state.game.gameState?.player1, state.game.gameState?.player2]);
 };
 
 export const useSyncGame = (): void => {
-  const { gameManager: gm, dispatch } = useZKChessState();
+  const {gameManager: gm, dispatch} = useZKChessState();
 
   // sync the shared state to game state
   useEffect(() => {
@@ -64,8 +63,8 @@ export const useSyncGame = (): void => {
     const syncState = () => {
       const gameState = gm.getGameState();
 
-      dispatch.updateGame({ gameState });
-      dispatch.updateSession({ selected: null });
+      dispatch.updateGame({gameState});
+      dispatch.updateSession({selected: null});
     };
     gm.addListener(GameManagerEvent.GameStart, syncState);
     gm.addListener(GameManagerEvent.MoveMade, syncState);
@@ -98,16 +97,16 @@ export const useSyncGame = (): void => {
 };
 
 export const useComputed = (): void => {
-  const { state, dispatch } = useZKChessState();
+  const {state, dispatch} = useZKChessState();
   const {
-    session: { selected, turnState, staged },
-    game: { gameState, player },
-    computed: { board, isMyTurn },
+    session: {selected, turnState, staged},
+    game: {gameState, player},
+    computed: {board, isMyTurn},
   } = state;
 
   // update board whenever gameState is updated
   useEffect(() => {
-    dispatch.updateComputed({ board: boardFromGame(gameState) });
+    dispatch.updateComputed({board: boardFromGame(gameState)});
   }, [gameState]);
 
   // update gamepaused
@@ -116,14 +115,14 @@ export const useComputed = (): void => {
       turnState >= TurnState.Submitting ||
       gameState?.gameStatus === GameStatus.COMPLETE;
 
-    dispatch.updateComputed({ gamePaused });
+    dispatch.updateComputed({gamePaused});
   }, [state.session.turnState, gameState]);
 
   // sync canmove to selected
   useLayoutEffect(() => {
     if (!state.game.gameState) return;
 
-    const canMove = getCanMove(selected);
+    const canMove = selected ? getCanMove(selected) : [];
 
     if (selected && !isGhost(selected)) {
       const board = boardFromGame(gameState);
@@ -133,19 +132,19 @@ export const useComputed = (): void => {
         // check for out of bounds
         if (inBounds(loc, SIZE)) {
           const cell: ChessCell | undefined = board[loc[0]][loc[1]];
-          if (cell && cell.piece && !cell.piece.captured) {
+          if (cell && cell.piece && cell.piece.alive) {
             canMove.splice(i--, 1);
           }
         }
       }
     }
 
-    dispatch.updateComputed({ canMove });
+    dispatch.updateComputed({canMove});
   }, [selected, gameState]);
 
   useEffect(() => {
     if (!selected || staged || !isGhost(selected)) {
-      dispatch.updateComputed({ ghostCanAct: false });
+      dispatch.updateComputed({ghostCanAct: false});
       return;
     }
 
@@ -153,9 +152,7 @@ export const useComputed = (): void => {
     for (const row of board) {
       for (const cell of row) {
         if (cell.piece && cell.ghost && cell.piece.owner !== cell.ghost.owner) {
-          // should always be true, but a fallback just in case
-          const fallback = compareLoc(selected.location, cell.ghost.location);
-          dispatch.updateComputed({ ghostCanAct: fallback });
+          dispatch.updateComputed({ghostCanAct: true});
           return;
         }
       }
@@ -165,13 +162,13 @@ export const useComputed = (): void => {
   // see if it's my turn
   useEffect(() => {
     if (!gameState) return;
-    const { gameStatus, player1, player2, myAddress } = gameState;
+    const {gameStatus, player1, player2, myAddress} = gameState;
 
     if (
       gameStatus === GameStatus.COMPLETE ||
       gameStatus === GameStatus.WAITING_FOR_PLAYERS
     ) {
-      dispatch.updateComputed({ isMyTurn: false });
+      dispatch.updateComputed({isMyTurn: false});
       return;
     }
 
@@ -181,15 +178,15 @@ export const useComputed = (): void => {
     }
     const isMyTurn = myAddress === whoseTurn.address;
 
-    dispatch.updateComputed({ isMyTurn });
+    dispatch.updateComputed({isMyTurn});
   }, [gameState]);
 
   // sync things to game state
   useEffect(() => {
     if (isMyTurn) {
-      dispatch.updateSession({ turnState: TurnState.Moving });
+      dispatch.updateSession({turnState: TurnState.Moving});
     } else {
-      dispatch.updateSession({ turnState: TurnState.Waiting });
+      dispatch.updateSession({turnState: TurnState.Waiting});
     }
   }, [isMyTurn]);
 
@@ -205,7 +202,7 @@ export const useComputed = (): void => {
       player ? player.account : null
     );
     if (enemyGhost) {
-      dispatch.updateGame({ enemyGhost });
+      dispatch.updateGame({enemyGhost});
     }
 
     setOldGameState(_.cloneDeep(gameState));
@@ -213,10 +210,10 @@ export const useComputed = (): void => {
 };
 
 export const useInitMethods = () => {
-  const { state, gameManager: gm, dispatch } = useZKChessState();
+  const {state, gameManager: gm, dispatch} = useZKChessState();
   const {
-    game: { gameState },
-    session: { selected, staged },
+    game: {gameState},
+    session: {selected, staged},
   } = state;
 
   const getColor = useCallback(
@@ -230,14 +227,14 @@ export const useInitMethods = () => {
 
   const setStaged = useCallback(
     (staged: StagedLoc | null) => {
-      dispatch.updateSession({ staged });
+      dispatch.updateSession({staged});
     },
     [dispatch]
   );
 
   const setSelected = useCallback(
-    (selected: Selectable | null) => {
-      dispatch.updateSession({ selected });
+    (selected: Piece | null) => {
+      dispatch.updateSession({selected});
     },
     [dispatch]
   );
@@ -246,16 +243,18 @@ export const useInitMethods = () => {
     if (!gm) return;
     console.log(staged, selected);
     if (staged && selected !== null) {
-      if (isGhost(selected)) gm.moveGhost(selected.id, staged[0]);
-      else gm.movePiece(selected.id, staged[0]);
-      dispatch.updateSession({ turnState: TurnState.Submitting });
+      gm.movePiece(selected.id, staged[0]);
+      dispatch.updateSession({turnState: TurnState.Submitting});
     }
   }, [gm, staged, selected]);
 
   const ghostAttack = useCallback(() => {
+    return;
+    /*
     if (!gm) return;
     gm.ghostAttack();
-    dispatch.updateSession({ turnState: TurnState.Submitting });
+    dispatch.updateSession({turnState: TurnState.Submitting});
+    */
   }, [gm, dispatch]);
 
   useLayoutEffect(() => {

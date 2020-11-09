@@ -1,14 +1,13 @@
 import {
   ContractCallArgs,
   GhostMoveArgs,
-  ProofArgs,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import {
   SnarkJSProof,
   SnarkJSProofAndSignals,
 } from '../_types/global/GlobalTypes';
 import {BigInteger} from 'big-integer';
-import mimcHash, {modPBigInt} from '../hash/mimc';
+import {modPBigInt} from '../hash/mimc';
 
 class SnarkArgsHelper {
   // private constructor() {}

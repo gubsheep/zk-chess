@@ -2,9 +2,9 @@
 import {EventEmitter} from 'events';
 import {
   ChessGameContractData,
-  ContractGhost,
   EthAddress,
   Objective,
+  PieceType,
   Piece,
 } from '../_types/global/GlobalTypes';
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
@@ -15,24 +15,21 @@ import _ from 'lodash';
 
 import {address, emptyAddress} from '../utils/CheckedTypeUtils';
 import {
-  UnsubmittedAction,
+  TxIntent,
   ContractsAPIEvent,
   SubmittedTx,
   ContractEvent,
   RawPiece,
   RawObjective,
-  UnsubmittedMove,
   UnsubmittedJoin,
-  UnsubmittedGhostAttack,
-  GhostMoveArgs,
-  UnsubmittedGhostMove,
   UnsubmittedCreateGame,
+  UnsubmittedMove,
+  UnsubmittedEndTurn,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
-import mimcHash from '../hash/mimc';
 
 type QueuedTxRequest = {
-  actionId: string;
+  txIntentId: string;
   contract: Contract;
   method: string; // make this an enum
 
@@ -66,7 +63,7 @@ class TxExecutor extends EventEmitter {
     }
     return new Promise<providers.TransactionResponse>((resolve, reject) => {
       this.once(
-        txRequest.actionId,
+        txRequest.txIntentId,
         (res: providers.TransactionResponse, e: Error) => {
           if (res) {
             resolve(res);
@@ -107,14 +104,14 @@ class TxExecutor extends EventEmitter {
         );
         this.nonce += 1;
         this.nonceLastUpdated = Date.now();
-        this.emit(txRequest.actionId, res);
+        this.emit(txRequest.txIntentId, res);
       } catch (e) {
         console.error('error while submitting tx:');
         console.error(e);
         throw e;
       }
     } catch (e) {
-      this.emit(txRequest.actionId, undefined, e);
+      this.emit(txRequest.txIntentId, undefined, e);
     }
     this.pendingExec = false;
     const next = this.txRequests.shift();
@@ -129,7 +126,7 @@ class ContractsAPI extends EventEmitter {
   private factoryContract: Contract;
   private gameContract: Contract | null;
   private readonly txRequestExecutor: TxExecutor;
-  private unminedTxs: Map<string, UnsubmittedAction>;
+  private unminedTxs: Map<string, TxIntent>;
 
   private constructor(
     account: EthAddress,
@@ -141,7 +138,7 @@ class ContractsAPI extends EventEmitter {
     this.factoryContract = factoryContract;
     this.gameContract = null;
     this.txRequestExecutor = new TxExecutor(nonce);
-    this.unminedTxs = new Map<string, UnsubmittedAction>();
+    this.unminedTxs = new Map<string, TxIntent>();
   }
 
   static async create(): Promise<ContractsAPI> {
@@ -212,19 +209,19 @@ class ContractsAPI extends EventEmitter {
     return address(this.factoryContract.address);
   }
 
-  public onTxInit(unminedTx: UnsubmittedAction): void {
-    this.unminedTxs.set(unminedTx.actionId, unminedTx);
+  public onTxInit(unminedTx: TxIntent): void {
+    this.unminedTxs.set(unminedTx.txIntentId, unminedTx);
     this.emit(ContractsAPIEvent.TxInitialized, unminedTx);
   }
 
-  public onTxSubmit(action: UnsubmittedAction, txHash: string): void {
+  public onTxSubmit(action: TxIntent, txHash: string): void {
     const unminedTx = {
       ...action,
       txHash,
       sentAtTimestamp: Math.floor(Date.now() / 1000),
     };
     // TODO encapsulate this into terminalemitter
-    this.unminedTxs.set(unminedTx.actionId, unminedTx);
+    this.unminedTxs.set(unminedTx.txIntentId, unminedTx);
     this.emit(ContractsAPIEvent.TxSubmitted, unminedTx);
     EthereumAccountManager.getInstance()
       .waitForTransaction(unminedTx.txHash)
@@ -234,7 +231,7 @@ class ContractsAPI extends EventEmitter {
   }
 
   private onTxConfirmation(unminedTx: SubmittedTx, success: boolean) {
-    this.unminedTxs.delete(unminedTx.actionId);
+    this.unminedTxs.delete(unminedTx.txIntentId);
     if (success) this.emit(ContractsAPIEvent.TxConfirmed, unminedTx);
     else this.emit(ContractsAPIEvent.TxFailed, new Error('tx reverted'));
   }
@@ -257,32 +254,11 @@ class ContractsAPI extends EventEmitter {
     const turnNumber = await contract.turnNumber();
     const gameState = await contract.gameState();
 
-    const player1pieces: Piece[] = [];
-    const player2pieces: Piece[] = [];
-    let myContractGhost: ContractGhost = {
-      id: -1,
-      owner: null,
-      commitment: mimcHash(3, 3, '0').toString(),
-    }; // dummy value
+    const pieces: Piece[] = [];
     for (const rawPiece of rawPieces) {
+      console.log(rawPiece);
       const piece = this.rawPieceToPiece(rawPiece);
-      if (piece) {
-        if (piece.owner === player1Addr) {
-          player1pieces.push(piece);
-        } else if (piece.owner === player2Addr) {
-          player2pieces.push(piece);
-        }
-      } else {
-        // is a ghost
-        if (address(rawPiece[2]) === this.account) {
-          // my ghost
-          myContractGhost = {
-            id: rawPiece[0],
-            owner: address(rawPiece[2]),
-            commitment: rawPiece[6].toString(),
-          };
-        }
-      }
+      pieces.push(piece);
     }
 
     const objectives = [];
@@ -297,11 +273,9 @@ class ContractsAPI extends EventEmitter {
       myAddress: this.account,
       player1: {address: player1Addr},
       player2: {address: player2Addr},
-      player1pieces,
-      player2pieces,
+      pieces,
       turnNumber,
       gameStatus: gameState,
-      myContractGhost,
       objectives,
     };
   }
@@ -331,7 +305,7 @@ class ContractsAPI extends EventEmitter {
     console.log('creating game');
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
-        actionId: action.actionId,
+        txIntentId: action.txIntentId,
         contract: this.factoryContract,
         method: 'createGame',
         args: [action.gameId],
@@ -357,7 +331,7 @@ class ContractsAPI extends EventEmitter {
     };
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
-        actionId: action.actionId,
+        txIntentId: action.txIntentId,
         contract: this.gameContract,
         method: 'joinGame',
         args: [],
@@ -371,7 +345,7 @@ class ContractsAPI extends EventEmitter {
     return tx.wait();
   }
 
-  public async movePiece(
+  public async doMove(
     action: UnsubmittedMove
   ): Promise<providers.TransactionReceipt> {
     if (!this.gameContract) {
@@ -383,13 +357,17 @@ class ContractsAPI extends EventEmitter {
     };
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
-        actionId: action.actionId,
+        txIntentId: action.txIntentId,
         contract: this.gameContract,
-        method: 'movePiece',
+        method: 'doMove',
         args: [
-          action.pieceId.toString(),
-          action.to[1].toString(),
-          action.to[0].toString(),
+          [
+            action.turnNumber,
+            action.pieceId,
+            action.isZk ? [] : action.moveToRow,
+            action.isZk ? [] : action.moveToCol,
+            await action.zkp,
+          ],
         ],
         overrides,
       }
@@ -401,6 +379,33 @@ class ContractsAPI extends EventEmitter {
     return tx.wait();
   }
 
+  public async endTurn(
+    action: UnsubmittedEndTurn
+  ): Promise<providers.TransactionReceipt> {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        txIntentId: action.txIntentId,
+        contract: this.gameContract,
+        method: 'endTurn',
+        args: [action.turnNumber],
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      this.onTxSubmit(action, tx.hash);
+    }
+    return tx.wait();
+  }
+
+  /*
   public async ghostAttack(
     action: UnsubmittedGhostAttack
   ): Promise<providers.TransactionReceipt> {
@@ -413,7 +418,7 @@ class ContractsAPI extends EventEmitter {
     };
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
-        actionId: action.actionId,
+        actionId: action.txIntentId,
         contract: this.gameContract,
         method: 'ghostAttack',
         args: [
@@ -431,49 +436,32 @@ class ContractsAPI extends EventEmitter {
     }
     return tx.wait();
   }
+  */
 
-  public async moveGhost(args: GhostMoveArgs, action: UnsubmittedGhostMove) {
-    if (!this.gameContract) {
-      throw new Error('no game contract set');
-    }
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        actionId: action.actionId,
-        contract: this.gameContract,
-        method: 'moveGhost',
-        args: [...args, action.pieceId.toString()],
-        overrides,
-      }
-    );
-
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
-    }
-    return tx.wait();
-  }
-
-  private rawPieceToPiece(rawPiece: RawPiece): Piece | null {
-    // returns null if ghost
-    if (rawPiece[1] === 2) {
-      // this is a ghost
-      return null;
-    }
+  private rawPieceToPiece(rawPiece: RawPiece): Piece {
     let owner: EthAddress | null = address(rawPiece[2]);
     if (owner === emptyAddress) {
       owner = null;
     }
-    return {
-      id: rawPiece[0],
-      owner,
-      location: [rawPiece[4], rawPiece[3]],
-      pieceType: rawPiece[1],
-      captured: rawPiece[5],
-    };
+    const pieceType = rawPiece[1];
+    if (pieceType === PieceType.Ghost) {
+      // return a ZKPiece that is not Locatable
+      return {
+        id: rawPiece[0],
+        owner,
+        pieceType,
+        alive: rawPiece[5],
+        commitment: rawPiece[6].toString(),
+      };
+    } else {
+      return {
+        id: rawPiece[0],
+        owner,
+        pieceType,
+        alive: rawPiece[5],
+        location: [rawPiece[4], rawPiece[3]],
+      };
+    }
   }
 
   private rawObjectiveToPiece(rawObjective: RawObjective): Objective {

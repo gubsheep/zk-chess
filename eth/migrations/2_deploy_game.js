@@ -14,7 +14,9 @@ const exec = async (command) => {
   console.log(">> ", command);
 
   if (error) {
-    console.error(`{command} failed with error ${error} and stderr ${stderr}.`);
+    console.error(
+      `${command} failed with error ${error} and stderr ${stderr}.`
+    );
     throw "";
   } else {
     return stdout.trim();
