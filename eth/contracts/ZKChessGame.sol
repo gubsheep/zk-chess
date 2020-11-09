@@ -36,6 +36,10 @@ contract ZKChessGame is Initializable {
     uint8 p1CurrentlyCapturing;
     uint8 p2CurrentlyCapturing;
 
+    // mapping from turn # -> piece # -> has acted
+    mapping(uint8 => mapping(uint8 => bool)) public hasMoved;
+    mapping(uint8 => mapping(uint8 => bool)) public hasAttacked;
+
     uint256 pfsVerified;
 
     function initialize(uint256 _gameId, bool _disableZKCheck) public {
@@ -337,6 +341,8 @@ contract ZKChessGame is Initializable {
             "can't move opponent's piece"
         );
         require(piece.alive, "Piece is dead");
+        require(!hasMoved[move.turnNumber][piece.id], "piece already moved");
+        require(!hasAttacked[move.turnNumber][piece.id], "piece already acted");
 
         if (piece.pieceType == PieceType.GHOST) {
             require(piece.commitment == move.zkp.input[0], "ZK Proof invalid");
@@ -374,6 +380,7 @@ contract ZKChessGame is Initializable {
                 }
             }
         }
+        hasMoved[move.turnNumber][piece.id] = true;
     }
 
     function endTurn(uint8 _turnNumber) public {

@@ -262,7 +262,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     }
     if (!ignoreObstacles) {
       for (let piece of this.gameState.pieces) {
-        if (!isZKPiece(piece) || isKnown(piece)) {
+        if (!isZKPiece(piece)) {
           distBoard[piece.location[1]][piece.location[0]] = -2;
         }
       }
