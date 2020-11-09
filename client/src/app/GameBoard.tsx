@@ -1,14 +1,19 @@
-import React, {memo} from 'react';
+import React, { memo } from 'react';
 import styled from 'styled-components';
-import {useZKChessState} from '../api/UIStateManager';
-import {boardMap, boardLocMap, compareLoc, hasLoc} from '../utils/ChessUtils';
+import { useZKChessState } from '../api/UIStateManager';
+import { boardMap, boardLocMap, compareLoc, hasLoc } from '../utils/ChessUtils';
 import {
   ChessCell,
   BoardLocation,
   ZKPiece,
   Piece,
 } from '../_types/global/GlobalTypes';
-import {ObjectivePiece, ChessPiece, PiecePos, EnemyGhost} from './BoardPieces';
+import {
+  ObjectivePiece,
+  ChessPiece,
+  PiecePos,
+  EnemyGhost,
+} from './BoardPieces';
 
 const borderColor = 'black';
 const StyledGameBoard = styled.table`
@@ -32,12 +37,20 @@ const StyledGameBoard = styled.table`
   }
 `;
 
-const StyledGameCell = styled.div<{canMove: boolean}>`
+const StyledGameCell = styled.div<{ canMove: boolean }>`
   width: 100%;
   height: 100%;
   margin: 0;
 
   background: ${(props) => (props.canMove ? '#f2f2f2' : 'none')};
+`;
+
+// const NTD = ({ children }: { children: React.ReactNode }) => (
+//   <td style={{ border: 'none' }}>{children}</td>
+// );
+
+const NTD = styled.td`
+  border: none !important;
 `;
 
 const GameCell = memo(function ({
@@ -47,12 +60,12 @@ const GameCell = memo(function ({
   location: BoardLocation;
   cell: ChessCell;
 }) {
-  const {state} = useZKChessState();
+  const { state } = useZKChessState();
   const {
-    session: {selected, staged},
-    computed: {gamePaused, canMove: canMoveArr},
-    game: {player},
-    methods: {setSelected, setStaged},
+    session: { selected, staged },
+    computed: { gamePaused, canMove: canMoveArr },
+    game: { player },
+    methods: { setSelected, setStaged },
   } = state;
 
   const canMove = hasLoc(canMoveArr, location);
@@ -90,6 +103,7 @@ const GameCell = memo(function ({
 
   return (
     <td onClick={cellHandler}>
+      <span style={{ position: 'absolute' }}>{location}</span>
       <StyledGameCell canMove={canMove}>
         {cell.objective && <ObjectivePiece objective={cell.objective} />}
         <EnemyGhost location={location} />
@@ -115,10 +129,10 @@ const GameCell = memo(function ({
 });
 
 export function GameBoard() {
-  const {state} = useZKChessState();
+  const { state } = useZKChessState();
   const {
-    computed: {board},
-    game: {player},
+    computed: { board },
+    game: { player },
   } = state;
 
   const transform = boardMap(player);
@@ -127,8 +141,15 @@ export function GameBoard() {
   return (
     <StyledGameBoard>
       <tbody>
+        <tr>
+          <NTD></NTD>
+          {transform(board).map((_row, i: number) => (
+            <NTD key={i}>{locMap([i, 0])[1]}</NTD>
+          ))}
+        </tr>
         {transform(board).map((row: ChessCell[], i: number) => (
           <tr key={i}>
+            <NTD key={i}>{locMap([0, i])[0]}</NTD>
             {row.map((_cell: ChessCell, j: number) => {
               const loc = locMap([i, j]);
               const cell = board[loc[0]][loc[1]];
