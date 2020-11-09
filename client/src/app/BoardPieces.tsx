@@ -1,11 +1,10 @@
 import {
   BoardLocation,
   Color,
-  Ghost,
+  ZKPiece,
   Objective,
-  Piece,
   PieceType,
-  Selectable,
+  Piece,
 } from '../_types/global/GlobalTypes';
 
 import React, {MutableRefObject, useLayoutEffect} from 'react';
@@ -88,11 +87,13 @@ const StyledChessPiece = styled(StyledBasePiece)<{
 const whitePieceUrls: Record<PieceType, string> = {
   [PieceType.King]: './public/chess/white_king.svg',
   [PieceType.Knight]: './public/chess/white_knight.svg',
+  [PieceType.Ghost]: './public/chess/white_ghost.svg',
 };
 
 const blackPieceUrls: Record<PieceType, string> = {
   [PieceType.King]: './public/chess/black_king.svg',
   [PieceType.Knight]: './public/chess/black_knight.svg',
+  [PieceType.Ghost]: './public/chess/black_ghost.svg',
 };
 
 type HoverProps = {
@@ -103,7 +104,7 @@ type HoverProps = {
 };
 
 type ChessPieceProps = {
-  piece: Selectable;
+  piece: Piece;
   staged?: boolean;
   style?: React.CSSProperties;
 } & HoverProps;
@@ -119,6 +120,8 @@ export const ChessPiece = React.forwardRef(
     const color = methods.getColor(piece.owner) || Color.WHITE;
     let url: string = '';
     if (isGhost(piece)) {
+      console.log(piece);
+      console.log(pos);
       url =
         color === Color.BLACK
           ? './public/chess/black_ghost.svg'
@@ -132,7 +135,7 @@ export const ChessPiece = React.forwardRef(
     }
 
     // todo make this not shitty
-    if ((piece as Piece).captured === true) {
+    if (!(piece as Piece).alive) {
       return <></>;
     }
 
@@ -174,7 +177,7 @@ export function EnemyGhost({location}: {location: BoardLocation}) {
 
   return (
     <ChessPiece
-      piece={{owner: enemyPlayer?.account} as Ghost}
+      piece={{owner: enemyPlayer?.account} as ZKPiece}
       pos={PiecePos.topLeft}
       disabled={true}
       style={styleObj}

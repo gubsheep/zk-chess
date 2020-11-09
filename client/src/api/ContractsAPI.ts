@@ -2,9 +2,9 @@
 import {EventEmitter} from 'events';
 import {
   ChessGameContractData,
-  ContractGhost,
   EthAddress,
   Objective,
+  PieceType,
   Piece,
 } from '../_types/global/GlobalTypes';
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
@@ -21,19 +21,15 @@ import {
   ContractEvent,
   RawPiece,
   RawObjective,
-  UnsubmittedMove,
   UnsubmittedJoin,
-  UnsubmittedGhostAttack,
-  GhostMoveArgs,
-  UnsubmittedGhostMove,
   UnsubmittedCreateGame,
-  UnsubmittedAction,
+  UnsubmittedMove,
+  UnsubmittedEndTurn,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
-import mimcHash from '../hash/mimc';
 
 type QueuedTxRequest = {
-  actionId: string;
+  txIntentId: string;
   contract: Contract;
   method: string; // make this an enum
 
@@ -67,7 +63,7 @@ class TxExecutor extends EventEmitter {
     }
     return new Promise<providers.TransactionResponse>((resolve, reject) => {
       this.once(
-        txRequest.actionId,
+        txRequest.txIntentId,
         (res: providers.TransactionResponse, e: Error) => {
           if (res) {
             resolve(res);
@@ -108,14 +104,14 @@ class TxExecutor extends EventEmitter {
         );
         this.nonce += 1;
         this.nonceLastUpdated = Date.now();
-        this.emit(txRequest.actionId, res);
+        this.emit(txRequest.txIntentId, res);
       } catch (e) {
         console.error('error while submitting tx:');
         console.error(e);
         throw e;
       }
     } catch (e) {
-      this.emit(txRequest.actionId, undefined, e);
+      this.emit(txRequest.txIntentId, undefined, e);
     }
     this.pendingExec = false;
     const next = this.txRequests.shift();
@@ -259,26 +255,10 @@ class ContractsAPI extends EventEmitter {
     const gameState = await contract.gameState();
 
     const pieces: Piece[] = [];
-    let myContractGhost: ContractGhost = {
-      id: -1,
-      owner: null,
-      commitment: mimcHash(3, 3, '0').toString(),
-    }; // dummy value
     for (const rawPiece of rawPieces) {
+      console.log(rawPiece);
       const piece = this.rawPieceToPiece(rawPiece);
-      if (piece) {
-        pieces.push(piece);
-      } else {
-        // is a ghost
-        if (address(rawPiece[2]) === this.account) {
-          // my ghost
-          myContractGhost = {
-            id: rawPiece[0],
-            owner: address(rawPiece[2]),
-            commitment: rawPiece[6].toString(),
-          };
-        }
-      }
+      pieces.push(piece);
     }
 
     const objectives = [];
@@ -296,7 +276,6 @@ class ContractsAPI extends EventEmitter {
       pieces,
       turnNumber,
       gameStatus: gameState,
-      myContractGhost,
       objectives,
     };
   }
@@ -326,7 +305,7 @@ class ContractsAPI extends EventEmitter {
     console.log('creating game');
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
-        actionId: action.txIntentId,
+        txIntentId: action.txIntentId,
         contract: this.factoryContract,
         method: 'createGame',
         args: [action.gameId],
@@ -352,7 +331,7 @@ class ContractsAPI extends EventEmitter {
     };
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
-        actionId: action.txIntentId,
+        txIntentId: action.txIntentId,
         contract: this.gameContract,
         method: 'joinGame',
         args: [],
@@ -366,8 +345,8 @@ class ContractsAPI extends EventEmitter {
     return tx.wait();
   }
 
-  public async doAction(
-    action: UnsubmittedAction
+  public async doMove(
+    action: UnsubmittedMove
   ): Promise<providers.TransactionReceipt> {
     if (!this.gameContract) {
       throw new Error('no game contract set');
@@ -378,23 +357,44 @@ class ContractsAPI extends EventEmitter {
     };
     const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
       {
-        actionId: action.txIntentId,
+        txIntentId: action.txIntentId,
         contract: this.gameContract,
-        method: 'act',
+        method: 'doMove',
         args: [
           [
             action.turnNumber,
             action.pieceId,
-            action.doesMove,
-            action.moveToRow,
-            action.moveToCol,
-            action.doesAttack,
-            action.attackRow,
-            action.attackCol,
-            await action.moveZkp,
-            await action.attackZkp,
+            action.isZk ? [] : action.moveToRow,
+            action.isZk ? [] : action.moveToCol,
+            await action.zkp,
           ],
         ],
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      this.onTxSubmit(action, tx.hash);
+    }
+    return tx.wait();
+  }
+
+  public async endTurn(
+    action: UnsubmittedEndTurn
+  ): Promise<providers.TransactionReceipt> {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        txIntentId: action.txIntentId,
+        contract: this.gameContract,
+        method: 'endTurn',
+        args: [action.turnNumber],
         overrides,
       }
     );
@@ -436,50 +436,32 @@ class ContractsAPI extends EventEmitter {
     }
     return tx.wait();
   }
-
-  public async moveGhost(args: GhostMoveArgs, action: UnsubmittedGhostMove) {
-    if (!this.gameContract) {
-      throw new Error('no game contract set');
-    }
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        actionId: action.txIntentId,
-        contract: this.gameContract,
-        method: 'moveGhost',
-        args: [...args, action.pieceId.toString()],
-        overrides,
-      }
-    );
-
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
-    }
-    return tx.wait();
-  }
   */
 
-  private rawPieceToPiece(rawPiece: RawPiece): Piece | null {
-    // returns null if ghost
-    if (rawPiece[1] === 2) {
-      // this is a ghost
-      return null;
-    }
+  private rawPieceToPiece(rawPiece: RawPiece): Piece {
     let owner: EthAddress | null = address(rawPiece[2]);
     if (owner === emptyAddress) {
       owner = null;
     }
-    return {
-      id: rawPiece[0],
-      owner,
-      location: [rawPiece[4], rawPiece[3]],
-      pieceType: rawPiece[1],
-      captured: !rawPiece[5],
-    };
+    const pieceType = rawPiece[1];
+    if (pieceType === PieceType.Ghost) {
+      // return a ZKPiece that is not Locatable
+      return {
+        id: rawPiece[0],
+        owner,
+        pieceType,
+        alive: rawPiece[5],
+        commitment: rawPiece[6].toString(),
+      };
+    } else {
+      return {
+        id: rawPiece[0],
+        owner,
+        pieceType,
+        alive: rawPiece[5],
+        location: [rawPiece[4], rawPiece[3]],
+      };
+    }
   }
 
   private rawObjectiveToPiece(rawObjective: RawObjective): Objective {

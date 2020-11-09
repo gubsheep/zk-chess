@@ -322,7 +322,7 @@ contract ZKChessGame is Initializable {
         emit GameStart(player1, player2);
     }
 
-    function act(Action memory action) public {
+    function doMove(Move memory move) public {
         require(gameState != GameState.COMPLETE, "Game is ended");
         if (msg.sender == player1) {
             require(gameState == GameState.P1_TO_MOVE, "Not p1's turn");
@@ -330,69 +330,54 @@ contract ZKChessGame is Initializable {
         if (msg.sender == player2) {
             require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
         }
-        require(action.turnNumber == turnNumber, "Wrong turn number");
-        Piece storage piece = pieces[action.pieceId];
+        require(move.turnNumber == turnNumber, "Wrong turn number");
+        Piece storage piece = pieces[move.pieceId];
         require(
-            piece.owner != msg.sender && piece.owner != address(0),
+            piece.owner == msg.sender && piece.owner != address(0),
             "can't move opponent's piece"
         );
+        require(piece.alive, "Piece is dead");
 
-        if (action.pieceId == 0) {
-            // TODO: creating a new piece
-            return;
-        } else {
-            // moving an existing piece
-            require(piece.alive, "Piece is dead");
-
-            if (piece.pieceType == PieceType.GHOST) {
+        if (piece.pieceType == PieceType.GHOST) {
+            require(piece.commitment == move.zkp.input[0], "ZK Proof invalid");
+            if (!DISABLE_ZK_CHECK) {
                 require(
-                    piece.commitment == action.moveZkp.input[0],
-                    "ZK Proof invalid"
+                    Verifier.verifyMoveProof(
+                        move.zkp.a,
+                        move.zkp.b,
+                        move.zkp.c,
+                        move.zkp.input
+                    ),
+                    "Failed zk move check"
                 );
-                if (!DISABLE_ZK_CHECK) {
-                    require(
-                        Verifier.verifyMoveProof(
-                            action.moveZkp.a,
-                            action.moveZkp.b,
-                            action.moveZkp.c,
-                            action.moveZkp.input
-                        ),
-                        "Failed zk move check"
-                    );
-                }
-                piece.commitment = action.moveZkp.input[1];
-            } else {
-                if (action.doesMove) {
-                    uint8[] memory moveToRow = action.moveToRow;
-                    uint8[] memory moveToCol = action.moveToCol;
-                    require(
-                        isValidMove(piece, moveToRow, moveToCol),
-                        "Invalid move"
-                    );
-                    uint8 toRow = moveToRow[moveToRow.length - 1];
-                    uint8 toCol = moveToCol[moveToCol.length - 1];
-                    boardPieces[piece.row][piece.col] = 0;
-                    boardPieces[toRow][toCol] = piece.id;
-                    piece.row = toRow;
-                    piece.col = toCol;
-                    if (
-                        objectives[boardObjectives[toRow][toCol]].value > 0 &&
-                        objectives[boardObjectives[toRow][toCol]].capturedBy ==
-                        address(0)
-                    ) {
-                        if (msg.sender == player1) {
-                            p1CurrentlyCapturing = boardObjectives[toRow][toCol];
-                        } else {
-                            p2CurrentlyCapturing = boardObjectives[toRow][toCol];
-                        }
-                    }
+            }
+            piece.commitment = move.zkp.input[1];
+        } else {
+            uint8[] memory moveToRow = move.moveToRow;
+            uint8[] memory moveToCol = move.moveToCol;
+            require(isValidMove(piece, moveToRow, moveToCol), "Invalid move");
+            uint8 toRow = moveToRow[moveToRow.length - 1];
+            uint8 toCol = moveToCol[moveToCol.length - 1];
+            boardPieces[piece.row][piece.col] = 0;
+            boardPieces[toRow][toCol] = piece.id;
+            piece.row = toRow;
+            piece.col = toCol;
+            if (
+                objectives[boardObjectives[toRow][toCol]].value > 0 &&
+                objectives[boardObjectives[toRow][toCol]].capturedBy ==
+                address(0)
+            ) {
+                if (msg.sender == player1) {
+                    p1CurrentlyCapturing = boardObjectives[toRow][toCol];
+                } else {
+                    p2CurrentlyCapturing = boardObjectives[toRow][toCol];
                 }
             }
         }
-        completeTurn();
     }
 
-    function completeTurn() internal {
+    function endTurn(uint8 _turnNumber) public {
+        require(_turnNumber == turnNumber, "wrong turn number");
         if (msg.sender == player1) {
             // check if opponent captures any objectives
             Objective storage capturing = objectives[p2CurrentlyCapturing];

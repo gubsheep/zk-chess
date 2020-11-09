@@ -28,6 +28,7 @@ export type Hook<S> = [S, SetFn<S>];
 export enum PieceType {
   King,
   Knight,
+  Ghost,
 }
 
 export type BoardLocation = [number, number];
@@ -35,6 +36,9 @@ export type BoardLocation = [number, number];
 export type GameObject = {
   id: number;
   owner: EthAddress | null;
+};
+
+export type Locatable = {
   location: BoardLocation;
 };
 
@@ -44,32 +48,44 @@ export enum Color {
   WHITE = 'WHITE',
 }
 
-export type Piece = GameObject & {
+type AbstractPiece = GameObject & {
   pieceType: PieceType;
-  captured: boolean;
+  alive: boolean;
 };
 
-export type Ghost = GameObject & {
-  salt: string;
+export type VisiblePiece = AbstractPiece & Locatable;
+
+export type ZKPiece = AbstractPiece & {
+  pieceType: PieceType.Ghost;
   commitment: string;
 };
 
-export type ContractGhost = {
-  id: number;
-  owner: EthAddress | null;
-  commitment: string;
-};
+export type KnownZKPiece = ZKPiece &
+  Locatable & {
+    salt: string;
+  };
+
+export type Piece = VisiblePiece | ZKPiece;
+
+export function isZKPiece(piece: Piece): piece is ZKPiece {
+  return (piece as ZKPiece).commitment !== undefined;
+}
+
+export function isKnown(piece: ZKPiece): piece is KnownZKPiece {
+  return (piece as KnownZKPiece).location !== undefined;
+}
+
 export type PlayerInfo = {
   account: EthAddress;
   color: Color;
 };
 
-export type Objective = GameObject & {
-  value: number;
-};
+export type Objective = GameObject &
+  Locatable & {
+    value: number;
+  };
 
-export type Selectable = Ghost | Piece;
-export type StagedLoc = [BoardLocation, Selectable];
+export type StagedLoc = [BoardLocation, Piece];
 
 export enum GameStatus {
   WAITING_FOR_PLAYERS,
@@ -86,12 +102,10 @@ export type ChessGameContractData = {
   player1: Player;
   player2: Player;
 
-  pieces: Piece[]; // non-ghost pieces
+  pieces: Piece[];
 
   turnNumber: number;
   gameStatus: GameStatus;
-
-  myContractGhost: ContractGhost;
   objectives: Objective[];
 };
 
@@ -103,18 +117,17 @@ export type ChessGame = {
   player1: Player;
   player2: Player;
 
-  pieces: Piece[]; // non-ghost pieces
+  pieces: Piece[];
 
   turnNumber: number;
   gameStatus: GameStatus;
 
-  myGhost: Ghost;
   objectives: Objective[];
 };
 
 export type ChessCell = {
-  piece?: Piece;
-  ghost?: Ghost;
+  piece?: VisiblePiece;
+  ghost?: ZKPiece;
   objective?: Objective;
 };
 

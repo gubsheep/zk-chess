@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-export const getRandomActionId = () => {
+export const getRandomTxIntentId = () => {
   const hex = '0123456789abcdef';
 
   let ret = '';

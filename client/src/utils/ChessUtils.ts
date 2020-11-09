@@ -5,14 +5,15 @@ import {
   ChessCell,
   PieceType,
   Color,
-  Ghost,
-  Piece,
   EthAddress,
   Player,
   GameStatus,
   PlayerInfo,
+  Piece,
+  isZKPiece,
+  isKnown,
 } from '../_types/global/GlobalTypes';
-import {address, almostEmptyAddress, emptyAddress} from './CheckedTypeUtils';
+import {almostEmptyAddress, emptyAddress} from './CheckedTypeUtils';
 import {SIZE} from './constants';
 
 const transpose = (board: ChessBoard): ChessBoard => {
@@ -44,9 +45,8 @@ export const boardLocMap = (
 ): ((loc: BoardLocation) => BoardLocation) =>
   player?.color === Color.WHITE ? whiteBoardLocMap : blackBoardLocMap;
 
-export const isGhost = (piece: Piece | Ghost): boolean => {
-  if (piece.hasOwnProperty('pieceType')) return false;
-  return true;
+export const isGhost = (piece: Piece): boolean => {
+  return isZKPiece(piece);
 };
 
 export const compareLoc = (
@@ -100,17 +100,18 @@ export const getCanMoveLoc = (
   return [];
 };
 
-export const getCanMove = (obj: Piece | Ghost | null): BoardLocation[] => {
+export const getCanMove = (obj: Piece): BoardLocation[] => {
   if (!obj) return [];
+  if (isZKPiece(obj) && !isKnown(obj)) return [];
   const loc = obj.location;
   if (isGhost(obj)) return getCanMoveLoc(loc, PieceType.King);
-  else return getCanMoveLoc(loc, (obj as Piece).pieceType);
+  else return getCanMoveLoc(loc, obj.pieceType);
 };
 
 export const boardFromGame = (game: ChessGame | null): ChessBoard => {
   if (!game) return [];
   const allPieces = game.pieces;
-  const {myGhost, objectives} = game;
+  const {objectives} = game;
 
   const tempBoard: ChessCell[][] = Array(SIZE)
     .fill(null)
@@ -121,13 +122,13 @@ export const boardFromGame = (game: ChessGame | null): ChessBoard => {
     );
 
   for (const piece of allPieces) {
-    const loc = piece.location;
-    tempBoard[loc[0]][loc[1]].piece = piece;
-  }
-
-  if (myGhost) {
-    const loc = myGhost.location;
-    tempBoard[loc[0]][loc[1]].ghost = myGhost;
+    if (!isZKPiece(piece)) {
+      const loc = piece.location;
+      tempBoard[loc[0]][loc[1]].piece = piece;
+    } else if (isKnown(piece)) {
+      const loc = piece.location;
+      tempBoard[loc[0]][loc[1]].ghost = piece;
+    }
   }
 
   for (const objective of objectives) {
@@ -147,7 +148,7 @@ const makePiece = (
   owner: color === Color.WHITE ? emptyAddress : almostEmptyAddress,
   location: loc,
   pieceType: type,
-  captured: false,
+  alive: true,
 });
 
 const makeObjective = (
@@ -195,10 +196,10 @@ export const enemyGhostMoved = (
 ): BoardLocation | null => {
   if (!myAddress || !oldState || !newState) return null;
   const myOldPieces = oldState.pieces.filter(
-    (piece) => piece.owner === myAddress && !piece.captured
+    (piece) => piece.owner === myAddress && piece.alive
   );
   const myNewPieces = newState.pieces.filter(
-    (piece) => piece.owner === myAddress && !piece.captured
+    (piece) => piece.owner === myAddress && piece.alive
   );
 
   // no pieces taken
@@ -214,7 +215,7 @@ export const enemyGhostMoved = (
       }
     }
 
-    if (!found) return piece.location;
+    if (!found && !isZKPiece(piece)) return piece.location;
   }
 
   return null;
@@ -236,13 +237,6 @@ export const sampleGame: ChessGame = {
     makePiece([3, 0], Color.BLACK, PieceType.Knight),
     makePiece([4, 0], Color.BLACK),
   ],
-  myGhost: {
-    location: [1, 1],
-    id: Math.random(),
-    owner: emptyAddress,
-    commitment: '0',
-    salt: '0',
-  },
   objectives: [
     makeObjective([0, 3], 10, Color.WHITE),
     makeObjective([3, 3], 10, null),

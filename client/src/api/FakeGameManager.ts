@@ -3,6 +3,8 @@ import {
   BoardLocation,
   ChessGame,
   EthAddress,
+  isKnown,
+  isZKPiece,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -92,9 +94,10 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
 
     const newState = _.cloneDeep(this.gameState);
     for (let i = 0; i < newState.pieces.length; i++) {
-      if (newState.pieces[i].id === pieceId) {
+      const piece = newState.pieces[i];
+      if (piece.id === pieceId && (!isZKPiece(piece) || isKnown(piece))) {
         console.log('found a piece!');
-        newState.pieces[i].location = to;
+        piece.location = to;
       }
     }
 
@@ -104,30 +107,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     return Promise.resolve();
   }
 
-  moveGhost(ghostId: number, to: BoardLocation): Promise<void> {
-    console.log(`moved ghost ${ghostId} to ${to}!`);
-
-    const newState = _.cloneDeep(this.gameState);
-    newState.myGhost.location = to;
-    this.gameState = newState;
-
-    return Promise.resolve();
-  }
-
-  ghostAttack(): Promise<void> {
-    console.log('ghost attack!');
-
-    const newState = _.cloneDeep(this.gameState);
-    const loc = newState.myGhost.location;
-    for (let i = 0; i < newState.pieces.length; i++) {
-      // if my ghost is overlapping
-      if (compareLoc(newState.pieces[i].location, loc)) {
-        newState.pieces.splice(i, 1);
-        break;
-      }
-    }
-    this.gameState = newState;
-
+  endTurn(): Promise<void> {
     return Promise.resolve();
   }
 

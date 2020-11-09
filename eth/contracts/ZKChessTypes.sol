@@ -36,15 +36,18 @@ struct AttackZKP {
     uint256[4] input; // start, endRow, endCol, dist
 }
 
-struct Action {
+struct Move {
     uint8 turnNumber;
     uint8 pieceId;
-    bool doesMove;
     uint8[] moveToRow;
     uint8[] moveToCol;
-    bool doesAttack;
+    MoveZKP zkp;
+}
+
+struct Attack {
+    uint8 turnNumber;
+    uint8 pieceId;
     uint8 attackRow;
     uint8 attackCol;
-    MoveZKP moveZkp;
-    AttackZKP attackZkp;
+    AttackZKP zkp;
 }

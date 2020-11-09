@@ -1,6 +1,5 @@
-import { TurnState } from '../app/Game';
+import {TurnState} from '../app/Game';
 import {
-  Selectable,
   StagedLoc,
   ChessBoard,
   BoardLocation,
@@ -8,11 +7,12 @@ import {
   Color,
   ChessGame,
   PlayerInfo,
+  Piece,
 } from '../_types/global/GlobalTypes';
 import AbstractGameManager from './AbstractGameManager';
 
 export type SessionState = {
-  selected: Selectable | null;
+  selected: Piece | null;
   staged: StagedLoc | null;
   turnState: TurnState;
 };
@@ -28,7 +28,7 @@ export type ComputedState = {
 export type StateMethods = {
   getColor: (obj: EthAddress | null) => Color | null;
 
-  setSelected: (obj: Selectable | null) => void;
+  setSelected: (obj: Piece | null) => void;
   setStaged: (obj: StagedLoc | null) => void;
 
   submitMove: () => void;

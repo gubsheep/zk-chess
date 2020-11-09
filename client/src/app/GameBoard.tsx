@@ -3,10 +3,9 @@ import styled from 'styled-components';
 import {useZKChessState} from '../api/UIStateManager';
 import {boardMap, boardLocMap, compareLoc, hasLoc} from '../utils/ChessUtils';
 import {
-  Color,
   ChessCell,
   BoardLocation,
-  Ghost,
+  ZKPiece,
   Piece,
 } from '../_types/global/GlobalTypes';
 import {ObjectivePiece, ChessPiece, PiecePos, EnemyGhost} from './BoardPieces';
@@ -60,7 +59,7 @@ const GameCell = memo(function ({
 
   const isEmpty = !cell.piece && !cell.ghost;
 
-  const pieceHandler = (obj: Piece | Ghost): React.MouseEventHandler => (
+  const pieceHandler = (obj: Piece): React.MouseEventHandler => (
     e: React.MouseEvent
   ) => {
     if (gamePaused) return;

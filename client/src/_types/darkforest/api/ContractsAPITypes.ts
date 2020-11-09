@@ -1,4 +1,5 @@
 import {BigNumber as EthersBN} from 'ethers';
+import {getRandomTxIntentId} from '../../../utils/Utils';
 import {BoardLocation} from '../../global/GlobalTypes';
 
 // TODO write these types
@@ -117,10 +118,10 @@ export type RawObjective = {
 export enum EthTxType {
   CREATE_GAME = 'CREATE_GAME',
   JOIN_GAME = 'JOIN_GAME',
-  ACTION = 'ACTION',
   MOVE = 'MOVE',
   GHOST_ATTACK = 'GHOST_ATTACK',
   GHOST_MOVE = 'GHOST_MOVE',
+  END_TURN = 'END_TURN',
 }
 
 export type TxIntent = {
@@ -149,60 +150,43 @@ export type UnsubmittedJoin = TxIntent & {
 
 export type SubmittedJoin = UnsubmittedJoin & SubmittedTx;
 
-export type UnsubmittedAction = TxIntent & {
-  type: EthTxType.ACTION;
-  turnNumber: number;
-  pieceId: number;
-  doesMove: boolean;
-  moveToRow: number[];
-  moveToCol: number[];
-  doesAttack: boolean;
-  attackRow: number;
-  attackCol: number;
-  isZk: boolean;
-  moveZkp: Promise<GhostMoveArgs>;
-  attackZkp: Promise<GhostAttackArgs>;
-};
-
-export const createEmptyAction = (): UnsubmittedAction => ({
-  txIntentId: '',
-  turnNumber: 0,
-  type: EthTxType.ACTION,
-  pieceId: 0,
-  doesMove: false,
-  moveToRow: [],
-  moveToCol: [],
-  doesAttack: false,
-  attackRow: 0,
-  attackCol: 0,
-  isZk: false,
-  moveZkp: Promise.resolve([
-    ['0', '0'],
-    [
-      ['0', '0'],
-      ['0', '0'],
-    ],
-    ['0', '0'],
-    ['0', '0'],
-  ]),
-  attackZkp: Promise.resolve([
-    ['0', '0'],
-    [
-      ['0', '0'],
-      ['0', '0'],
-    ],
-    ['0', '0'],
-    ['0', '0', '0', '0'],
-  ]),
-});
-
 export type UnsubmittedMove = TxIntent & {
   type: EthTxType.MOVE;
+  turnNumber: number;
   pieceId: number;
-  to: BoardLocation;
+  moveToRow: number[];
+  moveToCol: number[];
+  isZk: boolean;
+  zkp: Promise<GhostMoveArgs>;
 };
 
 export type SubmittedMove = UnsubmittedMove & SubmittedTx;
+
+export const createEmptyMove = (): UnsubmittedMove => ({
+  txIntentId: getRandomTxIntentId(),
+  turnNumber: 0,
+  type: EthTxType.MOVE,
+  pieceId: 0,
+  moveToRow: [],
+  moveToCol: [],
+  isZk: false,
+  zkp: Promise.resolve([
+    ['0', '0'],
+    [
+      ['0', '0'],
+      ['0', '0'],
+    ],
+    ['0', '0'],
+    ['0', '0'],
+  ]),
+});
+
+export type UnsubmittedEndTurn = TxIntent & {
+  type: EthTxType.END_TURN;
+  turnNumber: number;
+};
+
+export type SubmittedEndTurn = UnsubmittedEndTurn & SubmittedTx;
 
 export type UnsubmittedGhostAttack = TxIntent & {
   type: EthTxType.GHOST_ATTACK;
@@ -212,12 +196,3 @@ export type UnsubmittedGhostAttack = TxIntent & {
 };
 
 export type SubmittedGhostAttack = UnsubmittedGhostAttack & SubmittedTx;
-
-export type UnsubmittedGhostMove = TxIntent & {
-  type: EthTxType.GHOST_MOVE;
-  pieceId: number;
-  to: BoardLocation;
-  newSalt: string;
-};
-
-export type SubmittedGhostMove = UnsubmittedGhostAttack & SubmittedTx;
