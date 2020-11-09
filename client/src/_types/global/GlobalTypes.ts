@@ -80,11 +80,6 @@ export type PlayerInfo = {
   color: Color;
 };
 
-export type Objective = GameObject &
-  Locatable & {
-    value: number;
-  };
-
 export type StagedLoc = [BoardLocation, Piece];
 
 export enum GameStatus {
@@ -106,7 +101,6 @@ export type ChessGameContractData = {
 
   turnNumber: number;
   gameStatus: GameStatus;
-  objectives: Objective[];
 };
 
 export type ChessGame = {
@@ -121,14 +115,12 @@ export type ChessGame = {
 
   turnNumber: number;
   gameStatus: GameStatus;
-
-  objectives: Objective[];
 };
 
 export type ChessCell = {
+  // TODO should be able to have multiple ghosts
   piece?: VisiblePiece;
   ghost?: ZKPiece;
-  objective?: Objective;
 };
 
 export type ChessBoard = ChessCell[][];

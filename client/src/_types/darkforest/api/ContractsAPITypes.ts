@@ -25,7 +25,7 @@ export enum ContractEvent {
   // TODO this should be 2 enums. one for game events, one for factory events
   CreatedGame = 'CreatedGame',
   GameStart = 'GameStart',
-  MoveMade = 'MoveMade',
+  ActionMade = 'ActionMade',
   GameFinished = 'GameFinished',
 }
 
@@ -35,7 +35,7 @@ export enum ContractsAPIEvent {
   CreatedGame = 'CreatedGame', // args: (gameId: EthersBN)
 
   GameStart = 'GameStart', // args: ()
-  MoveMade = 'MoveMade', // args: ()
+  ActionMade = 'ActionMade', // args: ()
   GameFinished = 'GameFinished', // args: ()
 
   TxInitialized = 'TxInitialized', // args: (unminedTx: UnconfirmedTx)
@@ -96,23 +96,9 @@ export type RawPiece = {
 
   6: EthersBN;
   commitment?: EthersBN;
-};
 
-export type RawObjective = {
-  0: number;
-  id?: number;
-
-  1: number;
-  value?: number;
-
-  2: number;
-  row?: number;
-
-  3: number;
-  col?: number;
-
-  4: string;
-  capturedBy?: string;
+  7: boolean;
+  initialized?: boolean;
 };
 
 export enum EthTxType {

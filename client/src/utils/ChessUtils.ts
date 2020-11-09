@@ -111,7 +111,6 @@ export const getCanMove = (obj: Piece): BoardLocation[] => {
 export const boardFromGame = (game: ChessGame | null): ChessBoard => {
   if (!game) return [];
   const allPieces = game.pieces;
-  const {objectives} = game;
 
   const tempBoard: ChessCell[][] = Array(SIZE)
     .fill(null)
@@ -131,11 +130,6 @@ export const boardFromGame = (game: ChessGame | null): ChessBoard => {
     }
   }
 
-  for (const objective of objectives) {
-    const loc = objective.location;
-    tempBoard[loc[0]][loc[1]].objective = objective;
-  }
-
   return tempBoard as ChessBoard;
 };
 
@@ -151,21 +145,6 @@ const makePiece = (
   alive: true,
 });
 
-const makeObjective = (
-  loc: BoardLocation,
-  value: number = 10,
-  player: Color | null
-) => ({
-  id: Math.random(),
-  owner: player
-    ? player === Color.WHITE
-      ? emptyAddress
-      : almostEmptyAddress
-    : null,
-  location: loc,
-  value,
-});
-
 export type ScoreEntry = {
   player: Player;
   score: number;
@@ -174,14 +153,6 @@ export type ScoreEntry = {
 export const getScores = (game: ChessGame): [ScoreEntry, ScoreEntry] => {
   let p1score = 0;
   let p2score = 0;
-
-  for (const objective of game.objectives) {
-    if (objective.owner === game.player1.address) {
-      p1score += objective.value;
-    } else if (objective.owner === game.player2.address) {
-      p2score += objective.value;
-    }
-  }
 
   return [
     {player: game.player1, score: p1score},
@@ -236,11 +207,6 @@ export const sampleGame: ChessGame = {
     makePiece([2, 1], Color.BLACK),
     makePiece([3, 0], Color.BLACK, PieceType.Knight),
     makePiece([4, 0], Color.BLACK),
-  ],
-  objectives: [
-    makeObjective([0, 3], 10, Color.WHITE),
-    makeObjective([3, 3], 10, null),
-    makeObjective([6, 3], 10, Color.BLACK),
   ],
 };
 

@@ -3,7 +3,6 @@ import {EventEmitter} from 'events';
 import {
   ChessGameContractData,
   EthAddress,
-  Objective,
   PieceType,
   Piece,
 } from '../_types/global/GlobalTypes';
@@ -20,7 +19,6 @@ import {
   SubmittedTx,
   ContractEvent,
   RawPiece,
-  RawObjective,
   UnsubmittedJoin,
   UnsubmittedCreateGame,
   UnsubmittedMove,
@@ -106,6 +104,8 @@ class TxExecutor extends EventEmitter {
         this.nonceLastUpdated = Date.now();
         this.emit(txRequest.txIntentId, res);
       } catch (e) {
+        // TODO increment nonce if this is a revert
+        // don't increment if tx wasn't mined
         console.error('error while submitting tx:');
         console.error(e);
         throw e;
@@ -183,8 +183,8 @@ class ContractsAPI extends EventEmitter {
       this.gameContract.on(ContractEvent.GameStart, () => {
         this.emit(ContractsAPIEvent.GameStart);
       });
-      this.gameContract.on(ContractEvent.MoveMade, () => {
-        this.emit(ContractsAPIEvent.MoveMade);
+      this.gameContract.on(ContractEvent.ActionMade, () => {
+        this.emit(ContractsAPIEvent.ActionMade);
       });
       this.gameContract.on(ContractEvent.GameFinished, () => {
         this.emit(ContractsAPIEvent.GameFinished);
@@ -250,7 +250,6 @@ class ContractsAPI extends EventEmitter {
     const player1Addr = address(await contract.player1());
     const player2Addr = address(await contract.player2());
     const rawPieces: RawPiece[] = await contract.getPieces();
-    const rawObjectives: RawObjective[] = await contract.getObjectives();
     const turnNumber = await contract.turnNumber();
     const gameState = await contract.gameState();
 
@@ -259,12 +258,6 @@ class ContractsAPI extends EventEmitter {
       console.log(rawPiece);
       const piece = this.rawPieceToPiece(rawPiece);
       pieces.push(piece);
-    }
-
-    const objectives = [];
-    for (const rawObjective of rawObjectives) {
-      const objective = this.rawObjectiveToPiece(rawObjective);
-      objectives.push(objective);
     }
 
     return {
@@ -276,7 +269,6 @@ class ContractsAPI extends EventEmitter {
       pieces,
       turnNumber,
       gameStatus: gameState,
-      objectives,
     };
   }
 
@@ -462,19 +454,6 @@ class ContractsAPI extends EventEmitter {
         location: [rawPiece[4], rawPiece[3]],
       };
     }
-  }
-
-  private rawObjectiveToPiece(rawObjective: RawObjective): Objective {
-    let owner: EthAddress | null = address(rawObjective[4]);
-    if (owner === emptyAddress) {
-      owner = null;
-    }
-    return {
-      id: rawObjective[0],
-      owner,
-      location: [rawObjective[3], rawObjective[2]],
-      value: rawObjective[1],
-    };
   }
 }
 

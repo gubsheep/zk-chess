@@ -87,10 +87,10 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       await gameManager.refreshGameState();
       gameManager.emit(GameManagerEvent.GameStart, gameManager.getGameState());
     });
-    contractsAPI.on(ContractsAPIEvent.MoveMade, async () => {
+    contractsAPI.on(ContractsAPIEvent.ActionMade, async () => {
       console.log('move made');
       await gameManager.refreshGameState();
-      gameManager.emit(GameManagerEvent.MoveMade, gameManager.getGameState());
+      gameManager.emit(GameManagerEvent.ActionMade, gameManager.getGameState());
     });
     contractsAPI.on(ContractsAPIEvent.GameFinished, async () => {
       console.log('game finished');
@@ -141,7 +141,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   public destroy(): void {
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.CreatedGame);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.GameStart);
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.MoveMade);
+    this.contractsAPI.removeAllListeners(ContractsAPIEvent.ActionMade);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.GameFinished);
 
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxInitialized);

@@ -2,16 +2,15 @@ import {
   BoardLocation,
   Color,
   ZKPiece,
-  Objective,
   PieceType,
   Piece,
 } from '../_types/global/GlobalTypes';
 
-import React, { MutableRefObject, useLayoutEffect } from 'react';
-import styled, { css } from 'styled-components';
-import { compareLoc, isGhost } from '../utils/ChessUtils';
-import { useZKChessState } from '../api/UIStateManager';
-import { useState } from 'react';
+import React, {MutableRefObject, useLayoutEffect} from 'react';
+import styled, {css} from 'styled-components';
+import {compareLoc, isGhost} from '../utils/ChessUtils';
+import {useZKChessState} from '../api/UIStateManager';
+import {useState} from 'react';
 
 const flexCenter = css`
   display: flex;
@@ -45,19 +44,19 @@ const StyledPieceWrapper = styled.div<{
   position: absolute;
   ${flexCenter};
 
-  width: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '60%')};
-  height: ${({ pos }) => (pos === PiecePos.normal ? '100%' : '60%')};
+  width: ${({pos}) => (pos === PiecePos.normal ? '100%' : '60%')};
+  height: ${({pos}) => (pos === PiecePos.normal ? '100%' : '60%')};
 
-  ${({ pos }) =>
+  ${({pos}) =>
     pos === PiecePos.botRight ? 'bottom: 0; right: 0;' : 'top: 0; left: 0;'};
 
-  ${({ pos }) =>
+  ${({pos}) =>
     pos !== PiecePos.normal ? 'z-index: 2;' : PiecePos.topLeft && 'z-index: 1;'}
 
   // shitty but whatever
-  ${({ selected }) => selected && 'background: #ccc !important;'}
+  ${({selected}) => selected && 'background: #ccc !important;'}
 
-  ${({ nohover }) =>
+  ${({nohover}) =>
     !nohover &&
     `
     &:hover {
@@ -112,10 +111,10 @@ type ChessPieceProps = {
 // TODO remove this
 export const ChessPiece = React.forwardRef(
   (props: ChessPieceProps, ref: MutableRefObject<HTMLDivElement | null>) => {
-    const { piece, staged, style, onClick, pos, isSelected, disabled } = props;
+    const {piece, staged, style, onClick, pos, isSelected, disabled} = props;
 
-    const { state } = useZKChessState();
-    const { methods } = state;
+    const {state} = useZKChessState();
+    const {methods} = state;
 
     const color = methods.getColor(piece.owner) || Color.WHITE;
     let url: string = '';
@@ -151,7 +150,7 @@ export const ChessPiece = React.forwardRef(
         <StyledChessPiece staged={staged}>
           <img src={url} />
         </StyledChessPiece>
-        <span style={{ position: 'absolute', bottom: 0, right: 0 }}>
+        <span style={{position: 'absolute', bottom: 0, right: 0}}>
           {piece.id}
         </span>
       </StyledPieceWrapper>
@@ -159,10 +158,10 @@ export const ChessPiece = React.forwardRef(
   }
 );
 
-export function EnemyGhost({ location }: { location: BoardLocation }) {
-  const { state } = useZKChessState();
+export function EnemyGhost({location}: {location: BoardLocation}) {
+  const {state} = useZKChessState();
   const {
-    game: { enemyPlayer, enemyGhost },
+    game: {enemyPlayer, enemyGhost},
   } = state;
 
   const [styleObj, setStyleObj] = useState<React.CSSProperties>({
@@ -171,16 +170,16 @@ export function EnemyGhost({ location }: { location: BoardLocation }) {
 
   useLayoutEffect(() => {
     if (compareLoc(enemyGhost, location)) {
-      setStyleObj({ display: 'block' });
+      setStyleObj({display: 'block'});
       setTimeout(() => {
-        setStyleObj({ display: 'none' });
+        setStyleObj({display: 'none'});
       }, 1000);
     }
   }, [enemyGhost]);
 
   return (
     <ChessPiece
-      piece={{ owner: enemyPlayer?.account } as ZKPiece}
+      piece={{owner: enemyPlayer?.account} as ZKPiece}
       pos={PiecePos.topLeft}
       disabled={true}
       style={styleObj}
@@ -201,42 +200,3 @@ const whiteObj = css`
   border: 1px solid black;
   color: black;
 `;
-
-const StyledObjective = styled(StyledBasePiece)<{
-  pieceColor: Color | null;
-}>`
-  span.obj {
-    display: inline-block;
-    width: 32pt;
-    height: 32pt;
-
-    ${({ pieceColor: color }) =>
-      color === null
-        ? neutralObj
-        : color === Color.BLACK
-        ? blackObj
-        : whiteObj};
-
-    border-radius: 16pt;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-  }
-`;
-
-export function ObjectivePiece({ objective }: { objective: Objective }) {
-  const { state } = useZKChessState();
-  const color = state.methods.getColor(objective.owner);
-
-  return (
-    <StyledPieceWrapper pos={PiecePos.normal} nohover>
-      <StyledObjective pieceColor={color}>
-        <span className='obj'>
-          <span>{objective.value}</span>
-        </span>
-      </StyledObjective>
-    </StyledPieceWrapper>
-  );
-}

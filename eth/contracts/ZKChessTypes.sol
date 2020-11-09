@@ -12,6 +12,7 @@ struct Piece {
     uint8 col;
     bool alive; // only for non-ghosts
     uint256 commitment; // only for ghosts
+    bool initialized;
 }
 
 struct Objective {
@@ -20,6 +21,13 @@ struct Objective {
     uint8 row;
     uint8 col;
     address capturedBy;
+}
+
+struct SummonZKP {
+    uint256[2] a;
+    uint256[2][2] b;
+    uint256[2] c;
+    uint256[1] input; // commitment
 }
 
 struct MoveZKP {
@@ -34,6 +42,15 @@ struct AttackZKP {
     uint256[2][2] b;
     uint256[2] c;
     uint256[4] input; // start, endRow, endCol, dist
+}
+
+struct Summon {
+    uint8 turnNumber;
+    uint8 pieceId; // should be a fresh new ID
+    PieceType pieceType;
+    uint8 row; // for non-zk pieces
+    uint8 col; // for non-zk pieces
+    SummonZKP zkp;
 }
 
 struct Move {

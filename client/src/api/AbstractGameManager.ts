@@ -14,7 +14,7 @@ export enum GameManagerEvent {
 
   CreatedGame = 'CreatedGame', // args: (gameId: number)
   GameStart = 'GameStart', // args: (updatedGameState: ChessGame)
-  MoveMade = 'MoveMade', // args: (updatedGameState: ChessGame)
+  ActionMade = 'ActionMade', // args: (updatedGameState: ChessGame)
   GameFinished = 'GameFinished', // args: (updatedGameState: ChessGame)
 }
 

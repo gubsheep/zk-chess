@@ -18,23 +18,14 @@ contract ZKChessGame is Initializable {
     uint8 public turnNumber;
     GameState public gameState;
     uint8[BOARD_SIZE][BOARD_SIZE] public boardPieces; // board[row][col]
-    uint8[BOARD_SIZE][BOARD_SIZE] public boardObjectives;
 
     uint8[8] public pieceIds;
     mapping(uint8 => Piece) public pieces;
-    uint8[6] public objectiveIds;
-    mapping(uint8 => Objective) public objectives;
 
     bool public DISABLE_ZK_CHECK;
 
     address public player1;
     address public player2;
-
-    uint8 public player1Score;
-    uint8 public player2Score;
-
-    uint8 p1CurrentlyCapturing;
-    uint8 p2CurrentlyCapturing;
 
     // mapping from turn # -> piece # -> has acted
     mapping(uint8 => mapping(uint8 => bool)) public hasMoved;
@@ -48,7 +39,6 @@ contract ZKChessGame is Initializable {
         gameState = GameState.WAITING_FOR_PLAYERS;
 
         pieceIds = [1, 2, 3, 4, 5, 6, 7, 8];
-        objectiveIds = [9, 10, 11, 12, 13, 14];
 
         // initialize pieces
         pieces[1] = Piece({
@@ -58,7 +48,8 @@ contract ZKChessGame is Initializable {
             row: 0,
             col: 1,
             alive: true,
-            commitment: 0
+            commitment: 0,
+            initialized: true
         });
         boardPieces[0][1] = 1;
         pieces[2] = Piece({
@@ -68,7 +59,8 @@ contract ZKChessGame is Initializable {
             row: 0,
             col: 3,
             alive: true,
-            commitment: 0
+            commitment: 0,
+            initialized: true
         });
         boardPieces[0][3] = 2;
         pieces[3] = Piece({
@@ -78,7 +70,8 @@ contract ZKChessGame is Initializable {
             row: 0,
             col: 5,
             alive: true,
-            commitment: 0
+            commitment: 0,
+            initialized: true
         });
         boardPieces[0][5] = 3;
         pieces[4] = Piece({
@@ -88,7 +81,8 @@ contract ZKChessGame is Initializable {
             row: 0,
             col: 0,
             alive: true,
-            commitment: GHOST_START_COMMITMENT
+            commitment: GHOST_START_COMMITMENT,
+            initialized: true
         });
         pieces[5] = Piece({
             id: 5,
@@ -97,7 +91,8 @@ contract ZKChessGame is Initializable {
             row: 6,
             col: 1,
             alive: true,
-            commitment: 0
+            commitment: 0,
+            initialized: true
         });
         boardPieces[6][1] = 5;
         pieces[6] = Piece({
@@ -107,7 +102,8 @@ contract ZKChessGame is Initializable {
             row: 6,
             col: 3,
             alive: true,
-            commitment: 0
+            commitment: 0,
+            initialized: true
         });
         boardPieces[6][3] = 6;
         pieces[7] = Piece({
@@ -117,7 +113,8 @@ contract ZKChessGame is Initializable {
             row: 6,
             col: 5,
             alive: true,
-            commitment: 0
+            commitment: 0,
+            initialized: true
         });
         boardPieces[6][5] = 7;
         pieces[8] = Piece({
@@ -127,58 +124,9 @@ contract ZKChessGame is Initializable {
             row: 6,
             col: 0,
             alive: true,
-            commitment: GHOST_START_COMMITMENT
+            commitment: GHOST_START_COMMITMENT,
+            initialized: true
         });
-
-        // initialize objectives
-        objectives[9] = Objective({
-            id: 9,
-            value: 5,
-            row: 3,
-            col: 0,
-            capturedBy: address(0)
-        });
-        boardObjectives[3][0] = 9;
-        objectives[10] = Objective({
-            id: 10,
-            value: 5,
-            row: 2,
-            col: 2,
-            capturedBy: address(0)
-        });
-        boardObjectives[2][2] = 10;
-        objectives[11] = Objective({
-            id: 11,
-            value: 10,
-            row: 4,
-            col: 2,
-            capturedBy: address(0)
-        });
-        boardObjectives[4][2] = 11;
-        objectives[12] = Objective({
-            id: 12,
-            value: 10,
-            row: 2,
-            col: 4,
-            capturedBy: address(0)
-        });
-        boardObjectives[2][4] = 12;
-        objectives[13] = Objective({
-            id: 13,
-            value: 5,
-            row: 4,
-            col: 4,
-            capturedBy: address(0)
-        });
-        boardObjectives[4][4] = 13;
-        objectives[14] = Objective({
-            id: 14,
-            value: 5,
-            row: 3,
-            col: 6,
-            capturedBy: address(0)
-        });
-        boardObjectives[3][6] = 14;
     }
 
     //////////////
@@ -187,7 +135,7 @@ contract ZKChessGame is Initializable {
 
     event ProofVerified(uint256 pfsAccepted);
     event GameStart(address p1, address p2);
-    event MoveMade(address player);
+    event ActionMade(address player);
     event GameFinished();
 
     ///////////////
@@ -198,14 +146,6 @@ contract ZKChessGame is Initializable {
         ret = new Piece[](pieceIds.length);
         for (uint8 i = 0; i < pieceIds.length; i++) {
             ret[i] = pieces[pieceIds[i]];
-        }
-        return ret;
-    }
-
-    function getObjectives() public view returns (Objective[] memory ret) {
-        ret = new Objective[](objectiveIds.length);
-        for (uint8 i = 0; i < objectiveIds.length; i++) {
-            ret[i] = objectives[objectiveIds[i]];
         }
         return ret;
     }
@@ -264,34 +204,34 @@ contract ZKChessGame is Initializable {
     }
 
     function gameShouldBeCompleted() public view returns (bool) {
-        // check if game is over: no pieces left, OR no objectives left
-        bool noPiecesLeft = true;
+        // check if game is over: at least one player has no pieces left
+        bool player1HasPiecesLeft = false;
+        bool player2HasPiecesLeft = false;
         for (uint8 i = 0; i < pieceIds.length; i++) {
-            if (pieces[pieceIds[i]].alive) {
-                noPiecesLeft = false;
-                break;
+            Piece storage piece = pieces[pieceIds[i]];
+            if (piece.owner == player1 && piece.alive) {
+                player1HasPiecesLeft = true;
+            } else if (piece.owner == player2 && piece.alive) {
+                player2HasPiecesLeft = true;
             }
         }
-        if (noPiecesLeft) {
-            return true;
-        }
-
-        bool noObjectivesLeft = true;
-        for (uint8 i = 0; i < objectiveIds.length; i++) {
-            if (objectives[objectiveIds[i]].capturedBy == address(0)) {
-                noObjectivesLeft = false;
-                break;
-            }
-        }
-        if (noObjectivesLeft) {
-            return true;
-        }
-        return false;
+        return !(player1HasPiecesLeft && player2HasPiecesLeft);
     }
 
     //////////////////////
     /// Game Mechanics ///
     //////////////////////
+
+    function checkAction(uint8 turnNumber) internal {
+        require(gameState != GameState.COMPLETE, "Game is ended");
+        if (msg.sender == player1) {
+            require(gameState == GameState.P1_TO_MOVE, "Not p1's turn");
+        }
+        if (msg.sender == player2) {
+            require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
+        }
+        require(turnNumber == turnNumber, "Wrong turn number");
+    }
 
     function joinGame() public {
         require(
@@ -326,15 +266,43 @@ contract ZKChessGame is Initializable {
         emit GameStart(player1, player2);
     }
 
+    function doSummon(Summon memory summon) public {
+        checkAction(summon.turnNumber);
+        require(!pieces[summon.pieceId].initialized, "piece ID already in use");
+        /*
+        if (summon.pieceType == PieceType.GHOST) {
+            if (!DISABLE_ZK_CHECK) {
+                require(
+                    Verifier.verifySummonProof(
+                        summon.zkp.a,
+                        summon.zkp.b,
+                        summon.zkp.c,
+                        summon.zkp.input
+                    ),
+                    "Failed ZK summon check"
+                );
+            }
+        }
+            */
+        pieces[summon.pieceId] = Piece({
+            id: summon.pieceId,
+            pieceType: summon.pieceType,
+            owner: msg.sender,
+            row: summon.row,
+            col: summon.col,
+            alive: true,
+            commitment: summon.zkp.input[0],
+            initialized: true
+        });
+        // if piece has just been made, can't use it yet
+        // in the future this should be tracked in its own field
+        hasMoved[summon.turnNumber][summon.pieceId] = true;
+        hasAttacked[summon.turnNumber][summon.pieceId] = true;
+        emit ActionMade(msg.sender);
+    }
+
     function doMove(Move memory move) public {
-        require(gameState != GameState.COMPLETE, "Game is ended");
-        if (msg.sender == player1) {
-            require(gameState == GameState.P1_TO_MOVE, "Not p1's turn");
-        }
-        if (msg.sender == player2) {
-            require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
-        }
-        require(move.turnNumber == turnNumber, "Wrong turn number");
+        checkAction(move.turnNumber);
         Piece storage piece = pieces[move.pieceId];
         require(
             piece.owner == msg.sender && piece.owner != address(0),
@@ -368,58 +336,22 @@ contract ZKChessGame is Initializable {
             boardPieces[toRow][toCol] = piece.id;
             piece.row = toRow;
             piece.col = toCol;
-            if (
-                objectives[boardObjectives[toRow][toCol]].value > 0 &&
-                objectives[boardObjectives[toRow][toCol]].capturedBy ==
-                address(0)
-            ) {
-                if (msg.sender == player1) {
-                    p1CurrentlyCapturing = boardObjectives[toRow][toCol];
-                } else {
-                    p2CurrentlyCapturing = boardObjectives[toRow][toCol];
-                }
-            }
         }
         hasMoved[move.turnNumber][piece.id] = true;
+        emit ActionMade(msg.sender);
     }
 
     function endTurn(uint8 _turnNumber) public {
-        require(_turnNumber == turnNumber, "wrong turn number");
+        checkAction(_turnNumber);
         if (msg.sender == player1) {
-            // check if opponent captures any objectives
-            Objective storage capturing = objectives[p2CurrentlyCapturing];
-            if (capturing.value > 0 && capturing.capturedBy == address(0)) {
-                // is an uncaptured objective
-                Piece storage onObjective = pieces[boardPieces[capturing
-                    .row][capturing.col]];
-                if (onObjective.owner == player2 && onObjective.alive) {
-                    // p2's live piece is stationed on top
-                    capturing.capturedBy = player2;
-                    player2Score += capturing.value;
-                }
-            }
             // change to p2's turn
-            p2CurrentlyCapturing = 0;
             gameState = GameState.P2_TO_MOVE;
         } else {
-            // check if opponent captures any objectives
-            Objective storage capturing = objectives[p1CurrentlyCapturing];
-            if (capturing.value > 0 && capturing.capturedBy == address(0)) {
-                // is an uncaptured objective
-                Piece storage onObjective = pieces[boardPieces[capturing
-                    .row][capturing.col]];
-                if (onObjective.owner == player1 && onObjective.alive) {
-                    // p1's live piece is stationed on top
-                    capturing.capturedBy = player1;
-                    player1Score += capturing.value;
-                }
-            }
             // change to p1's turn
-            p1CurrentlyCapturing = 0;
             turnNumber++;
             gameState = GameState.P1_TO_MOVE;
         }
-        emit MoveMade(msg.sender);
+        emit ActionMade(msg.sender);
 
         if (gameShouldBeCompleted()) {
             gameState = GameState.COMPLETE;

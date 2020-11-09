@@ -116,7 +116,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     /*
     this.gameState.player2pieces[1].location = [4, 2];
     this.gameState.turnNumber = 0;
-    this.emit(GameManagerEvent.MoveMade);
+    this.emit(GameManagerEvent.ActionMade);
     */
   }
 
@@ -126,7 +126,7 @@ class FakeGameManager extends EventEmitter implements AbstractGameManager {
     newState.player1pieces.splice(0, 1);
     this.gameState = newState;
     this.gameState.turnNumber = 0;
-    this.emit(GameManagerEvent.MoveMade);
+    this.emit(GameManagerEvent.ActionMade);
     */
   }
 }
