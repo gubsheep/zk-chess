@@ -137,12 +137,18 @@ const makePiece = (
   loc: BoardLocation,
   color: Color,
   type: PieceType = PieceType.King
-) => ({
+): Piece => ({
   id: Math.random(),
   owner: color === Color.WHITE ? emptyAddress : almostEmptyAddress,
   location: loc,
   pieceType: type,
   alive: true,
+  hp: 10,
+  initializedOnTurn: 0,
+  mvRange: 1,
+  atkRange: 1,
+  atk: 1,
+  isZk: false,
 });
 
 export type ScoreEntry = {

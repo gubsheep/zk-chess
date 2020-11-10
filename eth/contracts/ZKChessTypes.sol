@@ -2,7 +2,16 @@
 pragma solidity ^0.6.7;
 
 enum GameState {WAITING_FOR_PLAYERS, P1_TO_MOVE, P2_TO_MOVE, COMPLETE}
-enum PieceType {KING, KNIGHT, GHOST}
+enum PieceType {KING, KNIGHT, GHOST, PORT}
+
+struct PieceDefaultStats {
+    PieceType pieceType;
+    uint8 mvRange;
+    uint8 atkRange;
+    uint8 hp;
+    uint8 atk;
+    bool isZk;
+}
 
 struct Piece {
     uint8 id;
@@ -11,16 +20,10 @@ struct Piece {
     uint8 row;
     uint8 col;
     bool alive; // only for non-ghosts
-    uint256 commitment; // only for ghosts
     bool initialized;
-}
-
-struct Objective {
-    uint8 id;
-    uint8 value;
-    uint8 row;
-    uint8 col;
-    address capturedBy;
+    uint8 hp;
+    uint8 initializedOnTurn;
+    uint256 commitment; // only for ghosts
 }
 
 struct SummonZKP {

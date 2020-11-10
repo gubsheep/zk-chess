@@ -48,17 +48,43 @@ export enum Color {
   WHITE = 'WHITE',
 }
 
-type AbstractPiece = GameObject & {
+export type PieceStatDefaults = {
+  pieceType: PieceType;
+  mvRange: number;
+  atkRange: number;
+  hp: number;
+  atk: number;
+  isZk: boolean;
+};
+
+// a piece but defaults aren't added in
+type PartialPiece = GameObject & {
   pieceType: PieceType;
   alive: boolean;
+  hp: number;
+  initializedOnTurn: number;
 };
 
-export type VisiblePiece = AbstractPiece & Locatable;
+type AbstractPiece = PartialPiece & {
+  mvRange: number;
+  atkRange: number;
+  atk: number;
+};
 
-export type ZKPiece = AbstractPiece & {
-  pieceType: PieceType.Ghost;
+// received from contract
+
+export type PartialVisiblePiece = PartialPiece & Locatable;
+
+export type PartialZKPiece = PartialPiece & {
   commitment: string;
 };
+
+export type ContractPiece = PartialVisiblePiece | PartialZKPiece;
+
+// used in client
+export type VisiblePiece = PartialVisiblePiece & AbstractPiece & {isZk: false};
+
+export type ZKPiece = AbstractPiece & PartialZKPiece & {isZk: true};
 
 export type KnownZKPiece = ZKPiece &
   Locatable & {
@@ -97,7 +123,8 @@ export type ChessGameContractData = {
   player1: Player;
   player2: Player;
 
-  pieces: Piece[];
+  pieces: ContractPiece[];
+  defaults: Map<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
   gameStatus: GameStatus;

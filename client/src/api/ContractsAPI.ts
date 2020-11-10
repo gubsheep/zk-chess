@@ -5,6 +5,8 @@ import {
   EthAddress,
   PieceType,
   Piece,
+  ContractPiece,
+  PieceStatDefaults,
 } from '../_types/global/GlobalTypes';
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
 // in particular, the below is bad!
@@ -24,6 +26,7 @@ import {
   UnsubmittedMove,
   UnsubmittedEndTurn,
   UnsubmittedSummon,
+  RawDefaults,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -251,14 +254,15 @@ class ContractsAPI extends EventEmitter {
     const player1Addr = address(await contract.player1());
     const player2Addr = address(await contract.player2());
     const rawPieces: RawPiece[] = await contract.getPieces();
+    const rawDefaults: RawDefaults[] = await contract.getDefaults();
     const turnNumber = await contract.turnNumber();
     const gameState = await contract.gameState();
 
-    const pieces: Piece[] = [];
-    for (const rawPiece of rawPieces) {
-      const piece = this.rawPieceToPiece(rawPiece);
-      console.log(rawPiece);
-      pieces.push(piece);
+    const pieces: ContractPiece[] = rawPieces.map(this.rawPieceToPiece);
+    const defaults = new Map<PieceType, PieceStatDefaults>();
+    for (const rawDefault of rawDefaults) {
+      const defStats = this.rawDefaultToDefault(rawDefault);
+      defaults.set(defStats.pieceType, defStats);
     }
 
     return {
@@ -268,6 +272,7 @@ class ContractsAPI extends EventEmitter {
       player1: {address: player1Addr},
       player2: {address: player2Addr},
       pieces,
+      defaults,
       turnNumber,
       gameStatus: gameState,
     };
@@ -433,40 +438,7 @@ class ContractsAPI extends EventEmitter {
     return tx.wait();
   }
 
-  /*
-  public async ghostAttack(
-    action: UnsubmittedGhostAttack
-  ): Promise<providers.TransactionReceipt> {
-    if (!this.gameContract) {
-      throw new Error('no game contract set');
-    }
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        actionId: action.txIntentId,
-        contract: this.gameContract,
-        method: 'ghostAttack',
-        args: [
-          action.pieceId.toString(),
-          action.at[1].toString(),
-          action.at[0].toString(),
-          action.salt,
-        ],
-        overrides,
-      }
-    );
-
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
-    }
-    return tx.wait();
-  }
-  */
-
-  private rawPieceToPiece(rawPiece: RawPiece): Piece {
+  private rawPieceToPiece(rawPiece: RawPiece): ContractPiece {
     let owner: EthAddress | null = address(rawPiece[2]);
     if (owner === emptyAddress) {
       owner = null;
@@ -479,7 +451,9 @@ class ContractsAPI extends EventEmitter {
         owner,
         pieceType,
         alive: rawPiece[5],
-        commitment: rawPiece[6].toString(),
+        commitment: rawPiece[9].toString(),
+        hp: rawPiece[7],
+        initializedOnTurn: rawPiece[8],
       };
     } else {
       return {
@@ -488,8 +462,21 @@ class ContractsAPI extends EventEmitter {
         pieceType,
         alive: rawPiece[5],
         location: [rawPiece[4], rawPiece[3]],
+        hp: rawPiece[7],
+        initializedOnTurn: rawPiece[8],
       };
     }
+  }
+
+  private rawDefaultToDefault(rawDefault: RawDefaults): PieceStatDefaults {
+    return {
+      pieceType: rawDefault[0],
+      mvRange: rawDefault[1],
+      atkRange: rawDefault[2],
+      hp: rawDefault[3],
+      atk: rawDefault[4],
+      isZk: rawDefault[5],
+    };
   }
 }
 

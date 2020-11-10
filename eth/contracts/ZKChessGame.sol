@@ -22,6 +22,8 @@ contract ZKChessGame is Initializable {
     uint8[] public pieceIds;
     mapping(uint8 => Piece) public pieces;
 
+    mapping(PieceType => PieceDefaultStats) public defaultStats;
+
     bool public DISABLE_ZK_CHECK;
 
     address public player1;
@@ -39,100 +41,38 @@ contract ZKChessGame is Initializable {
         gameState = GameState.WAITING_FOR_PLAYERS;
 
         // initialize pieces
-        pieces[1] = Piece({
-            id: 1,
+        defaultStats[PieceType.KING] = PieceDefaultStats({
             pieceType: PieceType.KING,
-            owner: address(0),
-            row: 0,
-            col: 1,
-            alive: true,
-            commitment: 0,
-            initialized: true
+            mvRange: 2,
+            atkRange: 1,
+            hp: 3,
+            atk: 2,
+            isZk: false
         });
-        pieceIds.push(1);
-        boardPieces[0][1] = 1;
-        pieces[2] = Piece({
-            id: 2,
+        defaultStats[PieceType.KNIGHT] = PieceDefaultStats({
             pieceType: PieceType.KNIGHT,
-            owner: address(0),
-            row: 0,
-            col: 3,
-            alive: true,
-            commitment: 0,
-            initialized: true
+            mvRange: 2,
+            atkRange: 2,
+            hp: 3,
+            atk: 2,
+            isZk: false
         });
-        pieceIds.push(2);
-        boardPieces[0][3] = 2;
-        pieces[3] = Piece({
-            id: 3,
-            pieceType: PieceType.KING,
-            owner: address(0),
-            row: 0,
-            col: 5,
-            alive: true,
-            commitment: 0,
-            initialized: true
-        });
-        pieceIds.push(3);
-        boardPieces[0][5] = 3;
-        pieces[4] = Piece({
-            id: 4,
+        defaultStats[PieceType.GHOST] = PieceDefaultStats({
             pieceType: PieceType.GHOST,
-            owner: address(0),
-            row: 0,
-            col: 0,
-            alive: true,
-            commitment: GHOST_START_COMMITMENT,
-            initialized: true
+            mvRange: 1,
+            atkRange: 1,
+            hp: 3,
+            atk: 1,
+            isZk: true
         });
-        pieceIds.push(4);
-        pieces[5] = Piece({
-            id: 5,
-            pieceType: PieceType.KING,
-            owner: address(0),
-            row: 6,
-            col: 1,
-            alive: true,
-            commitment: 0,
-            initialized: true
+        defaultStats[PieceType.PORT] = PieceDefaultStats({
+            pieceType: PieceType.PORT,
+            mvRange: 0,
+            atkRange: 2,
+            hp: 10,
+            atk: 2,
+            isZk: false
         });
-        pieceIds.push(5);
-        boardPieces[6][1] = 5;
-        pieces[6] = Piece({
-            id: 6,
-            pieceType: PieceType.KNIGHT,
-            owner: address(0),
-            row: 6,
-            col: 3,
-            alive: true,
-            commitment: 0,
-            initialized: true
-        });
-        pieceIds.push(6);
-        boardPieces[6][3] = 6;
-        pieces[7] = Piece({
-            id: 7,
-            pieceType: PieceType.KING,
-            owner: address(0),
-            row: 6,
-            col: 5,
-            alive: true,
-            commitment: 0,
-            initialized: true
-        });
-        pieceIds.push(7);
-        boardPieces[6][5] = 7;
-        pieces[8] = Piece({
-            id: 8,
-            pieceType: PieceType.GHOST,
-            owner: address(0),
-            row: 6,
-            col: 0,
-            alive: true,
-            commitment: GHOST_START_COMMITMENT,
-            initialized: true
-        });
-        pieceIds.push(8);
     }
 
     //////////////
@@ -152,6 +92,19 @@ contract ZKChessGame is Initializable {
         ret = new Piece[](pieceIds.length);
         for (uint8 i = 0; i < pieceIds.length; i++) {
             ret[i] = pieces[pieceIds[i]];
+        }
+        return ret;
+    }
+
+    function getDefaults()
+        public
+        view
+        returns (PieceDefaultStats[] memory ret)
+    {
+        ret = new PieceDefaultStats[](4);
+        // TODO hardcode bad >:(
+        for (uint8 i = 0; i < 4; i++) {
+            ret[i] = defaultStats[PieceType(i)];
         }
         return ret;
     }
@@ -188,14 +141,8 @@ contract ZKChessGame is Initializable {
         uint8 currentRow = piece.row;
         uint8 currentCol = piece.col;
         require(toRow.length == toCol.length, "invalid move");
-        uint8 moveRange = 0;
-        if (piece.pieceType == PieceType.KING) {
-            moveRange = 1;
-        } else if (piece.pieceType == PieceType.KNIGHT) {
-            moveRange = 2;
-        }
         require(
-            toRow.length <= moveRange,
+            toRow.length <= defaultStats[piece.pieceType].mvRange,
             "tried to move piece further than range allows"
         );
 
@@ -281,12 +228,34 @@ contract ZKChessGame is Initializable {
         }
 
         // set pieces
-        for (uint8 i = 1; i < 5; i++) {
-            pieces[i].owner = player1;
-        }
-        for (uint8 i = 5; i < 9; i++) {
-            pieces[i].owner = player2;
-        }
+        pieces[1] = Piece({
+            id: 1,
+            pieceType: PieceType.PORT,
+            owner: player1,
+            row: 0,
+            col: 3,
+            alive: true,
+            commitment: 0,
+            initialized: true,
+            hp: defaultStats[PieceType.PORT].hp,
+            initializedOnTurn: 0
+        });
+        pieceIds.push(1);
+        boardPieces[0][3] = 1;
+        pieces[2] = Piece({
+            id: 2,
+            pieceType: PieceType.PORT,
+            owner: player2,
+            row: 6,
+            col: 3,
+            alive: true,
+            commitment: 0,
+            initialized: true,
+            hp: defaultStats[PieceType.PORT].hp,
+            initializedOnTurn: 0
+        });
+        pieceIds.push(2);
+        boardPieces[6][3] = 2;
 
         gameState = GameState.P1_TO_MOVE;
         emit GameStart(player1, player2);
@@ -302,7 +271,7 @@ contract ZKChessGame is Initializable {
         if (msg.sender == player2) {
             homeRow = 6;
         }
-        if (summon.pieceType != PieceType.GHOST) {
+        if (!defaultStats[summon.pieceType].isZk) {
             require(
                 summon.row < BOARD_SIZE && summon.col < BOARD_SIZE,
                 "not in bounds"
@@ -319,8 +288,7 @@ contract ZKChessGame is Initializable {
                 taxiDist(summon.row, summon.col, homeRow, homeCol) == 1,
                 "can't summon there"
             );
-        }
-        if (summon.pieceType == PieceType.GHOST) {
+        } else {
             if (!DISABLE_ZK_CHECK) {
                 require(
                     summon.zkp.input[1] == homeRow &&
@@ -354,7 +322,9 @@ contract ZKChessGame is Initializable {
             col: summon.col,
             alive: true,
             commitment: summon.zkp.input[0],
-            initialized: true
+            initialized: true,
+            hp: defaultStats[summon.pieceType].hp,
+            initializedOnTurn: turnNumber
         });
         pieceIds.push(summon.pieceId);
         boardPieces[summon.row][summon.col] = summon.pieceId;
@@ -376,10 +346,14 @@ contract ZKChessGame is Initializable {
         require(!hasMoved[move.turnNumber][piece.id], "piece already moved");
         require(!hasAttacked[move.turnNumber][piece.id], "piece already acted");
 
-        if (piece.pieceType == PieceType.GHOST) {
+        if (defaultStats[piece.pieceType].isZk) {
             require(piece.commitment == move.zkp.input[0], "ZK Proof invalid");
             require(move.zkp.input[3] == BOARD_SIZE);
             // TODO: check that move is within pieceType's move range
+            require(
+                move.zkp.input[2] <= defaultStats[piece.pieceType].mvRange,
+                "Tried to move too far"
+            );
             if (!DISABLE_ZK_CHECK) {
                 require(
                     Verifier.verifyDist2Proof(

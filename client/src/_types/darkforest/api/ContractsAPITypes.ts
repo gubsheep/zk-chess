@@ -94,6 +94,26 @@ export type GhostAttackArgs = [
   ]
 ];
 
+export type RawDefaults = {
+  0: number;
+  pieceType?: number;
+
+  1: number;
+  mvRange?: number;
+
+  2: number;
+  atkRange?: number;
+
+  3: number;
+  hp?: number;
+
+  4: number;
+  atk?: number;
+
+  5: boolean;
+  isZk?: boolean;
+};
+
 export type RawPiece = {
   0: number;
   id?: number;
@@ -113,11 +133,17 @@ export type RawPiece = {
   5: boolean;
   alive?: boolean;
 
-  6: EthersBN;
-  commitment?: EthersBN;
-
-  7: boolean;
+  6: boolean;
   initialized?: boolean;
+
+  7: number;
+  hp?: number;
+
+  8: number;
+  initializedOnTurn?: number;
+
+  9: EthersBN;
+  commitment?: EthersBN;
 };
 
 export enum EthTxType {

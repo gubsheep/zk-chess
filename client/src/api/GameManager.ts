@@ -11,7 +11,7 @@ import {
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
-import _ from 'lodash';
+import _, {defaults} from 'lodash';
 
 import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 
@@ -187,7 +187,17 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     const contractGameState = await this.contractsAPI.getGameState();
     const pieces: Piece[] = [];
     for (let i = 0; i < contractGameState.pieces.length; i++) {
-      let piece = contractGameState.pieces[i];
+      let contractPiece = contractGameState.pieces[i];
+      const defaultsForPiece = contractGameState.defaults.get(
+        contractPiece.pieceType
+      );
+      if (!defaultsForPiece) continue;
+      const piece: Piece = {
+        ...contractPiece,
+        mvRange: defaultsForPiece.mvRange,
+        atkRange: defaultsForPiece.atkRange,
+        atk: defaultsForPiece.atk,
+      } as Piece;
       if (isZKPiece(piece)) {
         const commitment = piece.commitment;
         const commitmentDataStr = localStorage.getItem(`COMMIT_${commitment}`);
