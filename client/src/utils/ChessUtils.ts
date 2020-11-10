@@ -7,13 +7,11 @@ import {
   Color,
   EthAddress,
   Player,
-  GameStatus,
   PlayerInfo,
   Piece,
   isZKPiece,
   isKnown,
 } from '../_types/global/GlobalTypes';
-import {almostEmptyAddress, emptyAddress} from './CheckedTypeUtils';
 import {SIZE} from './constants';
 
 const transpose = (board: ChessBoard): ChessBoard => {
@@ -133,24 +131,6 @@ export const boardFromGame = (game: ChessGame | null): ChessBoard => {
   return tempBoard as ChessBoard;
 };
 
-const makePiece = (
-  loc: BoardLocation,
-  color: Color,
-  type: PieceType = PieceType.King
-): Piece => ({
-  id: Math.random(),
-  owner: color === Color.WHITE ? emptyAddress : almostEmptyAddress,
-  location: loc,
-  pieceType: type,
-  alive: true,
-  hp: 10,
-  initializedOnTurn: 0,
-  mvRange: 1,
-  atkRange: 1,
-  atk: 1,
-  isZk: false,
-});
-
 export type ScoreEntry = {
   player: Player;
   score: number;
@@ -196,24 +176,6 @@ export const enemyGhostMoved = (
   }
 
   return null;
-};
-
-export const sampleGame: ChessGame = {
-  gameAddress: emptyAddress,
-  gameId: '0',
-  myAddress: emptyAddress,
-  player1: {address: emptyAddress},
-  player2: {address: almostEmptyAddress},
-  turnNumber: 0,
-  gameStatus: GameStatus.P1_TO_MOVE,
-  pieces: [
-    makePiece([2, 6], Color.WHITE),
-    makePiece([3, 6], Color.WHITE, PieceType.Knight),
-    makePiece([4, 6], Color.WHITE),
-    makePiece([2, 1], Color.BLACK),
-    makePiece([3, 0], Color.BLACK, PieceType.Knight),
-    makePiece([4, 0], Color.BLACK),
-  ],
 };
 
 export const getAdjacentTiles = (from: BoardLocation): BoardLocation[] => {
