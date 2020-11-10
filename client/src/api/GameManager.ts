@@ -6,6 +6,8 @@ import {
   isZKPiece,
   Piece,
   isKnown,
+  PieceType,
+  KnownZKPiece,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -16,7 +18,9 @@ import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 import {
   ContractsAPIEvent,
   createEmptyMove,
+  createEmptySummon,
   EthTxType,
+  GhostSummonArgs,
   SubmittedTx,
   TxIntent,
   UnsubmittedCreateGame,
@@ -193,7 +197,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
             number,
             string
           ];
-          const location: BoardLocation = [commitData[0], commitData[1]];
+          const location: BoardLocation = [commitData[1], commitData[0]];
           const salt = commitData[2];
           const knownPiece = {
             ...piece,
@@ -316,6 +320,39 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     return path.reverse();
   }
 
+  summonPiece(pieceType: PieceType, at: BoardLocation): Promise<void> {
+    if (!this.gameState) throw new Error('no game set');
+    const newPieceId = Math.max(...this.gameState.pieces.map((p) => p.id)) + 1;
+    let unsubmittedSummon = createEmptySummon();
+    unsubmittedSummon.turnNumber = this.gameState.turnNumber;
+    unsubmittedSummon.pieceId = newPieceId;
+    unsubmittedSummon.pieceType = pieceType;
+    unsubmittedSummon.row = at[1];
+    unsubmittedSummon.col = at[0];
+    console.log(unsubmittedSummon);
+    if (pieceType === PieceType.Ghost) {
+      unsubmittedSummon.isZk = true;
+      const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
+      const zkp = this.snarkHelper.getDist1Proof(
+        at[1],
+        at[0],
+        newSalt,
+        this.gameState.myAddress === this.gameState.player1.address ? 0 : 6,
+        3,
+        1,
+        SIZE
+      );
+      localStorage.setItem(
+        `COMMIT_${mimcHash(at[1], at[0], newSalt).toString()}`,
+        JSON.stringify([at[1], at[0], newSalt])
+      );
+      unsubmittedSummon.zkp = zkp;
+    }
+    this.contractsAPI.onTxInit(unsubmittedSummon);
+    this.contractsAPI.doSummon(unsubmittedSummon);
+    return Promise.resolve();
+  }
+
   movePiece(pieceId: number, to: BoardLocation): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
     let piece: Piece | null = null;
@@ -324,42 +361,33 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     }
     if (!piece) throw new Error('piece not found');
     let unsubmittedMove = createEmptyMove();
-    if (!isZKPiece(piece)) {
-      const path = this.findPath(piece.location, to);
-      if (!path) throw new Error('no path found');
-      unsubmittedMove = {
-        ...unsubmittedMove,
-        turnNumber: this.gameState.turnNumber,
-        pieceId,
-        moveToRow: path.map((loc) => loc[1]),
-        moveToCol: path.map((loc) => loc[0]),
-      };
-    } else {
-      if (!isKnown(piece)) throw new Error('cant find ghost piece');
-      const path = this.findPath(piece.location, to, true);
-      if (!path) throw new Error('unexpected error occurred');
+    if (isZKPiece(piece) && !isKnown(piece))
+      throw new Error('cant find ghost piece');
+    const path = this.findPath(piece.location, to, isZKPiece(piece));
+    if (!path) throw new Error('no path found');
+    unsubmittedMove.turnNumber = this.gameState.turnNumber;
+    unsubmittedMove.pieceId = pieceId;
+    unsubmittedMove.moveToRow = path.map((loc) => loc[1]);
+    unsubmittedMove.moveToCol = path.map((loc) => loc[0]);
+    if (isZKPiece(piece)) {
       const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
-      const zkp = this.snarkHelper.getGhostMoveProof(
+      const zkp = this.snarkHelper.getDist2Proof(
         piece.location[1],
         piece.location[0],
-        piece.salt,
+        (piece as KnownZKPiece).salt,
         to[1],
         to[0],
-        newSalt
+        newSalt,
+        Math.abs(to[1] - piece.location[1]) +
+          Math.abs(to[0] - piece.location[0]),
+        SIZE
       );
       localStorage.setItem(
         `COMMIT_${mimcHash(to[1], to[0], newSalt).toString()}`,
         JSON.stringify([to[1], to[0], newSalt])
       );
-      unsubmittedMove = {
-        ...unsubmittedMove,
-        turnNumber: this.gameState.turnNumber,
-        pieceId,
-        moveToRow: path.map((loc) => loc[1]),
-        moveToCol: path.map((loc) => loc[0]),
-        isZk: true,
-        zkp,
-      };
+      unsubmittedMove.isZk = true;
+      unsubmittedMove.zkp = zkp;
     }
     this.contractsAPI.onTxInit(unsubmittedMove);
     this.contractsAPI.doMove(unsubmittedMove);

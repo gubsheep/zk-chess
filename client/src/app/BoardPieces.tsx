@@ -119,8 +119,6 @@ export const ChessPiece = React.forwardRef(
     const color = methods.getColor(piece.owner) || Color.WHITE;
     let url: string = '';
     if (isGhost(piece)) {
-      console.log(piece);
-      console.log(pos);
       url =
         color === Color.BLACK
           ? './public/chess/black_ghost.svg'

@@ -27,21 +27,21 @@ struct SummonZKP {
     uint256[2] a;
     uint256[2][2] b;
     uint256[2] c;
-    uint256[1] input; // commitment
+    uint256[5] input; // commitment, port row, port col, dist from port, boardsize
 }
 
 struct MoveZKP {
     uint256[2] a;
     uint256[2][2] b;
     uint256[2] c;
-    uint256[2] input; // start, end
+    uint256[4] input; // commitment1, commitment2, dist, boardsize
 }
 
 struct AttackZKP {
     uint256[2] a;
     uint256[2][2] b;
     uint256[2] c;
-    uint256[4] input; // start, endRow, endCol, dist
+    uint256[5] input; // commitment, port x, port y, dist from port, boardsize
 }
 
 struct Summon {

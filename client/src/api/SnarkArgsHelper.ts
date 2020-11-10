@@ -1,6 +1,7 @@
 import {
   ContractCallArgs,
   GhostMoveArgs,
+  GhostSummonArgs,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import {
   SnarkJSProof,
@@ -21,13 +22,51 @@ class SnarkArgsHelper {
     return snarkArgsHelper;
   }
 
-  async getGhostMoveProof(
+  async getDist1Proof(
     x1: number,
     y1: number,
     salt1: string,
     x2: number,
     y2: number,
-    salt2: string
+    dist: number,
+    boardSize: number
+  ): Promise<GhostSummonArgs> {
+    try {
+      const input = {
+        x1: modPBigInt(x1).toString(),
+        y1: modPBigInt(y1).toString(),
+        salt1: modPBigInt(salt1).toString(),
+        x2: modPBigInt(x2).toString(),
+        y2: modPBigInt(y2).toString(),
+        dist: dist.toString(),
+        boardSize: boardSize.toString(),
+      };
+
+      const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
+        input,
+        '/public/circuits/dist1/circuit.wasm',
+        '/public/dist1.zkey'
+      );
+      const ret = this.callArgsFromProofAndSignals(
+        snarkProof.proof,
+        snarkProof.publicSignals
+      ) as GhostSummonArgs;
+      return ret;
+    } catch (e) {
+      console.error(e);
+      throw new Error('error calculating zkSNARK.');
+    }
+  }
+
+  async getDist2Proof(
+    x1: number,
+    y1: number,
+    salt1: string,
+    x2: number,
+    y2: number,
+    salt2: string,
+    dist: number,
+    boardSize: number
   ): Promise<GhostMoveArgs> {
     try {
       const input = {
@@ -37,12 +76,14 @@ class SnarkArgsHelper {
         x2: modPBigInt(x2).toString(),
         y2: modPBigInt(y2).toString(),
         salt2: modPBigInt(salt2).toString(),
+        dist: dist.toString(),
+        boardSize: boardSize.toString(),
       };
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
-        '/public/circuits/move/circuit.wasm',
-        '/public/move.zkey'
+        '/public/circuits/dist2/circuit.wasm',
+        '/public/dist2.zkey'
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,

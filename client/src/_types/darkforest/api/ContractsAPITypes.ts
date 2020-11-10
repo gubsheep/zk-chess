@@ -1,6 +1,6 @@
 import {BigNumber as EthersBN} from 'ethers';
 import {getRandomTxIntentId} from '../../../utils/Utils';
-import {BoardLocation} from '../../global/GlobalTypes';
+import {BoardLocation, PieceType} from '../../global/GlobalTypes';
 
 // TODO write these types
 export type ContractCallArgs = Array<unknown>;
@@ -45,6 +45,23 @@ export enum ContractsAPIEvent {
   TxConfirmed = 'TxConfirmed', // args: (unminedTx: SubmittedTx)
 }
 
+export type GhostSummonArgs = [
+  [string, string], // proofA
+  [
+    // proofB
+    [string, string],
+    [string, string]
+  ],
+  [string, string], // proofC
+  [
+    string, // commit
+    string, // port row
+    string, // port col
+    string, // dist
+    string // board size
+  ]
+];
+
 export type GhostMoveArgs = [
   [string, string], // proofA
   [
@@ -55,7 +72,9 @@ export type GhostMoveArgs = [
   [string, string], // proofC
   [
     string, // old commit
-    string // new commit
+    string, // new commit
+    string, // dist
+    string // board size
   ]
 ];
 
@@ -104,6 +123,7 @@ export type RawPiece = {
 export enum EthTxType {
   CREATE_GAME = 'CREATE_GAME',
   JOIN_GAME = 'JOIN_GAME',
+  SUMMON = 'SUMMON',
   MOVE = 'MOVE',
   GHOST_ATTACK = 'GHOST_ATTACK',
   GHOST_MOVE = 'GHOST_MOVE',
@@ -136,6 +156,39 @@ export type UnsubmittedJoin = TxIntent & {
 
 export type SubmittedJoin = UnsubmittedJoin & SubmittedTx;
 
+export type UnsubmittedSummon = TxIntent & {
+  type: EthTxType.SUMMON;
+  turnNumber: number;
+  pieceId: number;
+  pieceType: PieceType;
+  row: number;
+  col: number;
+  isZk: boolean;
+  zkp: Promise<GhostSummonArgs>;
+};
+
+export type SubmittedSummon = UnsubmittedSummon & SubmittedTx;
+
+export const createEmptySummon = (): UnsubmittedSummon => ({
+  txIntentId: getRandomTxIntentId(),
+  turnNumber: 0,
+  type: EthTxType.SUMMON,
+  pieceId: 0,
+  pieceType: PieceType.King,
+  row: 0,
+  col: 0,
+  isZk: false,
+  zkp: Promise.resolve([
+    ['0', '0'],
+    [
+      ['0', '0'],
+      ['0', '0'],
+    ],
+    ['0', '0'],
+    ['0', '0', '0', '0', '0'],
+  ]),
+});
+
 export type UnsubmittedMove = TxIntent & {
   type: EthTxType.MOVE;
   turnNumber: number;
@@ -163,7 +216,7 @@ export const createEmptyMove = (): UnsubmittedMove => ({
       ['0', '0'],
     ],
     ['0', '0'],
-    ['0', '0'],
+    ['0', '0', '0', '0'],
   ]),
 });
 
@@ -173,12 +226,3 @@ export type UnsubmittedEndTurn = TxIntent & {
 };
 
 export type SubmittedEndTurn = UnsubmittedEndTurn & SubmittedTx;
-
-export type UnsubmittedGhostAttack = TxIntent & {
-  type: EthTxType.GHOST_ATTACK;
-  pieceId: number;
-  at: BoardLocation;
-  salt: string;
-};
-
-export type SubmittedGhostAttack = UnsubmittedGhostAttack & SubmittedTx;

@@ -23,6 +23,7 @@ import {
   UnsubmittedCreateGame,
   UnsubmittedMove,
   UnsubmittedEndTurn,
+  UnsubmittedSummon,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -255,8 +256,8 @@ class ContractsAPI extends EventEmitter {
 
     const pieces: Piece[] = [];
     for (const rawPiece of rawPieces) {
-      console.log(rawPiece);
       const piece = this.rawPieceToPiece(rawPiece);
+      console.log(rawPiece);
       pieces.push(piece);
     }
 
@@ -327,6 +328,41 @@ class ContractsAPI extends EventEmitter {
         contract: this.gameContract,
         method: 'joinGame',
         args: [],
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      this.onTxSubmit(action, tx.hash);
+    }
+    return tx.wait();
+  }
+
+  public async doSummon(
+    action: UnsubmittedSummon
+  ): Promise<providers.TransactionReceipt> {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        txIntentId: action.txIntentId,
+        contract: this.gameContract,
+        method: 'doSummon',
+        args: [
+          [
+            action.turnNumber,
+            action.pieceId,
+            action.pieceType,
+            action.isZk ? 0 : action.row,
+            action.isZk ? 0 : action.col,
+            await action.zkp,
+          ],
+        ],
         overrides,
       }
     );
