@@ -253,6 +253,8 @@ class ContractsAPI extends EventEmitter {
     const gameId = (await contract.gameId()).toNumber();
     const player1Addr = address(await contract.player1());
     const player2Addr = address(await contract.player2());
+    const player1Mana = await contract.player1Mana();
+    const player2Mana = await contract.player2Mana();
     const rawPieces: RawPiece[] = await contract.getPieces();
     const rawDefaults: RawDefaults[] = await contract.getDefaults();
     const turnNumber = await contract.turnNumber();
@@ -271,6 +273,8 @@ class ContractsAPI extends EventEmitter {
       myAddress: this.account,
       player1: {address: player1Addr},
       player2: {address: player2Addr},
+      player1Mana,
+      player2Mana,
       pieces,
       defaults,
       turnNumber,
@@ -476,6 +480,7 @@ class ContractsAPI extends EventEmitter {
       hp: rawDefault[3],
       atk: rawDefault[4],
       isZk: rawDefault[5],
+      cost: rawDefault[6],
     };
   }
 }

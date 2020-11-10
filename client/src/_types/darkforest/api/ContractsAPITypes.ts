@@ -112,6 +112,9 @@ export type RawDefaults = {
 
   5: boolean;
   isZk?: boolean;
+
+  6: number;
+  cost?: number;
 };
 
 export type RawPiece = {

@@ -29,6 +29,9 @@ contract ZKChessGame is Initializable {
     address public player1;
     address public player2;
 
+    uint8 public player1Mana;
+    uint8 public player2Mana;
+
     // mapping from turn # -> piece # -> has acted
     mapping(uint8 => mapping(uint8 => bool)) public hasMoved;
     mapping(uint8 => mapping(uint8 => bool)) public hasAttacked;
@@ -47,7 +50,8 @@ contract ZKChessGame is Initializable {
             atkRange: 1,
             hp: 3,
             atk: 2,
-            isZk: false
+            isZk: false,
+            cost: 1
         });
         defaultStats[PieceType.KNIGHT] = PieceDefaultStats({
             pieceType: PieceType.KNIGHT,
@@ -55,7 +59,8 @@ contract ZKChessGame is Initializable {
             atkRange: 2,
             hp: 3,
             atk: 2,
-            isZk: false
+            isZk: false,
+            cost: 2
         });
         defaultStats[PieceType.GHOST] = PieceDefaultStats({
             pieceType: PieceType.GHOST,
@@ -63,7 +68,8 @@ contract ZKChessGame is Initializable {
             atkRange: 1,
             hp: 3,
             atk: 1,
-            isZk: true
+            isZk: true,
+            cost: 3
         });
         defaultStats[PieceType.PORT] = PieceDefaultStats({
             pieceType: PieceType.PORT,
@@ -71,7 +77,8 @@ contract ZKChessGame is Initializable {
             atkRange: 2,
             hp: 10,
             atk: 2,
-            isZk: false
+            isZk: false,
+            cost: 100
         });
     }
 
@@ -196,6 +203,10 @@ contract ZKChessGame is Initializable {
     //////////////////////
 
     function checkAction(uint8 _turnNumber) internal {
+        require(
+            msg.sender == player1 || msg.sender == player2,
+            "Not registered for this game"
+        );
         require(gameState != GameState.COMPLETE, "Game is ended");
         if (msg.sender == player1) {
             require(gameState == GameState.P1_TO_MOVE, "Not p1's turn");
@@ -258,6 +269,8 @@ contract ZKChessGame is Initializable {
         boardPieces[6][3] = 2;
 
         gameState = GameState.P1_TO_MOVE;
+        turnNumber = 1;
+        player1Mana = turnNumber;
         emit GameStart(player1, player2);
     }
 
@@ -266,11 +279,32 @@ contract ZKChessGame is Initializable {
         require(!pieces[summon.pieceId].initialized, "piece ID already in use");
 
         // PORT tile
-        uint8 homeRow = 0;
-        uint8 homeCol = 3;
-        if (msg.sender == player2) {
+        uint8 homeRow;
+        uint8 homeCol;
+        if (msg.sender == player1) {
+            homeRow = 0;
+            homeCol = 3;
+        } else {
             homeRow = 6;
+            homeCol = 3;
         }
+
+        // MANA checks
+        if (msg.sender == player1) {
+            require(
+                player1Mana >= defaultStats[summon.pieceType].cost,
+                "not enough mana"
+            );
+            player1Mana -= defaultStats[summon.pieceType].cost;
+        } else {
+            require(
+                player2Mana >= defaultStats[summon.pieceType].cost,
+                "not enough mana"
+            );
+            player2Mana -= defaultStats[summon.pieceType].cost;
+        }
+
+        // validity checks
         if (!defaultStats[summon.pieceType].isZk) {
             require(
                 summon.row < BOARD_SIZE && summon.col < BOARD_SIZE,
@@ -314,6 +348,8 @@ contract ZKChessGame is Initializable {
                 );
             }
         }
+
+        // create piece
         pieces[summon.pieceId] = Piece({
             id: summon.pieceId,
             pieceType: summon.pieceType,
@@ -385,10 +421,20 @@ contract ZKChessGame is Initializable {
         checkAction(_turnNumber);
         if (msg.sender == player1) {
             // change to p2's turn
+            player1Mana = 0;
+            player2Mana = turnNumber;
+            if (player2Mana > 8) {
+                player2Mana = 8;
+            }
             gameState = GameState.P2_TO_MOVE;
         } else {
             // change to p1's turn
             turnNumber++;
+            player2Mana = 0;
+            player1Mana = turnNumber;
+            if (player1Mana > 8) {
+                player1Mana = 8;
+            }
             gameState = GameState.P1_TO_MOVE;
         }
         emit ActionMade(msg.sender);

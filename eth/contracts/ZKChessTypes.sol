@@ -10,6 +10,7 @@ struct PieceDefaultStats {
     uint8 atkRange;
     uint8 hp;
     uint8 atk;
+    uint8 cost;
     bool isZk;
 }
 

@@ -55,6 +55,7 @@ export type PieceStatDefaults = {
   hp: number;
   atk: number;
   isZk: boolean;
+  cost: number;
 };
 
 // a piece but defaults aren't added in
@@ -122,6 +123,8 @@ export type ChessGameContractData = {
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
+  player1Mana: number;
+  player2Mana: number;
 
   pieces: ContractPiece[];
   defaults: Map<PieceType, PieceStatDefaults>;
@@ -137,6 +140,9 @@ export type ChessGame = {
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
+
+  player1Mana: number;
+  player2Mana: number;
 
   pieces: Piece[];
 

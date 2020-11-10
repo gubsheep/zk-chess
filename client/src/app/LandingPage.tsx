@@ -4,7 +4,6 @@ import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
-import FakeGameManager from '../api/FakeGameManager';
 import GameManager from '../api/GameManager';
 import {ZKChessStateProvider} from '../api/UIStateManager';
 import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
@@ -24,8 +23,6 @@ enum InitState {
   TERMINATED,
 }
 
-const MOCK_GAME = false;
-
 export function LandingPage() {
   const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
     null
@@ -37,13 +34,7 @@ export function LandingPage() {
   const startGame = async () => {
     console.log('started game');
 
-    if (MOCK_GAME) {
-      const newGameManager = await FakeGameManager.create();
-      setGameManager(newGameManager);
-      setInitState(InitState.COMPLETE);
-    } else {
-      setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
-    }
+    setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
   };
 
   const displayAccounts = () => {
@@ -67,13 +58,8 @@ export function LandingPage() {
 
     setInitState(InitState.FETCHING_ETH_DATA);
     let newGameManager: AbstractGameManager;
-    if (MOCK_GAME) {
-      newGameManager = await FakeGameManager.create();
-      setGameManager(newGameManager);
-    } else {
-      newGameManager = await GameManager.create();
-      setGameManager(newGameManager);
-    }
+    newGameManager = await GameManager.create();
+    setGameManager(newGameManager);
     setGameIds(newGameManager.getAllGameIds());
     newGameManager.on(ContractEvent.CreatedGame, () => {
       setGameIds(newGameManager.getAllGameIds());
