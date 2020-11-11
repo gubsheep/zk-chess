@@ -91,10 +91,13 @@ export class PixiManager {
 
     // set up font
     const fontLoader = getFontLoader(cache['public/assets/font.png']);
-    app.stage.addChild(fontLoader('The quick brown fox jumps over the lazy dog?'));
-    const msg2 = fontLoader('THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. 1234567890', 0x000000);
-    msg2.y = 100;
-    app.stage.addChild(msg2);
+    const msg = fontLoader('Asdf?');
+    app.stage.addChild(msg.object);
+    const msg2 = fontLoader('Asdf.', 0x000000);
+    msg2.object.y = 100;
+    app.stage.addChild(msg2.object);
+
+    console.log(msg.width, msg2.width);
 
     // set up ships
     let container = new PIXI.Container();

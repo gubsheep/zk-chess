@@ -1,7 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 
-type FontLoader = (msg: string, color?: number) => PIXI.Container;
 const CAPIT = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const LOWER = 'abcdefghijklmnopqrstuvwxyz';
 const OTHER = '0123456789.!?';
@@ -12,6 +11,15 @@ const HAS_DESC = ['g', 'p', 'q', 'y'];
 const ROW_LEN = 13;
 const CHAR_H = 7;
 const CHAR_W = 5;
+
+type MessageData = {
+  message: string;
+  object: PIXI.Container;
+  color: number;
+  width: number;
+};
+
+type FontLoader = (msg: string, color?: number) => MessageData;
 
 export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
   const charMap = new Map<string, PIXI.Texture>();
@@ -32,8 +40,9 @@ export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
     }
   }
 
-  return (msg: string, color: number = 0xFFFFFF) => {
-    const chars = msg.split('');
+  return (message: string, color: number = 0xffffff) => {
+    const chars = message.split('');
+    console.log(chars);
     const container = new PIXI.Container();
     for (let i = 0; i < chars.length; i++) {
       const obj = charMap.get(chars[i]);
@@ -47,6 +56,14 @@ export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
     const shader = new ColorOverlayFilter(color);
     container.filters = [shader];
 
-    return container;
+    let width = chars.length * (1 + CHAR_W) - 1;
+    if (['.', '!'].includes(chars[chars.length - 1])) width -= 3;
+
+    return {
+      object: container,
+      color,
+      message,
+      width,
+    };
   };
 };
