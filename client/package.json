@@ -7,6 +7,7 @@
     "@ethersproject/networks": "^5.0.2",
     "@ethersproject/providers": "^5.0.5",
     "@metamask/detect-provider": "^1.1.0",
+    "@pixi/filter-color-overlay": "^3.1.1",
     "@types/big-integer": "^0.0.31",
     "@types/json-stable-stringify": "^1.0.32",
     "@types/lodash": "^4.14.157",

@@ -92,7 +92,7 @@ export class PixiManager {
     // set up font
     const fontLoader = getFontLoader(cache['public/assets/font.png']);
     app.stage.addChild(fontLoader('The quick brown fox jumps over the lazy dog?'));
-    const msg2 = fontLoader('THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.');
+    const msg2 = fontLoader('THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. 1234567890', 0x000000);
     msg2.y = 100;
     app.stage.addChild(msg2);
 

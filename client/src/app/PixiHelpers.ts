@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
+import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 
-type FontLoader = (msg: string) => PIXI.Container;
+type FontLoader = (msg: string, color?: number) => PIXI.Container;
 const CAPIT = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const LOWER = 'abcdefghijklmnopqrstuvwxyz';
 const OTHER = '0123456789.!?';
@@ -31,7 +32,7 @@ export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
     }
   }
 
-  return (msg: string) => {
+  return (msg: string, color: number = 0xFFFFFF) => {
     const chars = msg.split('');
     const container = new PIXI.Container();
     for (let i = 0; i < chars.length; i++) {
@@ -41,8 +42,10 @@ export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
         sprite.x = i * (1 + CHAR_W);
         if (HAS_DESC.includes(chars[i])) sprite.y = 2;
         container.addChild(sprite);
-      }
+      } // else just add a space
     }
+    const shader = new ColorOverlayFilter(color);
+    container.filters = [shader];
 
     return container;
   };
