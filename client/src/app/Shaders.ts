@@ -1,6 +1,5 @@
-import { Shader } from 'pixi.js';
-
-const glsl = (x: TemplateStringsArray): string => x[0];
+// const glsl = (x: TemplateStringsArray): string => x[0];
+import * as PIXI from 'pixi.js';
 
 export enum ShaderColor {
   Red,
@@ -21,7 +20,7 @@ export type ShaderProps = {
   color: ColorUniform;
 };
 
-export const shaderStr = (color: ShaderColor) => {
+const shaderStr = (color: ShaderColor) => {
   return `
   precision mediump float;
   uniform float color;
@@ -45,6 +44,8 @@ export const shaderStr = (color: ShaderColor) => {
     };
     gl_FragColor = overlay(baseColor, overlayColor);
   }
-
 `;
 };
+
+export const redShader = new PIXI.Filter('', shaderStr(ShaderColor.Red));
+export const blueShader = new PIXI.Filter('', shaderStr(ShaderColor.Blue));
