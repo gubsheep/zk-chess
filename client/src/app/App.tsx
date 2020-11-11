@@ -3,6 +3,7 @@ import React from 'react';
 import {BrowserRouter as Router, Switch, Route} from 'react-router-dom';
 import styled from 'styled-components';
 import {LandingPage} from './LandingPage';
+import PixiApp from './PixiApp';
 
 function App() {
   return (
@@ -22,7 +23,8 @@ const AppContainer = styled.div`
 export default function _App() {
   return (
     <AppContainer>
-      <App />
+      {/* <App /> */}
+      <PixiApp />
     </AppContainer>
   );
 }
