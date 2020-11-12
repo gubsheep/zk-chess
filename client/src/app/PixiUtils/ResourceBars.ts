@@ -4,6 +4,7 @@ import * as PIXI from 'pixi.js';
 import { BASELINE_ICONS, BASELINE_TEXT, ICONS } from './TextureLoader';
 import { ThemeProvider } from 'styled-components';
 import { CanvasCoords } from './PixiTypes';
+import { getFontLoader } from './FontLoader';
 
 const LABEL_WIDTH = 32; // width of 'Gold:'
 const LABEL_M_RIGHT = 2; // right margin
@@ -190,5 +191,38 @@ export class HPBar extends ResourceBar {
   getText(value: number): string {
     const valueStr = value < 10 ? '0' + value : value;
     return `${valueStr}/${this.max}`;
+  }
+}
+
+export class ResourceBars extends GameObject {
+  hpBar: HPBar;
+  goldBar: GoldBar;
+  constructor(manager: PixiManager, positionSelf: boolean = true) {
+    const container = new PIXI.Container();
+
+    const goldBar = new GoldBar(manager);
+    const hpBar = new HPBar(manager);
+
+    super(manager, container);
+
+    goldBar.setPosition({ x: 0, y: 12 });
+
+    this.hpBar = hpBar;
+    this.goldBar = goldBar;
+
+    this.addChild(goldBar);
+    this.addChild(hpBar);
+
+    if (positionSelf) this.positionSelf();
+  }
+
+  setPosition(coords: CanvasCoords) {
+    super.setPosition(coords);
+    this.hpBar.update();
+    this.goldBar.update();
+  }
+
+  private positionSelf() {
+    this.setPosition({ x: 10, y: 10 });
   }
 }

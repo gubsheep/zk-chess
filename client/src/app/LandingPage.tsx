@@ -1,14 +1,12 @@
 import React from 'react';
-import {useState} from 'react';
+import { useState } from 'react';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
-import {ZKChessStateProvider} from '../api/UIStateManager';
-import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
-import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
-import {Game} from './Game';
+import { ContractEvent } from '../_types/darkforest/api/ContractsAPITypes';
+import { EthAddress, GameStatus } from '../_types/global/GlobalTypes';
 
 enum InitState {
   NONE,
@@ -169,9 +167,10 @@ export function LandingPage() {
     );
   } else if (initState === InitState.COMPLETE && gameManager) {
     return (
-      <ZKChessStateProvider gameManager={gameManager}>
-        <Game />
-      </ZKChessStateProvider>
+      <></>
+      // <ZKChessStateProvider gameManager={gameManager}>
+      //   {/* <Game /> */}
+      // </ZKChessStateProvider>
     );
   }
   return <div></div>;

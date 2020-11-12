@@ -102,7 +102,7 @@ export class Ship extends GameObject {
     coords: BoardCoords,
     color: PlayerColor
   ) {
-    const { boardCoords } = manager;
+    // const { boardCoords } = manager;
     const { col, row } = coords;
 
     const cache = PIXI.utils.TextureCache;
@@ -116,8 +116,8 @@ export class Ship extends GameObject {
     sprite.x = 16;
     sprite.y = 16; // doesn't work? investigate
 
-    container.x = boardCoords[col][row].x + 2;
-    container.y = boardCoords[col][row].y + 2;
+    // container.x = boardCoords[col][row].x + 2;
+    // container.y = boardCoords[col][row].y + 2;
     container.addChild(sprite);
 
     let mask = new PIXI.Graphics();

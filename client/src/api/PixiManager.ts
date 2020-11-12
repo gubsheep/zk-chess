@@ -9,10 +9,10 @@ import {
   ShipType,
 } from '../app/PixiUtils/PixiTypes';
 import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
-import { GoldBar, HPBar } from '../app/PixiUtils/ResourceBars';
+import { GoldBar, HPBar, ResourceBars } from '../app/PixiUtils/ResourceBars';
 import { ToggleButton } from '../app/PixiUtils/ToggleButton';
 import { Shop } from './Shop';
-import { makeGrid } from '../app/PixiUtils/GameBoard';
+import { GameBoard, makeGrid } from '../app/PixiUtils/GameBoard';
 import { Background } from '../app/PixiUtils/Background';
 
 type InitProps = {
@@ -39,9 +39,8 @@ export class PixiManager {
 
   gameObjects: GameObject[];
 
-  boardCoords: CanvasCoords[][];
-  hpBar: HPBar;
-  goldBar: GoldBar;
+  gameBoard: GameBoard;
+  myMothership: Mothership;
 
   // pieces: PIXI.Container[];
 
@@ -90,31 +89,27 @@ export class PixiManager {
 
     // set up grid
     // this is definitely a bad way of doing it, but whatever TODO fix
-    this.boardCoords = makeGrid({ width, height, app });
+    this.addObject(new GameBoard(this));
 
     // make button to toggle b/t ships and submarines
-    const toggleButton = new ToggleButton(this);
-    this.addObject(toggleButton);
-    const botLeft = this.boardCoords[0][4];
-    toggleButton.setPosition({ x: botLeft.x, y: botLeft.y + 3 + 36 });
+    // const toggleButton = new ToggleButton(this);
+    // this.addObject(toggleButton);
+    // const botLeft = this.boardCoords[0][4];
+    // toggleButton.setPosition({ x: botLeft.x, y: botLeft.y + 3 + 36 });
 
     // set up ships
-    this.addObject(new Mothership(this, PlayerColor.Red));
+    const myMothership = new Mothership(this, PlayerColor.Red);
+    this.addObject(myMothership);
     this.addObject(new Mothership(this, PlayerColor.Blue));
 
     // set up resource bars
-    const hpBar = new HPBar(this);
-    this.addObject(hpBar);
-    hpBar.setPosition({ x: 10, y: 10 });
+    this.addObject(new ResourceBars(this, true));
 
-    const goldBar = new GoldBar(this);
-    this.addObject(goldBar);
-    goldBar.setPosition({ x: 10, y: 22 });
-
-    this.hpBar = hpBar;
-    this.goldBar = goldBar;
-
+    // set up shop
     this.addObject(new Shop(this, true));
+
+    // keep references
+    this.myMothership = myMothership;
 
     // initialize loop
     this.loop();
