@@ -32,10 +32,13 @@ export class PixiManager {
 
   fontLoader: FontLoader;
 
-  boardCoords: CanvasCoords[][];
-  // pieces: PIXI.Container[];
-
   gameObjects: GameObject[];
+
+  boardCoords: CanvasCoords[][];
+  hpBar: HPBar;
+  goldBar: GoldBar;
+
+  // pieces: PIXI.Container[];
 
   private constructor(props: InitProps) {
     const { canvas } = props;
@@ -45,8 +48,8 @@ export class PixiManager {
     const height = canvas.height;
 
     let app = new PIXI.Application({
-      width: width,
-      height: height,
+      width,
+      height,
       view: canvas,
       resolution: 1,
     });
@@ -57,11 +60,12 @@ export class PixiManager {
 
     autoBind(this);
 
-    // can't put this.setup directly or it won't bind this
+    // can't put `this.setup` directly or it won't bind `this`
     loadTextures(() => this.setup());
   }
 
   addObject(obj: GameObject) {
+    // TODO manage systems, components, etc.
     this.gameObjects.push(obj);
   }
 
@@ -93,15 +97,17 @@ export class PixiManager {
       )
     );
 
-    const goldBar = new GoldBar(this);
-    this.addObject(goldBar);
-    goldBar.object.position.set(25, 25);
-    goldBar.setValue(2);
-
+    // set up resource bars
     const hpBar = new HPBar(this);
     this.addObject(hpBar);
-    hpBar.object.position.set(25, 40);
-    hpBar.setValue(3);
+    hpBar.setPosition({ x: 10, y: 10 });
+
+    const goldBar = new GoldBar(this);
+    this.addObject(goldBar);
+    goldBar.setPosition({ x: 10, y: 22 });
+
+    this.hpBar = hpBar;
+    this.goldBar = goldBar;
 
     // initialize loop
     this.loop();

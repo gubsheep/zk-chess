@@ -3,11 +3,12 @@ import { GameObject } from './GameObject';
 import * as PIXI from 'pixi.js';
 import { ICONS } from './TextureLoader';
 import { ThemeProvider } from 'styled-components';
+import { CanvasCoords } from './PixiTypes';
 
-const LABEL_WIDTH = 36; // width of 'Gold:'
+const LABEL_WIDTH = 32; // width of 'Gold:'
 const LABEL_M_RIGHT = 2; // right margin
-const NUMBER_WIDTH = 30; // width of 'n/10'
-const NUMBER_M_RIGHT = 0; // right margin
+const NUMBER_WIDTH = 34; // width of 'n/10'
+const NUMBER_M_RIGHT = 2; // right margin
 
 const NUMBER_OFFSET = LABEL_WIDTH + LABEL_M_RIGHT;
 const ICON_OFFSET = NUMBER_OFFSET + NUMBER_WIDTH + NUMBER_M_RIGHT;
@@ -45,6 +46,7 @@ class ResourceBar extends GameObject {
   constructor(
     manager: PixiManager,
     label: string,
+    max: number,
     iconContainer: PIXI.Container,
     maskable: PIXI.DisplayObject
   ) {
@@ -73,12 +75,9 @@ class ResourceBar extends GameObject {
     this.numbersContainer = numbersContainer;
     this.mask = mask;
     this.maskable = maskable;
-    this.value = 0;
-    this.max = 10;
-    this.setValue(this.value);
-
-    // @ts-ignore
-    window['row'] = this;
+    this.value = max;
+    this.max = max;
+    this.update();
   }
 
   updateMask(value: number): void {
@@ -119,6 +118,11 @@ class ResourceBar extends GameObject {
     this.updateText(this.value);
   }
 
+  setPosition({ x, y }: CanvasCoords): void {
+    super.setPosition({ x, y });
+    this.update();
+  }
+
   //implemented by children
   getMaskWidth(value: number): number {
     return value * (ICON_WIDTH + MARGIN);
@@ -128,16 +132,44 @@ class ResourceBar extends GameObject {
   }
 }
 
+const GOLD_START_MAX = 3;
 export class GoldBar extends ResourceBar {
+  coinUsedRow: PIXI.DisplayObject;
+  iconContainer: PIXI.Container;
   constructor(manager: PixiManager) {
     const iconContainer = new PIXI.Container();
+
     const coinUsedRow = makeRow(ICONS.COIN_USED, 10);
+    coinUsedRow.zIndex = 0;
+
     const coinRow = makeRow(ICONS.COIN, 10);
+    coinRow.zIndex = 1;
 
     iconContainer.addChild(coinUsedRow);
     iconContainer.addChild(coinRow);
 
-    super(manager, 'Gold:', iconContainer, coinRow);
+    super(manager, 'Gold:', GOLD_START_MAX, iconContainer, coinRow);
+
+    this.iconContainer = iconContainer;
+    this.coinUsedRow = coinUsedRow;
+
+    this.setMax(GOLD_START_MAX);
+  }
+
+  // overrides
+  getText(value: number): string {
+    const valueStr = value < 10 ? '0' + value : value;
+    const maxStr = this.value < 10 ? '0' + this.value : this.value;
+    return `${valueStr}/${maxStr}`;
+  }
+  setMax(max: number): void {
+    this.iconContainer.removeChild(this.coinUsedRow);
+    const coinUsedRow = makeRow(ICONS.COIN_USED, max);
+    coinUsedRow.zIndex = 0;
+    this.coinUsedRow = coinUsedRow;
+    this.iconContainer.addChild(coinUsedRow);
+    this.iconContainer.children.sort((a, b) => a.zIndex - b.zIndex);
+    super.setMax(max);
   }
 }
 
@@ -148,12 +180,15 @@ export class HPBar extends ResourceBar {
 
     iconContainer.addChild(hpRow);
 
-    super(manager, 'HP:', iconContainer, hpRow);
-    this.setMax(20);
+    super(manager, 'HP:', 20, iconContainer, hpRow);
   }
 
   // overrides
   getMaskWidth(value: number): number {
     return Math.floor((value / 2) * (ICON_WIDTH + MARGIN));
+  }
+  getText(value: number): string {
+    const valueStr = value < 10 ? '0' + value : value;
+    return `${valueStr}/${this.max}`;
   }
 }

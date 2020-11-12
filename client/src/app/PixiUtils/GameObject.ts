@@ -1,6 +1,7 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
+import { CanvasCoords } from './PixiTypes';
 
 // top-level game object abstraction. all of our game things should be wrapped in these guys
 export class GameObject {
@@ -38,4 +39,7 @@ export class GameObject {
     // this.object = null;
   }
 
+  setPosition({ x, y }: CanvasCoords) {
+    this.object.position.set(x, y);
+  }
 }
