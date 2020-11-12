@@ -3,7 +3,7 @@ import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 
 const CAPIT = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const LOWER = 'abcdefghijklmnopqrstuvwxyz';
-const OTHER = '0123456789.!?';
+const OTHER = '0123456789.!?/:';
 const CHARS = `${CAPIT}${LOWER}${OTHER}`;
 
 const HAS_DESC = ['g', 'p', 'q', 'y'];
@@ -19,7 +19,7 @@ type MessageData = {
   width: number;
 };
 
-type FontLoader = (msg: string, color?: number) => MessageData;
+export type FontLoader = (msg: string, color?: number) => MessageData;
 
 export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
   const charMap = new Map<string, PIXI.Texture>();
@@ -42,7 +42,6 @@ export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
 
   return (message: string, color: number = 0xffffff) => {
     const chars = message.split('');
-    console.log(chars);
     const container = new PIXI.Container();
     for (let i = 0; i < chars.length; i++) {
       const obj = charMap.get(chars[i]);

@@ -1,28 +1,41 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import { getFontLoader } from '../app/PixiUtils/FontLoader';
-import { blueShader, redShader } from '../app/PixiUtils/Shaders';
+import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
+import { GameObject } from '../app/PixiUtils/GameObject';
+import { Ship } from '../app/PixiUtils/Ships';
+import {
+  CanvasCoords,
+  PlayerColor,
+  ShipType,
+} from '../app/PixiUtils/PixiTypes';
 import {
   BG_IMAGE,
   FONT,
+  ICONS,
   loadTextures,
-  PIECES,
+  SHIPS,
 } from '../app/PixiUtils/TextureLoader';
+import { makeGrid } from '../app/PixiUtils/Utils';
+import { GoldBar, HPBar } from '../app/PixiUtils/ResourceBars';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
 };
 
-type Coords = { x: number; y: number };
-
 export class PixiManager {
   static instance: PixiManager | null;
-  app: PIXI.Application;
   canvas: HTMLCanvasElement;
-  boardCoords: Coords[][];
-  pieces: PIXI.Container[];
+  app: PIXI.Application;
+
   frameRequestId: number;
   frameCount: number;
+
+  fontLoader: FontLoader;
+
+  boardCoords: CanvasCoords[][];
+  // pieces: PIXI.Container[];
+
+  gameObjects: GameObject[];
 
   private constructor(props: InitProps) {
     const { canvas } = props;
@@ -38,7 +51,8 @@ export class PixiManager {
       resolution: 1,
     });
     this.app = app;
-    this.pieces = [];
+    // this.pieces = [];
+    this.gameObjects = [];
     this.frameCount = 0;
 
     autoBind(this);
@@ -47,12 +61,18 @@ export class PixiManager {
     loadTextures(() => this.setup());
   }
 
+  addObject(obj: GameObject) {
+    this.gameObjects.push(obj);
+  }
+
   setup() {
+    const cache = PIXI.utils.TextureCache;
+    this.fontLoader = getFontLoader(cache[FONT]);
+
     const app = this.app;
     const { width, height } = this.app.renderer;
 
     app.renderer.backgroundColor = 0x061639; // TODO set fallback color
-    const cache = PIXI.utils.TextureCache;
 
     // set up background
     let texture = cache[BG_IMAGE];
@@ -60,89 +80,36 @@ export class PixiManager {
     app.stage.addChild(bgsprite);
 
     // set up grid
-    const numX = 7;
-    const numY = 5;
-    const DIM = 36;
-    const BORDER = 1;
-    const sumW = (BORDER + DIM) * numX - BORDER;
-    const sumH = (BORDER + DIM) * numY - BORDER;
-
-    const startX = Math.floor((width - sumW) / 2);
-    const startY = Math.floor((height - sumH) / 2);
-
-    const myCoords: Coords[][] = [...Array(7)].map((_e) => Array(5));
-
-    for (let i = 0; i < numX; i++) {
-      for (let j = 0; j < numY; j++) {
-        const x = startX + i * DIM + (i - 1) * BORDER;
-        const y = startY + j * DIM + (j - 1) * BORDER;
-        let rectangle = new PIXI.Graphics();
-        rectangle.beginFill(0x222266, 0.4);
-        rectangle.drawRect(0, 0, DIM, DIM);
-        rectangle.endFill();
-        rectangle.x = x;
-        rectangle.y = y;
-        app.stage.addChild(rectangle);
-
-        myCoords[i][j] = { x, y };
-      }
-    }
-    this.boardCoords = myCoords;
-
-    // set up font
-    const fontLoader = getFontLoader(cache[FONT]);
-    const msg = fontLoader('Asdf?');
-    app.stage.addChild(msg.object);
-    const msg2 = fontLoader('Asdf.', 0x000000);
-    msg2.object.y = 100;
-    app.stage.addChild(msg2.object);
-
-    console.log(msg.width, msg2.width);
+    // this is definitely a bad way of doing it, but whatever
+    this.boardCoords = makeGrid({ width, height, app });
 
     // set up ships
-    let container = new PIXI.Container();
-    let sprite = new PIXI.Sprite(cache[PIECES[0]]);
-    // should be unnecessary
-    sprite.x = 0;
-    sprite.y = 0;
-    sprite.filters = [redShader];
-    container.x = this.boardCoords[0][0].x + 2;
-    container.y = this.boardCoords[0][0].y + 2;
+    this.addObject(
+      new Ship(
+        this,
+        ShipType.Mothership_00,
+        { row: 0, col: 0 },
+        PlayerColor.Red
+      )
+    );
 
-    let debugRect = new PIXI.Graphics();
-    debugRect.beginFill(0xff0000);
-    debugRect.drawRect(0, 0, 100, 100);
-    debugRect.endFill();
-    debugRect.x = -50;
-    debugRect.y = -50;
-    container.addChild(debugRect);
+    const goldBar = new GoldBar(this);
+    this.addObject(goldBar);
+    goldBar.object.position.set(25, 25);
+    goldBar.setValue(2);
 
-    container.addChild(sprite);
+    const hpBar = new HPBar(this);
+    this.addObject(hpBar);
+    hpBar.object.position.set(25, 40);
+    hpBar.setValue(3);
 
-    let mask = new PIXI.Graphics();
-    mask.beginFill(0xffffff, 1.0);
-    mask.drawRect(container.x, container.y, 32, 24);
-    mask.endFill();
-    container.mask = mask;
-
-    app.stage.addChild(container);
-    this.pieces.push(container);
-
+    // initialize loop
     this.loop();
   }
 
   loop() {
-    const frames = 30;
-    if (this.frameCount % frames === 0) {
-      const container = this.pieces[0];
-      const boat = container.children[1];
-      if (this.frameCount % (2 * frames) === 0) {
-        // TODO need a better way to specify that it's the ship
-        boat.y = 2;
-      } else {
-        // mask.drawRect(container.x, container.y, 32, 24);
-        boat.y = 0;
-      }
+    for (const obj of this.gameObjects) {
+      if (obj.active) obj.loop();
     }
 
     this.frameCount++;

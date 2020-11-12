@@ -1,11 +1,7 @@
 import * as PIXI from 'pixi.js';
+import { PlayerColor } from './PixiTypes';
 
 const glsl = (x: TemplateStringsArray): string => x[0];
-
-export enum ShaderColor {
-  Red,
-  Blue,
-}
 
 /*
 interface Uniform<T> {
@@ -23,7 +19,7 @@ type ShaderProps = {
 };
 */
 
-const getOverlayFrag = (color: ShaderColor): string => `
+const getOverlayFrag = (color: PlayerColor): string => `
   precision mediump float;
 
   varying vec2 vTextureCoord;
@@ -39,7 +35,7 @@ const getOverlayFrag = (color: ShaderColor): string => `
   void main() {
     vec4 baseColor = texture2D(uSampler, vTextureCoord);
     vec4 overlayColor = ${
-      color === ShaderColor.Red
+      color === PlayerColor.Red
         ? 'vec4(1.0, 0.0, 0.0, 1.0)'
         : 'vec4(0.0, 0.0, 1.0, 1.0)'
     };
@@ -47,5 +43,5 @@ const getOverlayFrag = (color: ShaderColor): string => `
   }
 `;
 
-export const redShader = new PIXI.Filter('', getOverlayFrag(ShaderColor.Red));
-export const blueShader = new PIXI.Filter('', getOverlayFrag(ShaderColor.Blue));
+export const redShader = new PIXI.Filter('', getOverlayFrag(PlayerColor.Red));
+export const blueShader = new PIXI.Filter('', getOverlayFrag(PlayerColor.Blue));

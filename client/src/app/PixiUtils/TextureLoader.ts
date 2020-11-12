@@ -5,7 +5,7 @@ const imgUri = (file: string) => PATH + file;
 
 export const BG_IMAGE = imgUri('backgroundsmall.png');
 export const FONT = imgUri('font.png');
-export const PIECES = [
+export const SHIPS = [
   imgUri('00_mothership.png'),
   imgUri('01_cruiser.png'),
   imgUri('02_frigate.png'),
@@ -14,7 +14,13 @@ export const PIECES = [
   imgUri('05_warship.png'),
 ];
 
-const textures = [FONT, BG_IMAGE, ...PIECES];
+export const ICONS = {
+  HEART: imgUri('icons/heart.png'),
+  COIN: imgUri('icons/coin.png'),
+  COIN_USED: imgUri('icons/coin_used.png'),
+};
+
+const textures = [FONT, BG_IMAGE, ...SHIPS, ...Object.values(ICONS)];
 
 export const loadTextures = (callbackFn: () => void): void => {
   const loader = PIXI.Loader.shared;
