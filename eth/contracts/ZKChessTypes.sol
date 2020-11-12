@@ -4,6 +4,15 @@ pragma solidity ^0.6.7;
 enum GameState {WAITING_FOR_PLAYERS, P1_TO_MOVE, P2_TO_MOVE, COMPLETE}
 enum PieceType {KING, KNIGHT, GHOST, PORT}
 
+struct GameInfo {
+    uint8 turnNumber;
+    GameState gameState;
+    address player1;
+    address player2;
+    uint8 player1Mana;
+    uint8 player2Mana;
+}
+
 struct PieceDefaultStats {
     PieceType pieceType;
     uint8 mvRange;
@@ -12,6 +21,7 @@ struct PieceDefaultStats {
     uint8 atk;
     uint8 cost;
     bool isZk;
+    bool kamikaze;
 }
 
 struct Piece {
@@ -45,7 +55,7 @@ struct AttackZKP {
     uint256[2] a;
     uint256[2][2] b;
     uint256[2] c;
-    uint256[5] input; // commitment, port x, port y, dist from port, boardsize
+    uint256[5] input; // commitment, attacking x, attacking y, dist, boardsize
 }
 
 struct Summon {
@@ -68,7 +78,6 @@ struct Move {
 struct Attack {
     uint8 turnNumber;
     uint8 pieceId;
-    uint8 attackRow;
-    uint8 attackCol;
+    uint8 attackedId;
     AttackZKP zkp;
 }

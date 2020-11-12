@@ -7,17 +7,13 @@ import "./ZKChessUtils.sol";
 import "./Verifier.sol";
 
 contract ZKChessGame is Initializable {
-    uint256
-        public constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-    uint256
-        public constant GHOST_START_COMMITMENT = 7374563847362678215915084925243633004703986452179446109135597066279732561698;
     uint256 public constant BOARD_SIZE = 7;
 
     uint256 public gameId;
 
     uint8 public turnNumber;
     GameState public gameState;
-    uint8[BOARD_SIZE][BOARD_SIZE] public boardPieces; // board[row][col]
+    uint8[][] public boardPieces; // board[row][col]
 
     uint8[] public pieceIds;
     mapping(uint8 => Piece) public pieces;
@@ -36,12 +32,17 @@ contract ZKChessGame is Initializable {
     mapping(uint8 => mapping(uint8 => bool)) public hasMoved;
     mapping(uint8 => mapping(uint8 => bool)) public hasAttacked;
 
-    uint256 pfsVerified;
-
     function initialize(uint256 _gameId, bool _disableZKCheck) public {
         gameId = _gameId;
         DISABLE_ZK_CHECK = _disableZKCheck;
         gameState = GameState.WAITING_FOR_PLAYERS;
+
+        for (uint8 i = 0; i < BOARD_SIZE; i++) {
+            boardPieces.push();
+            for (uint8 j = 0; j < BOARD_SIZE; j++) {
+                boardPieces[i].push(0);
+            }
+        }
 
         // initialize pieces
         defaultStats[PieceType.KING] = PieceDefaultStats({
@@ -51,7 +52,8 @@ contract ZKChessGame is Initializable {
             hp: 3,
             atk: 2,
             isZk: false,
-            cost: 1
+            cost: 1,
+            kamikaze: false
         });
         defaultStats[PieceType.KNIGHT] = PieceDefaultStats({
             pieceType: PieceType.KNIGHT,
@@ -60,7 +62,8 @@ contract ZKChessGame is Initializable {
             hp: 3,
             atk: 2,
             isZk: false,
-            cost: 2
+            cost: 2,
+            kamikaze: false
         });
         defaultStats[PieceType.GHOST] = PieceDefaultStats({
             pieceType: PieceType.GHOST,
@@ -69,7 +72,8 @@ contract ZKChessGame is Initializable {
             hp: 3,
             atk: 1,
             isZk: true,
-            cost: 3
+            cost: 3,
+            kamikaze: true
         });
         defaultStats[PieceType.PORT] = PieceDefaultStats({
             pieceType: PieceType.PORT,
@@ -78,7 +82,8 @@ contract ZKChessGame is Initializable {
             hp: 10,
             atk: 2,
             isZk: false,
-            cost: 100
+            cost: 100,
+            kamikaze: false
         });
     }
 
@@ -120,24 +125,15 @@ contract ZKChessGame is Initializable {
     /// Helper ///
     //////////////
 
-    function taxiDist(
-        uint8 row1,
-        uint8 col1,
-        uint8 row2,
-        uint8 col2
-    ) private pure returns (uint8) {
-        uint8 ret = 0;
-        if (row1 > row2) {
-            ret += row1 - row2;
-        } else {
-            ret += row2 - row1;
-        }
-        if (col1 > col2) {
-            ret += col1 - col2;
-        } else {
-            ret += col2 - col1;
-        }
-        return ret;
+    function checkAction(uint8 _turnNumber) public view returns (bool) {
+        return
+            ZKChessUtils.checkAction(
+                _turnNumber,
+                turnNumber,
+                player1,
+                player2,
+                gameState
+            );
     }
 
     function isValidMove(
@@ -145,77 +141,31 @@ contract ZKChessGame is Initializable {
         uint8[] memory toRow,
         uint8[] memory toCol
     ) private view returns (bool) {
-        uint8 currentRow = piece.row;
-        uint8 currentCol = piece.col;
-        require(toRow.length == toCol.length, "invalid move");
-        require(
-            toRow.length <= defaultStats[piece.pieceType].mvRange,
-            "tried to move piece further than range allows"
-        );
-
-        for (uint256 i = 0; i < toRow.length; i++) {
-            uint8 nextRow = toRow[i];
-            uint8 nextCol = toCol[i];
-            // must be in range [0, SIZE - 1]
-            require(
-                nextRow < BOARD_SIZE || nextCol < BOARD_SIZE,
-                "tried to move out of bounds"
+        return
+            ZKChessUtils.isValidMove(
+                piece,
+                toRow,
+                toCol,
+                boardPieces,
+                pieces,
+                defaultStats,
+                BOARD_SIZE
             );
-            // (nextRow, nextCol) must be adjacent to (currentRow, currentCol)
-            require(
-                (nextRow == currentRow || nextCol == currentCol) &&
-                    (nextRow - currentRow == 1 ||
-                        currentRow - nextRow == 1 ||
-                        nextCol - currentCol == 1 ||
-                        currentCol - nextCol == 1),
-                "invalid move"
-            );
-            // can't move through or onto a square with a piece on it
-            uint8 pieceIdAtNextTile = boardPieces[nextRow][nextCol];
-            Piece storage pieceAtNextTile = pieces[pieceIdAtNextTile];
-            require(
-                !pieceAtNextTile.alive,
-                "tried to move through an existing piece"
-            );
-            currentRow = nextRow;
-            currentCol = nextCol;
-        }
-        return true;
     }
 
     function gameShouldBeCompleted() public view returns (bool) {
-        // check if game is over: at least one player has no pieces left
-        bool player1HasPiecesLeft = false;
-        bool player2HasPiecesLeft = false;
-        for (uint8 i = 0; i < pieceIds.length; i++) {
-            Piece storage piece = pieces[pieceIds[i]];
-            if (piece.owner == player1 && piece.alive) {
-                player1HasPiecesLeft = true;
-            } else if (piece.owner == player2 && piece.alive) {
-                player2HasPiecesLeft = true;
-            }
-        }
-        return !(player1HasPiecesLeft && player2HasPiecesLeft);
+        return
+            ZKChessUtils.gameShouldBeCompleted(
+                pieceIds,
+                pieces,
+                player1,
+                player2
+            );
     }
 
     //////////////////////
     /// Game Mechanics ///
     //////////////////////
-
-    function checkAction(uint8 _turnNumber) internal {
-        require(
-            msg.sender == player1 || msg.sender == player2,
-            "Not registered for this game"
-        );
-        require(gameState != GameState.COMPLETE, "Game is ended");
-        if (msg.sender == player1) {
-            require(gameState == GameState.P1_TO_MOVE, "Not p1's turn");
-        }
-        if (msg.sender == player2) {
-            require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
-        }
-        require(_turnNumber == turnNumber, "Wrong turn number");
-    }
 
     function joinGame() public {
         require(
@@ -313,13 +263,15 @@ contract ZKChessGame is Initializable {
             // if visible piece, can't summon on existing piece
             uint8 pieceIdAtSummonTile = boardPieces[summon.row][summon.col];
             Piece storage pieceAtSummonTile = pieces[pieceIdAtSummonTile];
-            require(
-                !pieceAtSummonTile.alive,
-                "tried to summon onto an existing piece"
-            );
+            require(!pieceAtSummonTile.alive, "can't summon there");
             // must summon adjacent to the PORT tile
             require(
-                taxiDist(summon.row, summon.col, homeRow, homeCol) == 1,
+                ZKChessUtils.taxiDist(
+                    summon.row,
+                    summon.col,
+                    homeRow,
+                    homeCol
+                ) == 1,
                 "can't summon there"
             );
         } else {
@@ -327,16 +279,10 @@ contract ZKChessGame is Initializable {
                 require(
                     summon.zkp.input[1] == homeRow &&
                         summon.zkp.input[2] == homeCol,
-                    "invalid ZK proof: invalid port"
+                    "bad ZKP"
                 );
-                require(
-                    summon.zkp.input[3] == 1,
-                    "invalid ZK proof: can only summon next to port"
-                );
-                require(
-                    summon.zkp.input[4] == BOARD_SIZE,
-                    "invalid ZK proof: invalid board size"
-                );
+                require(summon.zkp.input[3] == 1, "bad ZKP");
+                require(summon.zkp.input[4] == BOARD_SIZE, "bad ZKP");
                 require(
                     Verifier.verifyDist1Proof(
                         summon.zkp.a,
@@ -344,7 +290,7 @@ contract ZKChessGame is Initializable {
                         summon.zkp.c,
                         summon.zkp.input
                     ),
-                    "Failed ZK summon check"
+                    "bad ZKP"
                 );
             }
         }
@@ -376,19 +322,18 @@ contract ZKChessGame is Initializable {
         Piece storage piece = pieces[move.pieceId];
         require(
             piece.owner == msg.sender && piece.owner != address(0),
-            "can't move opponent's piece"
+            "can't move that"
         );
-        require(piece.alive, "Piece is dead");
-        require(!hasMoved[move.turnNumber][piece.id], "piece already moved");
-        require(!hasAttacked[move.turnNumber][piece.id], "piece already acted");
+        require(piece.alive, "piece dead");
+        require(!hasMoved[move.turnNumber][piece.id], "already moved");
+        require(!hasAttacked[move.turnNumber][piece.id], "already acted");
 
         if (defaultStats[piece.pieceType].isZk) {
-            require(piece.commitment == move.zkp.input[0], "ZK Proof invalid");
-            require(move.zkp.input[3] == BOARD_SIZE);
-            // TODO: check that move is within pieceType's move range
+            require(piece.commitment == move.zkp.input[0], "bad ZKP");
+            require(move.zkp.input[3] == BOARD_SIZE, "bad ZKP");
             require(
                 move.zkp.input[2] <= defaultStats[piece.pieceType].mvRange,
-                "Tried to move too far"
+                "bad ZKP"
             );
             if (!DISABLE_ZK_CHECK) {
                 require(
@@ -398,7 +343,7 @@ contract ZKChessGame is Initializable {
                         move.zkp.c,
                         move.zkp.input
                     ),
-                    "Failed zk move check"
+                    "bad ZKP"
                 );
             }
             piece.commitment = move.zkp.input[1];
@@ -414,6 +359,32 @@ contract ZKChessGame is Initializable {
             piece.col = toCol;
         }
         hasMoved[move.turnNumber][piece.id] = true;
+        emit ActionMade(msg.sender);
+    }
+
+    function doAttack(Attack memory attack) public {
+        checkAction(attack.turnNumber);
+        Piece storage piece = pieces[attack.pieceId];
+        Piece storage attacked = pieces[attack.attackedId];
+        require(
+            ZKChessUtils.checkAttack(
+                attack,
+                pieces,
+                defaultStats,
+                hasAttacked,
+                BOARD_SIZE
+            ),
+            "invalid attack"
+        );
+
+        ZKChessUtils.executeAttack(
+            attack,
+            pieces,
+            boardPieces,
+            defaultStats,
+            hasAttacked,
+            BOARD_SIZE
+        );
         emit ActionMade(msg.sender);
     }
 

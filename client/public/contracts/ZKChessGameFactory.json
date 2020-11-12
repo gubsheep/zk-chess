@@ -113,9 +113,9 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.6.7+commit.b8d736ae\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_implementationContract\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"}],\"name\":\"CreatedGame\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"}],\"name\":\"createGame\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"gameIdToAddr\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"gameIds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllGameIds\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"implementationContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/bgu/zk-chess/eth/contracts/ZKChessGameFactory.sol\":\"ZKChessGameFactory\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/bgu/zk-chess/eth/contracts/CloneFactory.sol\":{\"keccak256\":\"0x950767bd4ed547545c5f1d8e136152a9ba53316098f0ffea6f5bb3ed056bf784\",\"urls\":[\"bzz-raw://444cb5c64519c886a855ebc002cc289169fbf5ae6d1f66c1bdd0ce30ab182b83\",\"dweb:/ipfs/QmfLaQZuc1nGJM8wTvSSvk2UsBs1hckfYwGoVJr7167Dg9\"]},\"/Users/bgu/zk-chess/eth/contracts/Hasher.sol\":{\"keccak256\":\"0x0d5f090f43263037de64accde5908e592f6034fa7d4543a044be76df5caaba9e\",\"urls\":[\"bzz-raw://3c015efec80781e599b80b95d7769d358d755becb5fe399e731ff21e882684b5\",\"dweb:/ipfs/QmRvCqKmW2gBoatpsADZ7vFCpc6rSKqiie3hnG8L7gBJ9n\"]},\"/Users/bgu/zk-chess/eth/contracts/Verifier.sol\":{\"keccak256\":\"0x69ccf558224e9e4cf036ad8d1537c33c4fb4a2b6bc2582b6d851d9274d29ea12\",\"urls\":[\"bzz-raw://f38119372b6f757ea126e2d40072b1cb771d3117b273e9d680f16227156078ba\",\"dweb:/ipfs/QmUdRtv1UYStWWyyXiQjdGkSedkwfUtHs1pDvXbys77Lig\"]},\"/Users/bgu/zk-chess/eth/contracts/ZKChessGame.sol\":{\"keccak256\":\"0xdd5a54285f486361ebd4b42b35a57d26d6b25e2447d958d46d5704d25d2e66ee\",\"urls\":[\"bzz-raw://de5a7f40026db69a6baad8d2ece1ef9046fc5abee10947e99791c07b5d9bba31\",\"dweb:/ipfs/QmWUsiW4F2SDZEaJwPbpEuxXrtGZsGuCBT1eCaPgMUbRoc\"]},\"/Users/bgu/zk-chess/eth/contracts/ZKChessGameFactory.sol\":{\"keccak256\":\"0x7886b59e0e8a7037f60828deb0c7e6f8b15b77cbdaad8ea76641d65084c971fb\",\"urls\":[\"bzz-raw://07665cc21dc0f06f2db78634a7697cff8624aa0f52d6a7760afb65038d4905c5\",\"dweb:/ipfs/QmaYBPGXxNKzbA3BhSnkF4uX8ffn2i8KSzXewCNF5SBZ3W\"]},\"/Users/bgu/zk-chess/eth/contracts/ZKChessTypes.sol\":{\"keccak256\":\"0xcb23d81be92e4dec3fe4a09fa2699b328eb93ffdfaf19eb67a21c002e260e1f7\",\"urls\":[\"bzz-raw://830d3e03a70368df00b18b658dff60a1cb208fa0d46e4b8bc5b7bd19b7e2d09c\",\"dweb:/ipfs/QmSWimKMiFw4Mv5ukxoqzARREKcAFT3dnrjoSRvKSZfKQT\"]},\"/Users/bgu/zk-chess/eth/contracts/ZKChessUtils.sol\":{\"keccak256\":\"0x6cf618701c1d4feb63d777963b1c397cfb77c1149843fb28d5f4210a15d45368\",\"urls\":[\"bzz-raw://f4f743b2e839950503c07e6e15f2a7d0fd604e725a7bdfb7c640bf896bfae3ae\",\"dweb:/ipfs/QmUvwrp2q4W2S3rW3EHuF7wYbFo26ykr1LsAEL41AUPCmE\"]},\"@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol\":{\"keccak256\":\"0x9bfec92e36234ecc99b5d37230acb6cd1f99560233753162204104a4897e8721\",\"urls\":[\"bzz-raw://5cf7c208583d4d046d75bd99f5507412ab01cce9dd9f802ce9768a416d93ea2f\",\"dweb:/ipfs/QmcQS1BBMPpVEkXP3qzwSjxHNrqDek8YeR7xbVWDC9ApC7\"]}},\"version\":1}",
-  "bytecode": "0x608060405234801561001057600080fd5b5060405161081b38038061081b8339818101604052810190610032919061008d565b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506100ff565b600081519050610087816100e8565b92915050565b60006020828403121561009f57600080fd5b60006100ad84828501610078565b91505092915050565b60006100c1826100c8565b9050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6100f1816100b6565b81146100fc57600080fd5b50565b61070d8061010e6000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c806348e837b91461005c5780636999700c1461008c5780636b3d2cbb146100bc57806399e7d056146100da578063d82c13f0146100f8575b600080fd5b61007660048036038101906100719190610472565b610128565b604051610083919061058d565b60405180910390f35b6100a660048036038101906100a19190610472565b610322565b6040516100b3919061058d565b60405180910390f35b6100c4610355565b6040516100d191906105a8565b60405180910390f35b6100e26103ad565b6040516100ef919061058d565b60405180910390f35b610112600480360381019061010d9190610472565b6103d2565b60405161011f91906105ea565b60405180910390f35b60008073ffffffffffffffffffffffffffffffffffffffff166001600084815260200190815260200160002060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146101cb576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016101c2906105ca565b60405180910390fd5b60006101f76000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff166103f3565b90508073ffffffffffffffffffffffffffffffffffffffff1663279646668460006040518363ffffffff1660e01b8152600401610235929190610605565b600060405180830381600087803b15801561024f57600080fd5b505af1158015610263573d6000803e3d6000fd5b505050506002839080600181540180825580915050600190039060005260206000200160009091909190915055806001600085815260200190815260200160002060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055507f99146aff770fef32e56c26f3d6a16a798454c52bcf1c392f0223a2aaa350e6df8360405161031191906105ea565b60405180910390a180915050919050565b60016020528060005260406000206000915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b606060028054806020026020016040519081016040528092919081815260200182805480156103a357602002820191906000526020600020905b81548152602001906001019080831161038f575b5050505050905090565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600281815481106103df57fe5b906000526020600020016000915090505481565b6000808260601b90506040517f3d602d80600a3d3981f3363d3d373d3d3d363d7300000000000000000000000081528160148201527f5af43d82803e903d91602b57fd5bf3000000000000000000000000000000000060288201526037816000f092505050919050565b60008135905061046c816106c0565b92915050565b60006020828403121561048457600080fd5b60006104928482850161045d565b91505092915050565b60006104a7838361056f565b60208301905092915050565b6104bc81610678565b82525050565b60006104cd8261063e565b6104d78185610656565b93506104e28361062e565b8060005b838110156105135781516104fa888261049b565b975061050583610649565b9250506001810190506104e6565b5085935050505092915050565b6105298161068a565b82525050565b600061053c602083610667565b91507f67616d652077697468207468617420494420616c7265616479206578697374736000830152602082019050919050565b610578816106b6565b82525050565b610587816106b6565b82525050565b60006020820190506105a260008301846104b3565b92915050565b600060208201905081810360008301526105c281846104c2565b905092915050565b600060208201905081810360008301526105e38161052f565b9050919050565b60006020820190506105ff600083018461057e565b92915050565b600060408201905061061a600083018561057e565b6106276020830184610520565b9392505050565b6000819050602082019050919050565b600081519050919050565b6000602082019050919050565b600082825260208201905092915050565b600082825260208201905092915050565b600061068382610696565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b6106c9816106b6565b81146106d457600080fd5b5056fea2646970667358221220eb3077f19c498d613b401e38e3bc5061d6f87d8606195ae21d803602cd01353064736f6c63430006070033",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c806348e837b91461005c5780636999700c1461008c5780636b3d2cbb146100bc57806399e7d056146100da578063d82c13f0146100f8575b600080fd5b61007660048036038101906100719190610472565b610128565b604051610083919061058d565b60405180910390f35b6100a660048036038101906100a19190610472565b610322565b6040516100b3919061058d565b60405180910390f35b6100c4610355565b6040516100d191906105a8565b60405180910390f35b6100e26103ad565b6040516100ef919061058d565b60405180910390f35b610112600480360381019061010d9190610472565b6103d2565b60405161011f91906105ea565b60405180910390f35b60008073ffffffffffffffffffffffffffffffffffffffff166001600084815260200190815260200160002060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146101cb576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016101c2906105ca565b60405180910390fd5b60006101f76000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff166103f3565b90508073ffffffffffffffffffffffffffffffffffffffff1663279646668460006040518363ffffffff1660e01b8152600401610235929190610605565b600060405180830381600087803b15801561024f57600080fd5b505af1158015610263573d6000803e3d6000fd5b505050506002839080600181540180825580915050600190039060005260206000200160009091909190915055806001600085815260200190815260200160002060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055507f99146aff770fef32e56c26f3d6a16a798454c52bcf1c392f0223a2aaa350e6df8360405161031191906105ea565b60405180910390a180915050919050565b60016020528060005260406000206000915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b606060028054806020026020016040519081016040528092919081815260200182805480156103a357602002820191906000526020600020905b81548152602001906001019080831161038f575b5050505050905090565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600281815481106103df57fe5b906000526020600020016000915090505481565b6000808260601b90506040517f3d602d80600a3d3981f3363d3d373d3d3d363d7300000000000000000000000081528160148201527f5af43d82803e903d91602b57fd5bf3000000000000000000000000000000000060288201526037816000f092505050919050565b60008135905061046c816106c0565b92915050565b60006020828403121561048457600080fd5b60006104928482850161045d565b91505092915050565b60006104a7838361056f565b60208301905092915050565b6104bc81610678565b82525050565b60006104cd8261063e565b6104d78185610656565b93506104e28361062e565b8060005b838110156105135781516104fa888261049b565b975061050583610649565b9250506001810190506104e6565b5085935050505092915050565b6105298161068a565b82525050565b600061053c602083610667565b91507f67616d652077697468207468617420494420616c7265616479206578697374736000830152602082019050919050565b610578816106b6565b82525050565b610587816106b6565b82525050565b60006020820190506105a260008301846104b3565b92915050565b600060208201905081810360008301526105c281846104c2565b905092915050565b600060208201905081810360008301526105e38161052f565b9050919050565b60006020820190506105ff600083018461057e565b92915050565b600060408201905061061a600083018561057e565b6106276020830184610520565b9392505050565b6000819050602082019050919050565b600081519050919050565b6000602082019050919050565b600082825260208201905092915050565b600082825260208201905092915050565b600061068382610696565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b6106c9816106b6565b81146106d457600080fd5b5056fea2646970667358221220eb3077f19c498d613b401e38e3bc5061d6f87d8606195ae21d803602cd01353064736f6c63430006070033",
+  "metadata": "{\"compiler\":{\"version\":\"0.6.7+commit.b8d736ae\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_implementationContract\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"}],\"name\":\"CreatedGame\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"}],\"name\":\"createGame\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"gameIdToAddr\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"gameIds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllGameIds\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"implementationContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/bgu/zk-chess/eth/contracts/ZKChessGameFactory.sol\":\"ZKChessGameFactory\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/bgu/zk-chess/eth/contracts/CloneFactory.sol\":{\"keccak256\":\"0x950767bd4ed547545c5f1d8e136152a9ba53316098f0ffea6f5bb3ed056bf784\",\"urls\":[\"bzz-raw://444cb5c64519c886a855ebc002cc289169fbf5ae6d1f66c1bdd0ce30ab182b83\",\"dweb:/ipfs/QmfLaQZuc1nGJM8wTvSSvk2UsBs1hckfYwGoVJr7167Dg9\"]},\"/Users/bgu/zk-chess/eth/contracts/Hasher.sol\":{\"keccak256\":\"0x0d5f090f43263037de64accde5908e592f6034fa7d4543a044be76df5caaba9e\",\"urls\":[\"bzz-raw://3c015efec80781e599b80b95d7769d358d755becb5fe399e731ff21e882684b5\",\"dweb:/ipfs/QmRvCqKmW2gBoatpsADZ7vFCpc6rSKqiie3hnG8L7gBJ9n\"]},\"/Users/bgu/zk-chess/eth/contracts/Verifier.sol\":{\"keccak256\":\"0x69ccf558224e9e4cf036ad8d1537c33c4fb4a2b6bc2582b6d851d9274d29ea12\",\"urls\":[\"bzz-raw://f38119372b6f757ea126e2d40072b1cb771d3117b273e9d680f16227156078ba\",\"dweb:/ipfs/QmUdRtv1UYStWWyyXiQjdGkSedkwfUtHs1pDvXbys77Lig\"]},\"/Users/bgu/zk-chess/eth/contracts/ZKChessGame.sol\":{\"keccak256\":\"0x234f56fc74b3fa5f49f42c25d5b4cbb9b2ca06e89c68295601dc12b837d52b5e\",\"urls\":[\"bzz-raw://4962d32e27da191cc7fcd170fca930d14be5d79c3af0751900e128c53deab934\",\"dweb:/ipfs/QmYXUGL1uFvJXjFYFV6TtsktbURHYUevCizG3BbG4UxBp7\"]},\"/Users/bgu/zk-chess/eth/contracts/ZKChessGameFactory.sol\":{\"keccak256\":\"0x7886b59e0e8a7037f60828deb0c7e6f8b15b77cbdaad8ea76641d65084c971fb\",\"urls\":[\"bzz-raw://07665cc21dc0f06f2db78634a7697cff8624aa0f52d6a7760afb65038d4905c5\",\"dweb:/ipfs/QmaYBPGXxNKzbA3BhSnkF4uX8ffn2i8KSzXewCNF5SBZ3W\"]},\"/Users/bgu/zk-chess/eth/contracts/ZKChessTypes.sol\":{\"keccak256\":\"0x7a7549cd7c5d1fc25588d136a35cedc380d50de6e01a33594e83d61f4c66aaa9\",\"urls\":[\"bzz-raw://6368206bf458dab375763c51aa79a18050753438537913549733f1c05f178d6c\",\"dweb:/ipfs/QmcMGsUs941kaBd2uhh7uBAtSmDwotcy1pk1Fn9nXLqZ1z\"]},\"/Users/bgu/zk-chess/eth/contracts/ZKChessUtils.sol\":{\"keccak256\":\"0x5422938676f690758f8c63c9c20f6b511b46f0826359761af4b13e2399526c8f\",\"urls\":[\"bzz-raw://be16106080f0dedf8035e235aa39bcce2db844fa099e965e88ff9668703b44e4\",\"dweb:/ipfs/QmSXqPsUsR2Lt4KbEZxupPcDUjv7aPzbJCz2LW2JACP1TS\"]},\"@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol\":{\"keccak256\":\"0x9bfec92e36234ecc99b5d37230acb6cd1f99560233753162204104a4897e8721\",\"urls\":[\"bzz-raw://5cf7c208583d4d046d75bd99f5507412ab01cce9dd9f802ce9768a416d93ea2f\",\"dweb:/ipfs/QmcQS1BBMPpVEkXP3qzwSjxHNrqDek8YeR7xbVWDC9ApC7\"]},\"hardhat/console.sol\":{\"keccak256\":\"0xd3f9eb69241af8de5174a6cfa3da3cbc94e351dee495002d8675b665865ba417\",\"urls\":[\"bzz-raw://68d7929eff6d6b56882da604050b60b25d0281b4b4e0333a196868e8dc89b1b5\",\"dweb:/ipfs/QmeWYGyN2DxpFLH4KMMuTGQAHZrkQBaMTotrEJnEHLApuk\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161081b38038061081b8339818101604052810190610032919061008d565b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506100ff565b600081519050610087816100e8565b92915050565b60006020828403121561009f57600080fd5b60006100ad84828501610078565b91505092915050565b60006100c1826100c8565b9050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6100f1816100b6565b81146100fc57600080fd5b50565b61070d8061010e6000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c806348e837b91461005c5780636999700c1461008c5780636b3d2cbb146100bc57806399e7d056146100da578063d82c13f0146100f8575b600080fd5b61007660048036038101906100719190610472565b610128565b604051610083919061058d565b60405180910390f35b6100a660048036038101906100a19190610472565b610322565b6040516100b3919061058d565b60405180910390f35b6100c4610355565b6040516100d191906105a8565b60405180910390f35b6100e26103ad565b6040516100ef919061058d565b60405180910390f35b610112600480360381019061010d9190610472565b6103d2565b60405161011f91906105ea565b60405180910390f35b60008073ffffffffffffffffffffffffffffffffffffffff166001600084815260200190815260200160002060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146101cb576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016101c2906105ca565b60405180910390fd5b60006101f76000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff166103f3565b90508073ffffffffffffffffffffffffffffffffffffffff1663279646668460006040518363ffffffff1660e01b8152600401610235929190610605565b600060405180830381600087803b15801561024f57600080fd5b505af1158015610263573d6000803e3d6000fd5b505050506002839080600181540180825580915050600190039060005260206000200160009091909190915055806001600085815260200190815260200160002060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055507f99146aff770fef32e56c26f3d6a16a798454c52bcf1c392f0223a2aaa350e6df8360405161031191906105ea565b60405180910390a180915050919050565b60016020528060005260406000206000915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b606060028054806020026020016040519081016040528092919081815260200182805480156103a357602002820191906000526020600020905b81548152602001906001019080831161038f575b5050505050905090565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600281815481106103df57fe5b906000526020600020016000915090505481565b6000808260601b90506040517f3d602d80600a3d3981f3363d3d373d3d3d363d7300000000000000000000000081528160148201527f5af43d82803e903d91602b57fd5bf3000000000000000000000000000000000060288201526037816000f092505050919050565b60008135905061046c816106c0565b92915050565b60006020828403121561048457600080fd5b60006104928482850161045d565b91505092915050565b60006104a7838361056f565b60208301905092915050565b6104bc81610678565b82525050565b60006104cd8261063e565b6104d78185610656565b93506104e28361062e565b8060005b838110156105135781516104fa888261049b565b975061050583610649565b9250506001810190506104e6565b5085935050505092915050565b6105298161068a565b82525050565b600061053c602083610667565b91507f67616d652077697468207468617420494420616c7265616479206578697374736000830152602082019050919050565b610578816106b6565b82525050565b610587816106b6565b82525050565b60006020820190506105a260008301846104b3565b92915050565b600060208201905081810360008301526105c281846104c2565b905092915050565b600060208201905081810360008301526105e38161052f565b9050919050565b60006020820190506105ff600083018461057e565b92915050565b600060408201905061061a600083018561057e565b6106276020830184610520565b9392505050565b6000819050602082019050919050565b600081519050919050565b6000602082019050919050565b600082825260208201905092915050565b600082825260208201905092915050565b600061068382610696565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b6106c9816106b6565b81146106d457600080fd5b5056fea2646970667358221220c9def5d8dafab6ddb23645195768c76ab60f7d8c2b24f34c5485def6e062ae4a64736f6c63430006070033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c806348e837b91461005c5780636999700c1461008c5780636b3d2cbb146100bc57806399e7d056146100da578063d82c13f0146100f8575b600080fd5b61007660048036038101906100719190610472565b610128565b604051610083919061058d565b60405180910390f35b6100a660048036038101906100a19190610472565b610322565b6040516100b3919061058d565b60405180910390f35b6100c4610355565b6040516100d191906105a8565b60405180910390f35b6100e26103ad565b6040516100ef919061058d565b60405180910390f35b610112600480360381019061010d9190610472565b6103d2565b60405161011f91906105ea565b60405180910390f35b60008073ffffffffffffffffffffffffffffffffffffffff166001600084815260200190815260200160002060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146101cb576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016101c2906105ca565b60405180910390fd5b60006101f76000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff166103f3565b90508073ffffffffffffffffffffffffffffffffffffffff1663279646668460006040518363ffffffff1660e01b8152600401610235929190610605565b600060405180830381600087803b15801561024f57600080fd5b505af1158015610263573d6000803e3d6000fd5b505050506002839080600181540180825580915050600190039060005260206000200160009091909190915055806001600085815260200190815260200160002060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055507f99146aff770fef32e56c26f3d6a16a798454c52bcf1c392f0223a2aaa350e6df8360405161031191906105ea565b60405180910390a180915050919050565b60016020528060005260406000206000915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b606060028054806020026020016040519081016040528092919081815260200182805480156103a357602002820191906000526020600020905b81548152602001906001019080831161038f575b5050505050905090565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600281815481106103df57fe5b906000526020600020016000915090505481565b6000808260601b90506040517f3d602d80600a3d3981f3363d3d373d3d3d363d7300000000000000000000000081528160148201527f5af43d82803e903d91602b57fd5bf3000000000000000000000000000000000060288201526037816000f092505050919050565b60008135905061046c816106c0565b92915050565b60006020828403121561048457600080fd5b60006104928482850161045d565b91505092915050565b60006104a7838361056f565b60208301905092915050565b6104bc81610678565b82525050565b60006104cd8261063e565b6104d78185610656565b93506104e28361062e565b8060005b838110156105135781516104fa888261049b565b975061050583610649565b9250506001810190506104e6565b5085935050505092915050565b6105298161068a565b82525050565b600061053c602083610667565b91507f67616d652077697468207468617420494420616c7265616479206578697374736000830152602082019050919050565b610578816106b6565b82525050565b610587816106b6565b82525050565b60006020820190506105a260008301846104b3565b92915050565b600060208201905081810360008301526105c281846104c2565b905092915050565b600060208201905081810360008301526105e38161052f565b9050919050565b60006020820190506105ff600083018461057e565b92915050565b600060408201905061061a600083018561057e565b6106276020830184610520565b9392505050565b6000819050602082019050919050565b600081519050919050565b6000602082019050919050565b600082825260208201905092915050565b600082825260208201905092915050565b600061068382610696565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b6106c9816106b6565b81146106d457600080fd5b5056fea2646970667358221220c9def5d8dafab6ddb23645195768c76ab60f7d8c2b24f34c5485def6e062ae4a64736f6c63430006070033",
   "immutableReferences": {},
   "sourceMap": "117:874:5:-:0;;;335:117;5:9:-1;2:2;;;27:1;24;17:12;2:2;335:117:5;;;;;;;;;;;;;;;;;;;;;;;;422:23;397:22;;:48;;;;;;;;;;;;;;;;;;335:117;117:874;;5:134:-1;;89:6;83:13;74:22;;101:33;128:5;101:33;;;68:71;;;;;146:263;;261:2;249:9;240:7;236:23;232:32;229:2;;;277:1;274;267:12;229:2;312:1;329:64;385:7;376:6;365:9;361:22;329:64;;;319:74;;291:108;223:186;;;;;416:91;;478:24;496:5;478:24;;;467:35;;461:46;;;;514:121;;587:42;580:5;576:54;565:65;;559:76;;;;642:117;711:24;729:5;711:24;;;704:5;701:35;691:2;;750:1;747;740:12;691:2;685:74;;117:874:5;;;;;;;",
   "deployedSourceMap": "117:874:5:-:0;;;;5:9:-1;2:2;;;27:1;24;17:12;2:2;117:874:5;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;12:1:-1;9;2:12;559:430:5;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;211:47;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;458:95;;;:::i;:::-;;;;;;;;;;;;;;;;167:37;;;:::i;:::-;;;;;;;;;;;;;;;;264:24;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;559:430;611:7;683:1;651:34;;:12;:20;664:6;651:20;;;;;;;;;;;;;;;;;;;;;:34;;;630:113;;;;;;;;;;;;;;;;;;;;;;753:13;769:35;781:22;;;;;;;;;;;769:11;:35::i;:::-;753:51;;826:5;814:29;;;844:6;852:5;814:44;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;5:9:-1;2:2;;;27:1;24;17:12;2:2;814:44:5;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;814:44:5;;;;868:7;881:6;868:20;;39:1:-1;33:3;27:10;23:18;57:10;52:3;45:23;79:10;72:17;;0:93;868:20:5;;;;;;;;;;;;;;;;;;;921:5;898:12;:20;911:6;898:20;;;;;;;;;;;;:28;;;;;;;;;;;;;;;;;;941:19;953:6;941:19;;;;;;;;;;;;;;;977:5;970:12;;;559:430;;;:::o;211:47::-;;;;;;;;;;;;;;;;;;;;;;:::o;458:95::-;504:16;539:7;532:14;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;458:95;:::o;167:37::-;;;;;;;;;;;;;:::o;264:24::-;;;;;;;;;;;;;;;;;;;;;;;;;:::o;1215:577:0:-;1270:14;1296:19;1326:6;1318:15;;1296:37;;1385:4;1379:11;1450:66;1427:5;1403:127;1568:11;1561:4;1554:5;1550:16;1543:37;1651:66;1628:4;1621:5;1617:16;1593:138;1771:4;1764:5;1761:1;1754:22;1744:32;;1352:434;;;;;:::o;5:130:-1:-;;85:6;72:20;63:29;;97:33;124:5;97:33;;;57:78;;;;;142:241;;246:2;234:9;225:7;221:23;217:32;214:2;;;262:1;259;252:12;214:2;297:1;314:53;359:7;350:6;339:9;335:22;314:53;;;304:63;;276:97;208:175;;;;;391:173;;478:46;520:3;512:6;478:46;;;553:4;548:3;544:14;530:28;;471:93;;;;;572:113;655:24;673:5;655:24;;;650:3;643:37;637:48;;;723:690;;868:54;916:5;868:54;;;935:86;1014:6;1009:3;935:86;;;928:93;;1042:56;1092:5;1042:56;;;1118:7;1146:1;1131:260;1156:6;1153:1;1150:13;1131:260;;;1223:6;1217:13;1244:63;1303:3;1288:13;1244:63;;;1237:70;;1324:60;1377:6;1324:60;;;1314:70;;1188:203;1178:1;1175;1171:9;1166:14;;1131:260;;;1135:14;1404:3;1397:10;;847:566;;;;;;;;1421:104;1498:21;1513:5;1498:21;;;1493:3;1486:34;1480:45;;;1533:332;;1693:67;1757:2;1752:3;1693:67;;;1686:74;;1793:34;1789:1;1784:3;1780:11;1773:55;1856:2;1851:3;1847:12;1840:19;;1679:186;;;;1873:103;1946:24;1964:5;1946:24;;;1941:3;1934:37;1928:48;;;1983:113;2066:24;2084:5;2066:24;;;2061:3;2054:37;2048:48;;;2103:213;;2221:2;2210:9;2206:18;2198:26;;2235:71;2303:1;2292:9;2288:17;2279:6;2235:71;;;2192:124;;;;;2323:361;;2491:2;2480:9;2476:18;2468:26;;2541:9;2535:4;2531:20;2527:1;2516:9;2512:17;2505:47;2566:108;2669:4;2660:6;2566:108;;;2558:116;;2462:222;;;;;2691:407;;2882:2;2871:9;2867:18;2859:26;;2932:9;2926:4;2922:20;2918:1;2907:9;2903:17;2896:47;2957:131;3083:4;2957:131;;;2949:139;;2853:245;;;;3105:213;;3223:2;3212:9;3208:18;3200:26;;3237:71;3305:1;3294:9;3290:17;3281:6;3237:71;;;3194:124;;;;;3325:312;;3465:2;3454:9;3450:18;3442:26;;3479:71;3547:1;3536:9;3532:17;3523:6;3479:71;;;3561:66;3623:2;3612:9;3608:18;3599:6;3561:66;;;3436:201;;;;;;3644:151;;3730:3;3722:11;;3768:4;3763:3;3759:14;3751:22;;3716:79;;;;3802:137;;3911:5;3905:12;3895:22;;3876:63;;;;3946:108;;4044:4;4039:3;4035:14;4027:22;;4021:33;;;;4062:178;;4192:6;4187:3;4180:19;4229:4;4224:3;4220:14;4205:29;;4173:67;;;;;4249:163;;4364:6;4359:3;4352:19;4401:4;4396:3;4392:14;4377:29;;4345:67;;;;;4420:91;;4482:24;4500:5;4482:24;;;4471:35;;4465:46;;;;4518:85;;4591:5;4584:13;4577:21;4566:32;;4560:43;;;;4610:121;;4683:42;4676:5;4672:54;4661:65;;4655:76;;;;4738:72;;4800:5;4789:16;;4783:27;;;;4817:117;4886:24;4904:5;4886:24;;;4879:5;4876:35;4866:2;;4925:1;4922;4915:12;4866:2;4860:74;",
@@ -125,14 +125,14 @@
     "absolutePath": "/Users/bgu/zk-chess/eth/contracts/ZKChessGameFactory.sol",
     "exportedSymbols": {
       "ZKChessGameFactory": [
-        2751
+        2558
       ]
     },
-    "id": 2752,
+    "id": 2559,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2661,
+        "id": 2468,
         "literals": [
           "solidity",
           "^",
@@ -143,7 +143,7 @@
         "src": "0:23:5"
       },
       {
-        "id": 2662,
+        "id": 2469,
         "literals": [
           "experimental",
           "ABIEncoderV2"
@@ -154,10 +154,10 @@
       {
         "absolutePath": "/Users/bgu/zk-chess/eth/contracts/ZKChessGame.sol",
         "file": "./ZKChessGame.sol",
-        "id": 2663,
+        "id": 2470,
         "nodeType": "ImportDirective",
-        "scope": 2752,
-        "sourceUnit": 2660,
+        "scope": 2559,
+        "sourceUnit": 2467,
         "src": "59:27:5",
         "symbolAliases": [],
         "unitAlias": ""
@@ -165,9 +165,9 @@
       {
         "absolutePath": "/Users/bgu/zk-chess/eth/contracts/CloneFactory.sol",
         "file": "./CloneFactory.sol",
-        "id": 2664,
+        "id": 2471,
         "nodeType": "ImportDirective",
-        "scope": 2752,
+        "scope": 2559,
         "sourceUnit": 37,
         "src": "87:28:5",
         "symbolAliases": [],
@@ -180,7 +180,7 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 2665,
+              "id": 2472,
               "name": "CloneFactory",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 36,
@@ -190,7 +190,7 @@
                 "typeString": "contract CloneFactory"
               }
             },
-            "id": 2666,
+            "id": 2473,
             "nodeType": "InheritanceSpecifier",
             "src": "148:12:5"
           }
@@ -201,9 +201,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 2751,
+        "id": 2558,
         "linearizedBaseContracts": [
-          2751,
+          2558,
           36
         ],
         "name": "ZKChessGameFactory",
@@ -212,12 +212,12 @@
           {
             "constant": false,
             "functionSelector": "99e7d056",
-            "id": 2668,
+            "id": 2475,
             "mutability": "mutable",
             "name": "implementationContract",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 2751,
+            "scope": 2558,
             "src": "167:37:5",
             "stateVariable": true,
             "storageLocation": "default",
@@ -226,7 +226,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 2667,
+              "id": 2474,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "167:7:5",
@@ -242,12 +242,12 @@
           {
             "constant": false,
             "functionSelector": "6999700c",
-            "id": 2672,
+            "id": 2479,
             "mutability": "mutable",
             "name": "gameIdToAddr",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 2751,
+            "scope": 2558,
             "src": "211:47:5",
             "stateVariable": true,
             "storageLocation": "default",
@@ -256,9 +256,9 @@
               "typeString": "mapping(uint256 => address)"
             },
             "typeName": {
-              "id": 2671,
+              "id": 2478,
               "keyType": {
-                "id": 2669,
+                "id": 2476,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "219:7:5",
@@ -274,7 +274,7 @@
                 "typeString": "mapping(uint256 => address)"
               },
               "valueType": {
-                "id": 2670,
+                "id": 2477,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "230:7:5",
@@ -291,12 +291,12 @@
           {
             "constant": false,
             "functionSelector": "d82c13f0",
-            "id": 2675,
+            "id": 2482,
             "mutability": "mutable",
             "name": "gameIds",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 2751,
+            "scope": 2558,
             "src": "264:24:5",
             "stateVariable": true,
             "storageLocation": "default",
@@ -306,7 +306,7 @@
             },
             "typeName": {
               "baseType": {
-                "id": 2673,
+                "id": 2480,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "264:7:5",
@@ -315,7 +315,7 @@
                   "typeString": "uint256"
                 }
               },
-              "id": 2674,
+              "id": 2481,
               "length": null,
               "nodeType": "ArrayTypeName",
               "src": "264:9:5",
@@ -330,22 +330,22 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 2679,
+            "id": 2486,
             "name": "CreatedGame",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2678,
+              "id": 2485,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2677,
+                  "id": 2484,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "gameId",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2679,
+                  "scope": 2486,
                   "src": "313:14:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -354,7 +354,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2676,
+                    "id": 2483,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "313:7:5",
@@ -373,25 +373,25 @@
           },
           {
             "body": {
-              "id": 2688,
+              "id": 2495,
               "nodeType": "Block",
               "src": "387:65:5",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 2686,
+                    "id": 2493,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 2684,
+                      "id": 2491,
                       "name": "implementationContract",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2668,
+                      "referencedDeclaration": 2475,
                       "src": "397:22:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -402,11 +402,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 2685,
+                      "id": 2492,
                       "name": "_implementationContract",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2681,
+                      "referencedDeclaration": 2488,
                       "src": "422:23:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -419,14 +419,14 @@
                       "typeString": "address"
                     }
                   },
-                  "id": 2687,
+                  "id": 2494,
                   "nodeType": "ExpressionStatement",
                   "src": "397:48:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 2689,
+            "id": 2496,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [],
@@ -434,17 +434,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 2682,
+              "id": 2489,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2681,
+                  "id": 2488,
                   "mutability": "mutable",
                   "name": "_implementationContract",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2689,
+                  "scope": 2496,
                   "src": "347:31:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -453,7 +453,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2680,
+                    "id": 2487,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "347:7:5",
@@ -470,12 +470,12 @@
               "src": "346:33:5"
             },
             "returnParameters": {
-              "id": 2683,
+              "id": 2490,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "387:0:5"
             },
-            "scope": 2751,
+            "scope": 2558,
             "src": "335:117:5",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -483,26 +483,26 @@
           },
           {
             "body": {
-              "id": 2697,
+              "id": 2504,
               "nodeType": "Block",
               "src": "522:31:5",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 2695,
+                    "id": 2502,
                     "name": "gameIds",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2675,
+                    "referencedDeclaration": 2482,
                     "src": "539:7:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_uint256_$dyn_storage",
                       "typeString": "uint256[] storage ref"
                     }
                   },
-                  "functionReturnParameters": 2694,
-                  "id": 2696,
+                  "functionReturnParameters": 2501,
+                  "id": 2503,
                   "nodeType": "Return",
                   "src": "532:14:5"
                 }
@@ -510,7 +510,7 @@
             },
             "documentation": null,
             "functionSelector": "6b3d2cbb",
-            "id": 2698,
+            "id": 2505,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -518,23 +518,23 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 2690,
+              "id": 2497,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "480:2:5"
             },
             "returnParameters": {
-              "id": 2694,
+              "id": 2501,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2693,
+                  "id": 2500,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2698,
+                  "scope": 2505,
                   "src": "504:16:5",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -544,7 +544,7 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 2691,
+                      "id": 2498,
                       "name": "uint256",
                       "nodeType": "ElementaryTypeName",
                       "src": "504:7:5",
@@ -553,7 +553,7 @@
                         "typeString": "uint256"
                       }
                     },
-                    "id": 2692,
+                    "id": 2499,
                     "length": null,
                     "nodeType": "ArrayTypeName",
                     "src": "504:9:5",
@@ -568,7 +568,7 @@
               ],
               "src": "503:18:5"
             },
-            "scope": 2751,
+            "scope": 2558,
             "src": "458:95:5",
             "stateMutability": "view",
             "virtual": false,
@@ -576,7 +576,7 @@
           },
           {
             "body": {
-              "id": 2749,
+              "id": 2556,
               "nodeType": "Block",
               "src": "620:369:5",
               "statements": [
@@ -590,7 +590,7 @@
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         },
-                        "id": 2713,
+                        "id": 2520,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -599,25 +599,25 @@
                           "argumentTypes": null,
                           "baseExpression": {
                             "argumentTypes": null,
-                            "id": 2706,
+                            "id": 2513,
                             "name": "gameIdToAddr",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2672,
+                            "referencedDeclaration": 2479,
                             "src": "651:12:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_mapping$_t_uint256_$_t_address_$",
                               "typeString": "mapping(uint256 => address)"
                             }
                           },
-                          "id": 2708,
+                          "id": 2515,
                           "indexExpression": {
                             "argumentTypes": null,
-                            "id": 2707,
+                            "id": 2514,
                             "name": "gameId",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2700,
+                            "referencedDeclaration": 2507,
                             "src": "664:6:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_uint256",
@@ -643,7 +643,7 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "30",
-                              "id": 2711,
+                              "id": 2518,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
@@ -666,7 +666,7 @@
                                 "typeString": "int_const 0"
                               }
                             ],
-                            "id": 2710,
+                            "id": 2517,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -678,7 +678,7 @@
                               "typeString": "type(address)"
                             },
                             "typeName": {
-                              "id": 2709,
+                              "id": 2516,
                               "name": "address",
                               "nodeType": "ElementaryTypeName",
                               "src": "675:7:5",
@@ -688,7 +688,7 @@
                               }
                             }
                           },
-                          "id": 2712,
+                          "id": 2519,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
@@ -712,7 +712,7 @@
                       {
                         "argumentTypes": null,
                         "hexValue": "67616d652077697468207468617420494420616c726561647920657869737473",
-                        "id": 2714,
+                        "id": 2521,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -739,7 +739,7 @@
                           "typeString": "literal_string \"game with that ID already exists\""
                         }
                       ],
-                      "id": 2705,
+                      "id": 2512,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
@@ -753,7 +753,7 @@
                         "typeString": "function (bool,string memory) pure"
                       }
                     },
-                    "id": 2715,
+                    "id": 2522,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -768,23 +768,23 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2716,
+                  "id": 2523,
                   "nodeType": "ExpressionStatement",
                   "src": "630:113:5"
                 },
                 {
                   "assignments": [
-                    2718
+                    2525
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 2718,
+                      "id": 2525,
                       "mutability": "mutable",
                       "name": "proxy",
                       "nodeType": "VariableDeclaration",
                       "overrides": null,
-                      "scope": 2749,
+                      "scope": 2556,
                       "src": "753:13:5",
                       "stateVariable": false,
                       "storageLocation": "default",
@@ -793,7 +793,7 @@
                         "typeString": "address"
                       },
                       "typeName": {
-                        "id": 2717,
+                        "id": 2524,
                         "name": "address",
                         "nodeType": "ElementaryTypeName",
                         "src": "753:7:5",
@@ -807,17 +807,17 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 2722,
+                  "id": 2529,
                   "initialValue": {
                     "argumentTypes": null,
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2720,
+                        "id": 2527,
                         "name": "implementationContract",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2668,
+                        "referencedDeclaration": 2475,
                         "src": "781:22:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -832,7 +832,7 @@
                           "typeString": "address"
                         }
                       ],
-                      "id": 2719,
+                      "id": 2526,
                       "name": "createClone",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -843,7 +843,7 @@
                         "typeString": "function (address) returns (address)"
                       }
                     },
-                    "id": 2721,
+                    "id": 2528,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -867,11 +867,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2727,
+                        "id": 2534,
                         "name": "gameId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2700,
+                        "referencedDeclaration": 2507,
                         "src": "844:6:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -881,7 +881,7 @@
                       {
                         "argumentTypes": null,
                         "hexValue": "66616c7365",
-                        "id": 2728,
+                        "id": 2535,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -913,11 +913,11 @@
                         "arguments": [
                           {
                             "argumentTypes": null,
-                            "id": 2724,
+                            "id": 2531,
                             "name": "proxy",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2718,
+                            "referencedDeclaration": 2525,
                             "src": "826:5:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_address",
@@ -932,18 +932,18 @@
                               "typeString": "address"
                             }
                           ],
-                          "id": 2723,
+                          "id": 2530,
                           "name": "ZKChessGame",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2659,
+                          "referencedDeclaration": 2466,
                           "src": "814:11:5",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_contract$_ZKChessGame_$2659_$",
+                            "typeIdentifier": "t_type$_t_contract$_ZKChessGame_$2466_$",
                             "typeString": "type(contract ZKChessGame)"
                           }
                         },
-                        "id": 2725,
+                        "id": 2532,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -954,25 +954,25 @@
                         "src": "814:18:5",
                         "tryCall": false,
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ZKChessGame_$2659",
+                          "typeIdentifier": "t_contract$_ZKChessGame_$2466",
                           "typeString": "contract ZKChessGame"
                         }
                       },
-                      "id": 2726,
+                      "id": 2533,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "initialize",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1472,
+                      "referencedDeclaration": 1502,
                       "src": "814:29:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_uint256_$_t_bool_$returns$__$",
                         "typeString": "function (uint256,bool) external"
                       }
                     },
-                    "id": 2729,
+                    "id": 2536,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -987,7 +987,7 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2730,
+                  "id": 2537,
                   "nodeType": "ExpressionStatement",
                   "src": "814:44:5"
                 },
@@ -997,11 +997,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2734,
+                        "id": 2541,
                         "name": "gameId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2700,
+                        "referencedDeclaration": 2507,
                         "src": "881:6:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1018,18 +1018,18 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 2731,
+                        "id": 2538,
                         "name": "gameIds",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2675,
+                        "referencedDeclaration": 2482,
                         "src": "868:7:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_array$_t_uint256_$dyn_storage",
                           "typeString": "uint256[] storage ref"
                         }
                       },
-                      "id": 2733,
+                      "id": 2540,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -1043,7 +1043,7 @@
                         "typeString": "function (uint256)"
                       }
                     },
-                    "id": 2735,
+                    "id": 2542,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1058,14 +1058,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2736,
+                  "id": 2543,
                   "nodeType": "ExpressionStatement",
                   "src": "868:20:5"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 2741,
+                    "id": 2548,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1074,25 +1074,25 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 2737,
+                        "id": 2544,
                         "name": "gameIdToAddr",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2672,
+                        "referencedDeclaration": 2479,
                         "src": "898:12:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_uint256_$_t_address_$",
                           "typeString": "mapping(uint256 => address)"
                         }
                       },
-                      "id": 2739,
+                      "id": 2546,
                       "indexExpression": {
                         "argumentTypes": null,
-                        "id": 2738,
+                        "id": 2545,
                         "name": "gameId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2700,
+                        "referencedDeclaration": 2507,
                         "src": "911:6:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1114,11 +1114,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 2740,
+                      "id": 2547,
                       "name": "proxy",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2718,
+                      "referencedDeclaration": 2525,
                       "src": "921:5:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -1131,7 +1131,7 @@
                       "typeString": "address"
                     }
                   },
-                  "id": 2742,
+                  "id": 2549,
                   "nodeType": "ExpressionStatement",
                   "src": "898:28:5"
                 },
@@ -1141,11 +1141,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2744,
+                        "id": 2551,
                         "name": "gameId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2700,
+                        "referencedDeclaration": 2507,
                         "src": "953:6:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1160,18 +1160,18 @@
                           "typeString": "uint256"
                         }
                       ],
-                      "id": 2743,
+                      "id": 2550,
                       "name": "CreatedGame",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2679,
+                      "referencedDeclaration": 2486,
                       "src": "941:11:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$returns$__$",
                         "typeString": "function (uint256)"
                       }
                     },
-                    "id": 2745,
+                    "id": 2552,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1186,26 +1186,26 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2746,
+                  "id": 2553,
                   "nodeType": "EmitStatement",
                   "src": "936:24:5"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 2747,
+                    "id": 2554,
                     "name": "proxy",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2718,
+                    "referencedDeclaration": 2525,
                     "src": "977:5:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "functionReturnParameters": 2704,
-                  "id": 2748,
+                  "functionReturnParameters": 2511,
+                  "id": 2555,
                   "nodeType": "Return",
                   "src": "970:12:5"
                 }
@@ -1213,7 +1213,7 @@
             },
             "documentation": null,
             "functionSelector": "48e837b9",
-            "id": 2750,
+            "id": 2557,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -1221,17 +1221,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 2701,
+              "id": 2508,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2700,
+                  "id": 2507,
                   "mutability": "mutable",
                   "name": "gameId",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2750,
+                  "scope": 2557,
                   "src": "579:14:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1240,7 +1240,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2699,
+                    "id": 2506,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "579:7:5",
@@ -1256,17 +1256,17 @@
               "src": "578:16:5"
             },
             "returnParameters": {
-              "id": 2704,
+              "id": 2511,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2703,
+                  "id": 2510,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2750,
+                  "scope": 2557,
                   "src": "611:7:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1275,7 +1275,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2702,
+                    "id": 2509,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "611:7:5",
@@ -1291,14 +1291,14 @@
               ],
               "src": "610:9:5"
             },
-            "scope": 2751,
+            "scope": 2558,
             "src": "559:430:5",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
           }
         ],
-        "scope": 2752,
+        "scope": 2559,
         "src": "117:874:5"
       }
     ],
@@ -1308,14 +1308,14 @@
     "absolutePath": "/Users/bgu/zk-chess/eth/contracts/ZKChessGameFactory.sol",
     "exportedSymbols": {
       "ZKChessGameFactory": [
-        2751
+        2558
       ]
     },
-    "id": 2752,
+    "id": 2559,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2661,
+        "id": 2468,
         "literals": [
           "solidity",
           "^",
@@ -1326,7 +1326,7 @@
         "src": "0:23:5"
       },
       {
-        "id": 2662,
+        "id": 2469,
         "literals": [
           "experimental",
           "ABIEncoderV2"
@@ -1337,10 +1337,10 @@
       {
         "absolutePath": "/Users/bgu/zk-chess/eth/contracts/ZKChessGame.sol",
         "file": "./ZKChessGame.sol",
-        "id": 2663,
+        "id": 2470,
         "nodeType": "ImportDirective",
-        "scope": 2752,
-        "sourceUnit": 2660,
+        "scope": 2559,
+        "sourceUnit": 2467,
         "src": "59:27:5",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1348,9 +1348,9 @@
       {
         "absolutePath": "/Users/bgu/zk-chess/eth/contracts/CloneFactory.sol",
         "file": "./CloneFactory.sol",
-        "id": 2664,
+        "id": 2471,
         "nodeType": "ImportDirective",
-        "scope": 2752,
+        "scope": 2559,
         "sourceUnit": 37,
         "src": "87:28:5",
         "symbolAliases": [],
@@ -1363,7 +1363,7 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 2665,
+              "id": 2472,
               "name": "CloneFactory",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 36,
@@ -1373,7 +1373,7 @@
                 "typeString": "contract CloneFactory"
               }
             },
-            "id": 2666,
+            "id": 2473,
             "nodeType": "InheritanceSpecifier",
             "src": "148:12:5"
           }
@@ -1384,9 +1384,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 2751,
+        "id": 2558,
         "linearizedBaseContracts": [
-          2751,
+          2558,
           36
         ],
         "name": "ZKChessGameFactory",
@@ -1395,12 +1395,12 @@
           {
             "constant": false,
             "functionSelector": "99e7d056",
-            "id": 2668,
+            "id": 2475,
             "mutability": "mutable",
             "name": "implementationContract",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 2751,
+            "scope": 2558,
             "src": "167:37:5",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1409,7 +1409,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 2667,
+              "id": 2474,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "167:7:5",
@@ -1425,12 +1425,12 @@
           {
             "constant": false,
             "functionSelector": "6999700c",
-            "id": 2672,
+            "id": 2479,
             "mutability": "mutable",
             "name": "gameIdToAddr",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 2751,
+            "scope": 2558,
             "src": "211:47:5",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1439,9 +1439,9 @@
               "typeString": "mapping(uint256 => address)"
             },
             "typeName": {
-              "id": 2671,
+              "id": 2478,
               "keyType": {
-                "id": 2669,
+                "id": 2476,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "219:7:5",
@@ -1457,7 +1457,7 @@
                 "typeString": "mapping(uint256 => address)"
               },
               "valueType": {
-                "id": 2670,
+                "id": 2477,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "230:7:5",
@@ -1474,12 +1474,12 @@
           {
             "constant": false,
             "functionSelector": "d82c13f0",
-            "id": 2675,
+            "id": 2482,
             "mutability": "mutable",
             "name": "gameIds",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 2751,
+            "scope": 2558,
             "src": "264:24:5",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1489,7 +1489,7 @@
             },
             "typeName": {
               "baseType": {
-                "id": 2673,
+                "id": 2480,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "264:7:5",
@@ -1498,7 +1498,7 @@
                   "typeString": "uint256"
                 }
               },
-              "id": 2674,
+              "id": 2481,
               "length": null,
               "nodeType": "ArrayTypeName",
               "src": "264:9:5",
@@ -1513,22 +1513,22 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 2679,
+            "id": 2486,
             "name": "CreatedGame",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2678,
+              "id": 2485,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2677,
+                  "id": 2484,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "gameId",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2679,
+                  "scope": 2486,
                   "src": "313:14:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1537,7 +1537,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2676,
+                    "id": 2483,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "313:7:5",
@@ -1556,25 +1556,25 @@
           },
           {
             "body": {
-              "id": 2688,
+              "id": 2495,
               "nodeType": "Block",
               "src": "387:65:5",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 2686,
+                    "id": 2493,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 2684,
+                      "id": 2491,
                       "name": "implementationContract",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2668,
+                      "referencedDeclaration": 2475,
                       "src": "397:22:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -1585,11 +1585,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 2685,
+                      "id": 2492,
                       "name": "_implementationContract",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2681,
+                      "referencedDeclaration": 2488,
                       "src": "422:23:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -1602,14 +1602,14 @@
                       "typeString": "address"
                     }
                   },
-                  "id": 2687,
+                  "id": 2494,
                   "nodeType": "ExpressionStatement",
                   "src": "397:48:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 2689,
+            "id": 2496,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [],
@@ -1617,17 +1617,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 2682,
+              "id": 2489,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2681,
+                  "id": 2488,
                   "mutability": "mutable",
                   "name": "_implementationContract",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2689,
+                  "scope": 2496,
                   "src": "347:31:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1636,7 +1636,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2680,
+                    "id": 2487,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "347:7:5",
@@ -1653,12 +1653,12 @@
               "src": "346:33:5"
             },
             "returnParameters": {
-              "id": 2683,
+              "id": 2490,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "387:0:5"
             },
-            "scope": 2751,
+            "scope": 2558,
             "src": "335:117:5",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -1666,26 +1666,26 @@
           },
           {
             "body": {
-              "id": 2697,
+              "id": 2504,
               "nodeType": "Block",
               "src": "522:31:5",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 2695,
+                    "id": 2502,
                     "name": "gameIds",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2675,
+                    "referencedDeclaration": 2482,
                     "src": "539:7:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_uint256_$dyn_storage",
                       "typeString": "uint256[] storage ref"
                     }
                   },
-                  "functionReturnParameters": 2694,
-                  "id": 2696,
+                  "functionReturnParameters": 2501,
+                  "id": 2503,
                   "nodeType": "Return",
                   "src": "532:14:5"
                 }
@@ -1693,7 +1693,7 @@
             },
             "documentation": null,
             "functionSelector": "6b3d2cbb",
-            "id": 2698,
+            "id": 2505,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -1701,23 +1701,23 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 2690,
+              "id": 2497,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "480:2:5"
             },
             "returnParameters": {
-              "id": 2694,
+              "id": 2501,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2693,
+                  "id": 2500,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2698,
+                  "scope": 2505,
                   "src": "504:16:5",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -1727,7 +1727,7 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 2691,
+                      "id": 2498,
                       "name": "uint256",
                       "nodeType": "ElementaryTypeName",
                       "src": "504:7:5",
@@ -1736,7 +1736,7 @@
                         "typeString": "uint256"
                       }
                     },
-                    "id": 2692,
+                    "id": 2499,
                     "length": null,
                     "nodeType": "ArrayTypeName",
                     "src": "504:9:5",
@@ -1751,7 +1751,7 @@
               ],
               "src": "503:18:5"
             },
-            "scope": 2751,
+            "scope": 2558,
             "src": "458:95:5",
             "stateMutability": "view",
             "virtual": false,
@@ -1759,7 +1759,7 @@
           },
           {
             "body": {
-              "id": 2749,
+              "id": 2556,
               "nodeType": "Block",
               "src": "620:369:5",
               "statements": [
@@ -1773,7 +1773,7 @@
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         },
-                        "id": 2713,
+                        "id": 2520,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1782,25 +1782,25 @@
                           "argumentTypes": null,
                           "baseExpression": {
                             "argumentTypes": null,
-                            "id": 2706,
+                            "id": 2513,
                             "name": "gameIdToAddr",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2672,
+                            "referencedDeclaration": 2479,
                             "src": "651:12:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_mapping$_t_uint256_$_t_address_$",
                               "typeString": "mapping(uint256 => address)"
                             }
                           },
-                          "id": 2708,
+                          "id": 2515,
                           "indexExpression": {
                             "argumentTypes": null,
-                            "id": 2707,
+                            "id": 2514,
                             "name": "gameId",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2700,
+                            "referencedDeclaration": 2507,
                             "src": "664:6:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_uint256",
@@ -1826,7 +1826,7 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "30",
-                              "id": 2711,
+                              "id": 2518,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
@@ -1849,7 +1849,7 @@
                                 "typeString": "int_const 0"
                               }
                             ],
-                            "id": 2710,
+                            "id": 2517,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -1861,7 +1861,7 @@
                               "typeString": "type(address)"
                             },
                             "typeName": {
-                              "id": 2709,
+                              "id": 2516,
                               "name": "address",
                               "nodeType": "ElementaryTypeName",
                               "src": "675:7:5",
@@ -1871,7 +1871,7 @@
                               }
                             }
                           },
-                          "id": 2712,
+                          "id": 2519,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
@@ -1895,7 +1895,7 @@
                       {
                         "argumentTypes": null,
                         "hexValue": "67616d652077697468207468617420494420616c726561647920657869737473",
-                        "id": 2714,
+                        "id": 2521,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -1922,7 +1922,7 @@
                           "typeString": "literal_string \"game with that ID already exists\""
                         }
                       ],
-                      "id": 2705,
+                      "id": 2512,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
@@ -1936,7 +1936,7 @@
                         "typeString": "function (bool,string memory) pure"
                       }
                     },
-                    "id": 2715,
+                    "id": 2522,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1951,23 +1951,23 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2716,
+                  "id": 2523,
                   "nodeType": "ExpressionStatement",
                   "src": "630:113:5"
                 },
                 {
                   "assignments": [
-                    2718
+                    2525
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 2718,
+                      "id": 2525,
                       "mutability": "mutable",
                       "name": "proxy",
                       "nodeType": "VariableDeclaration",
                       "overrides": null,
-                      "scope": 2749,
+                      "scope": 2556,
                       "src": "753:13:5",
                       "stateVariable": false,
                       "storageLocation": "default",
@@ -1976,7 +1976,7 @@
                         "typeString": "address"
                       },
                       "typeName": {
-                        "id": 2717,
+                        "id": 2524,
                         "name": "address",
                         "nodeType": "ElementaryTypeName",
                         "src": "753:7:5",
@@ -1990,17 +1990,17 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 2722,
+                  "id": 2529,
                   "initialValue": {
                     "argumentTypes": null,
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2720,
+                        "id": 2527,
                         "name": "implementationContract",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2668,
+                        "referencedDeclaration": 2475,
                         "src": "781:22:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -2015,7 +2015,7 @@
                           "typeString": "address"
                         }
                       ],
-                      "id": 2719,
+                      "id": 2526,
                       "name": "createClone",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -2026,7 +2026,7 @@
                         "typeString": "function (address) returns (address)"
                       }
                     },
-                    "id": 2721,
+                    "id": 2528,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2050,11 +2050,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2727,
+                        "id": 2534,
                         "name": "gameId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2700,
+                        "referencedDeclaration": 2507,
                         "src": "844:6:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2064,7 +2064,7 @@
                       {
                         "argumentTypes": null,
                         "hexValue": "66616c7365",
-                        "id": 2728,
+                        "id": 2535,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -2096,11 +2096,11 @@
                         "arguments": [
                           {
                             "argumentTypes": null,
-                            "id": 2724,
+                            "id": 2531,
                             "name": "proxy",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2718,
+                            "referencedDeclaration": 2525,
                             "src": "826:5:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_address",
@@ -2115,18 +2115,18 @@
                               "typeString": "address"
                             }
                           ],
-                          "id": 2723,
+                          "id": 2530,
                           "name": "ZKChessGame",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2659,
+                          "referencedDeclaration": 2466,
                           "src": "814:11:5",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_contract$_ZKChessGame_$2659_$",
+                            "typeIdentifier": "t_type$_t_contract$_ZKChessGame_$2466_$",
                             "typeString": "type(contract ZKChessGame)"
                           }
                         },
-                        "id": 2725,
+                        "id": 2532,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -2137,25 +2137,25 @@
                         "src": "814:18:5",
                         "tryCall": false,
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ZKChessGame_$2659",
+                          "typeIdentifier": "t_contract$_ZKChessGame_$2466",
                           "typeString": "contract ZKChessGame"
                         }
                       },
-                      "id": 2726,
+                      "id": 2533,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "initialize",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1472,
+                      "referencedDeclaration": 1502,
                       "src": "814:29:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_uint256_$_t_bool_$returns$__$",
                         "typeString": "function (uint256,bool) external"
                       }
                     },
-                    "id": 2729,
+                    "id": 2536,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2170,7 +2170,7 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2730,
+                  "id": 2537,
                   "nodeType": "ExpressionStatement",
                   "src": "814:44:5"
                 },
@@ -2180,11 +2180,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2734,
+                        "id": 2541,
                         "name": "gameId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2700,
+                        "referencedDeclaration": 2507,
                         "src": "881:6:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2201,18 +2201,18 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 2731,
+                        "id": 2538,
                         "name": "gameIds",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2675,
+                        "referencedDeclaration": 2482,
                         "src": "868:7:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_array$_t_uint256_$dyn_storage",
                           "typeString": "uint256[] storage ref"
                         }
                       },
-                      "id": 2733,
+                      "id": 2540,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2226,7 +2226,7 @@
                         "typeString": "function (uint256)"
                       }
                     },
-                    "id": 2735,
+                    "id": 2542,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2241,14 +2241,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2736,
+                  "id": 2543,
                   "nodeType": "ExpressionStatement",
                   "src": "868:20:5"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 2741,
+                    "id": 2548,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2257,25 +2257,25 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 2737,
+                        "id": 2544,
                         "name": "gameIdToAddr",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2672,
+                        "referencedDeclaration": 2479,
                         "src": "898:12:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_uint256_$_t_address_$",
                           "typeString": "mapping(uint256 => address)"
                         }
                       },
-                      "id": 2739,
+                      "id": 2546,
                       "indexExpression": {
                         "argumentTypes": null,
-                        "id": 2738,
+                        "id": 2545,
                         "name": "gameId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2700,
+                        "referencedDeclaration": 2507,
                         "src": "911:6:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2297,11 +2297,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 2740,
+                      "id": 2547,
                       "name": "proxy",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2718,
+                      "referencedDeclaration": 2525,
                       "src": "921:5:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -2314,7 +2314,7 @@
                       "typeString": "address"
                     }
                   },
-                  "id": 2742,
+                  "id": 2549,
                   "nodeType": "ExpressionStatement",
                   "src": "898:28:5"
                 },
@@ -2324,11 +2324,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2744,
+                        "id": 2551,
                         "name": "gameId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2700,
+                        "referencedDeclaration": 2507,
                         "src": "953:6:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2343,18 +2343,18 @@
                           "typeString": "uint256"
                         }
                       ],
-                      "id": 2743,
+                      "id": 2550,
                       "name": "CreatedGame",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2679,
+                      "referencedDeclaration": 2486,
                       "src": "941:11:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$returns$__$",
                         "typeString": "function (uint256)"
                       }
                     },
-                    "id": 2745,
+                    "id": 2552,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2369,26 +2369,26 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2746,
+                  "id": 2553,
                   "nodeType": "EmitStatement",
                   "src": "936:24:5"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 2747,
+                    "id": 2554,
                     "name": "proxy",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2718,
+                    "referencedDeclaration": 2525,
                     "src": "977:5:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "functionReturnParameters": 2704,
-                  "id": 2748,
+                  "functionReturnParameters": 2511,
+                  "id": 2555,
                   "nodeType": "Return",
                   "src": "970:12:5"
                 }
@@ -2396,7 +2396,7 @@
             },
             "documentation": null,
             "functionSelector": "48e837b9",
-            "id": 2750,
+            "id": 2557,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -2404,17 +2404,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 2701,
+              "id": 2508,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2700,
+                  "id": 2507,
                   "mutability": "mutable",
                   "name": "gameId",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2750,
+                  "scope": 2557,
                   "src": "579:14:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2423,7 +2423,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2699,
+                    "id": 2506,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "579:7:5",
@@ -2439,17 +2439,17 @@
               "src": "578:16:5"
             },
             "returnParameters": {
-              "id": 2704,
+              "id": 2511,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2703,
+                  "id": 2510,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 2750,
+                  "scope": 2557,
                   "src": "611:7:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2458,7 +2458,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2702,
+                    "id": 2509,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "611:7:5",
@@ -2474,14 +2474,14 @@
               ],
               "src": "610:9:5"
             },
-            "scope": 2751,
+            "scope": 2558,
             "src": "559:430:5",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
           }
         ],
-        "scope": 2752,
+        "scope": 2559,
         "src": "117:874:5"
       }
     ],
@@ -2510,11 +2510,11 @@
       },
       "links": {},
       "address": "0x5cCb1be191b1602c176eDe23D5f0A67Fc68151f6",
-      "transactionHash": "0xcbd21acf3442ad8f28ff4b73cb28da900b95afc8bb1eabd86499f35f6c1a3b34"
+      "transactionHash": "0x686d797a412f7b48bfe877a806febb7c057a795aeaf0a843259685f6609d2063"
     }
   },
   "schemaVersion": "3.3.1",
-  "updatedAt": "2020-11-10T22:09:55.556Z",
+  "updatedAt": "2020-11-12T00:17:52.101Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

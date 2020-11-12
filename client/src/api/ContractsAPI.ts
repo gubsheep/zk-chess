@@ -27,6 +27,7 @@ import {
   UnsubmittedEndTurn,
   UnsubmittedSummon,
   RawDefaults,
+  UnsubmittedAttack,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -92,7 +93,7 @@ class TxExecutor extends EventEmitter {
       }
       */
 
-      if (Date.now() - this.nonceLastUpdated > 30000) {
+      if (Date.now() - this.nonceLastUpdated > 1000) {
         this.nonce = await EthereumAccountManager.getInstance().getNonce();
       }
       // await this.popupConfirmationWindow(txRequest);
@@ -416,6 +417,39 @@ class ContractsAPI extends EventEmitter {
     return tx.wait();
   }
 
+  public async doAttack(
+    action: UnsubmittedAttack
+  ): Promise<providers.TransactionReceipt> {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
+    const overrides: providers.TransactionRequest = {
+      gasPrice: 1000000000,
+      gasLimit: 2000000,
+    };
+    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+      {
+        txIntentId: action.txIntentId,
+        contract: this.gameContract,
+        method: 'doAttack',
+        args: [
+          [
+            action.turnNumber,
+            action.pieceId,
+            action.attackedId,
+            await action.zkp,
+          ],
+        ],
+        overrides,
+      }
+    );
+
+    if (tx.hash) {
+      this.onTxSubmit(action, tx.hash);
+    }
+    return tx.wait();
+  }
+
   public async endTurn(
     action: UnsubmittedEndTurn
   ): Promise<providers.TransactionReceipt> {
@@ -479,8 +513,9 @@ class ContractsAPI extends EventEmitter {
       atkRange: rawDefault[2],
       hp: rawDefault[3],
       atk: rawDefault[4],
-      isZk: rawDefault[5],
-      cost: rawDefault[6],
+      cost: rawDefault[5],
+      isZk: rawDefault[6],
+      kamikaze: rawDefault[7],
     };
   }
 }

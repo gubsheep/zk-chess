@@ -54,8 +54,9 @@ export type PieceStatDefaults = {
   atkRange: number;
   hp: number;
   atk: number;
-  isZk: boolean;
   cost: number;
+  isZk: boolean;
+  kamikaze: boolean;
 };
 
 // a piece but defaults aren't added in
@@ -70,6 +71,7 @@ type AbstractPiece = PartialPiece & {
   mvRange: number;
   atkRange: number;
   atk: number;
+  kamikaze: boolean;
 };
 
 // received from contract
@@ -83,9 +85,9 @@ export type PartialZKPiece = PartialPiece & {
 export type ContractPiece = PartialVisiblePiece | PartialZKPiece;
 
 // used in client
-export type VisiblePiece = PartialVisiblePiece & AbstractPiece & {isZk: false};
+export type VisiblePiece = AbstractPiece & PartialVisiblePiece;
 
-export type ZKPiece = AbstractPiece & PartialZKPiece & {isZk: true};
+export type ZKPiece = AbstractPiece & PartialZKPiece;
 
 export type KnownZKPiece = ZKPiece &
   Locatable & {
@@ -145,6 +147,7 @@ export type ChessGame = {
   player2Mana: number;
 
   pieces: Piece[];
+  defaults: Map<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
   gameStatus: GameStatus;

@@ -17,6 +17,7 @@ import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 
 import {
   ContractsAPIEvent,
+  createEmptyAttack,
   createEmptyMove,
   createEmptySummon,
   EthTxType,
@@ -197,7 +198,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         mvRange: defaultsForPiece.mvRange,
         atkRange: defaultsForPiece.atkRange,
         atk: defaultsForPiece.atk,
-      } as Piece;
+        kamikaze: defaultsForPiece.kamikaze,
+      };
       if (isZKPiece(piece)) {
         const commitment = piece.commitment;
         const commitmentDataStr = localStorage.getItem(`COMMIT_${commitment}`);
@@ -276,7 +278,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     }
     if (!ignoreObstacles) {
       for (let piece of this.gameState.pieces) {
-        if (!isZKPiece(piece)) {
+        if (!isZKPiece(piece) && piece.alive) {
           distBoard[piece.location[1]][piece.location[0]] = -2;
         }
       }
@@ -340,10 +342,10 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     unsubmittedSummon.row = at[1];
     unsubmittedSummon.col = at[0];
     console.log(unsubmittedSummon);
-    if (pieceType === PieceType.Ghost) {
+    if (this.gameState.defaults.get(pieceType)?.isZk) {
       unsubmittedSummon.isZk = true;
       const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
-      const zkp = this.snarkHelper.getDist1Proof(
+      const zkp = this.snarkHelper.getSummonProof(
         at[1],
         at[0],
         newSalt,
@@ -381,7 +383,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     unsubmittedMove.moveToCol = path.map((loc) => loc[0]);
     if (isZKPiece(piece)) {
       const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
-      const zkp = this.snarkHelper.getDist2Proof(
+      const zkp = this.snarkHelper.getMoveProve(
         piece.location[1],
         piece.location[0],
         (piece as KnownZKPiece).salt,
@@ -401,6 +403,43 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     }
     this.contractsAPI.onTxInit(unsubmittedMove);
     this.contractsAPI.doMove(unsubmittedMove);
+    return Promise.resolve();
+  }
+
+  attack(pieceId: number, attackedId: number): Promise<void> {
+    if (!this.gameState) throw new Error('no game set');
+    const attacker = this.gameState.pieces.filter((p) => p.id === pieceId)[0];
+    const attacked = this.gameState.pieces.filter(
+      (p) => p.id === attackedId
+    )[0];
+    console.log(attacker);
+    console.log(attacked);
+    if (!attacker || !attacked) throw new Error('piece not found');
+    if (isZKPiece(attacked) && !isKnown(attacked))
+      throw new Error('attacking location not found');
+    let unsubmittedAttack = createEmptyAttack();
+    unsubmittedAttack.turnNumber = this.gameState.turnNumber;
+    unsubmittedAttack.pieceId = pieceId;
+    unsubmittedAttack.row = attacked.location[1];
+    unsubmittedAttack.col = attacked.location[0];
+    unsubmittedAttack.attackedId = attackedId;
+    console.log(unsubmittedAttack);
+    if (isZKPiece(attacker)) {
+      if (!isKnown(attacker)) throw new Error('attacker location not found');
+      unsubmittedAttack.isZk = true;
+      const zkp = this.snarkHelper.getAttackProof(
+        attacker.location[1],
+        attacker.location[0],
+        attacker.salt,
+        attacked.location[1],
+        attacked.location[0],
+        attacker.atkRange,
+        SIZE
+      );
+      unsubmittedAttack.zkp = zkp;
+    }
+    this.contractsAPI.onTxInit(unsubmittedAttack);
+    this.contractsAPI.doAttack(unsubmittedAttack);
     return Promise.resolve();
   }
 
