@@ -5,7 +5,7 @@ import { CanvasCoords } from './PixiTypes';
 
 // top-level game object abstraction. all of our game things should be wrapped in these guys
 export class GameObject {
-  object: PIXI.DisplayObject;
+  object: PIXI.Container;
   children: GameObject[]; // do we actually need this?
 
   manager: PixiManager;
@@ -15,14 +15,23 @@ export class GameObject {
   // skip inactive ones; we don't have enough objects to care about killing
   active: boolean = true;
 
-  constructor(manager: PixiManager, object: PIXI.DisplayObject) {
+  constructor(
+    manager: PixiManager,
+    object: PIXI.Container,
+    zIndex: number = 0
+  ) {
     this.manager = manager;
-    manager.app.stage.addChild(object);
 
     this.object = object;
     this.lifetime = 0;
     this.children = [];
+    this.object.zIndex = zIndex;
     autoBind(this);
+  }
+
+  addChild(child: GameObject) {
+    this.object.addChild(child.object);
+    this.children.push(child);
   }
 
   loop() {

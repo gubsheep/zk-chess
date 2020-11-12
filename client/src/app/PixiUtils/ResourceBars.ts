@@ -1,7 +1,7 @@
-import { PixiManager } from '../../api/PixiManager';
+import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { GameObject } from './GameObject';
 import * as PIXI from 'pixi.js';
-import { ICONS } from './TextureLoader';
+import { BASELINE_ICONS, BASELINE_TEXT, ICONS } from './TextureLoader';
 import { ThemeProvider } from 'styled-components';
 import { CanvasCoords } from './PixiTypes';
 
@@ -14,8 +14,6 @@ const NUMBER_OFFSET = LABEL_WIDTH + LABEL_M_RIGHT;
 const ICON_OFFSET = NUMBER_OFFSET + NUMBER_WIDTH + NUMBER_M_RIGHT;
 
 const ICON_WIDTH = 9;
-const BASELINE_TEXT = 0;
-const BASELINE_ICONS = -1;
 const MARGIN = 2;
 
 const MASK_HEIGHT = 2 * ICON_WIDTH;
@@ -69,7 +67,7 @@ class ResourceBar extends GameObject {
 
     container.addChild(iconContainer);
 
-    super(manager, container);
+    super(manager, container, GameZIndex.UI);
 
     this.label = labelObj;
     this.numbersContainer = numbersContainer;
@@ -150,6 +148,8 @@ export class GoldBar extends ResourceBar {
 
     super(manager, 'Gold:', GOLD_START_MAX, iconContainer, coinRow);
 
+    iconContainer.sortableChildren = true;
+
     this.iconContainer = iconContainer;
     this.coinUsedRow = coinUsedRow;
 
@@ -168,7 +168,7 @@ export class GoldBar extends ResourceBar {
     coinUsedRow.zIndex = 0;
     this.coinUsedRow = coinUsedRow;
     this.iconContainer.addChild(coinUsedRow);
-    this.iconContainer.children.sort((a, b) => a.zIndex - b.zIndex);
+    this.iconContainer.sortChildren();
     super.setMax(max);
   }
 }

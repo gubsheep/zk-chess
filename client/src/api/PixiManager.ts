@@ -1,6 +1,6 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
+import { CHAR_H, FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
 import { GameObject } from '../app/PixiUtils/GameObject';
 import { Ship } from '../app/PixiUtils/Ships';
 import {
@@ -8,19 +8,24 @@ import {
   PlayerColor,
   ShipType,
 } from '../app/PixiUtils/PixiTypes';
-import {
-  BG_IMAGE,
-  FONT,
-  ICONS,
-  loadTextures,
-  SHIPS,
-} from '../app/PixiUtils/TextureLoader';
-import { makeGrid } from '../app/PixiUtils/Utils';
+import { BG_IMAGE, FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
 import { GoldBar, HPBar } from '../app/PixiUtils/ResourceBars';
+import { ToggleButton } from '../app/PixiUtils/ToggleButton';
+import { Shop } from './Shop';
+import { makeGrid } from '../app/PixiUtils/GameBoard';
+import { Background } from '../app/PixiUtils/Background';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
 };
+
+export enum GameZIndex {
+  Background,
+  Board,
+  Ships,
+  UI,
+  Shop,
+}
 
 export class PixiManager {
   static instance: PixiManager | null;
@@ -54,11 +59,15 @@ export class PixiManager {
       resolution: 1,
     });
     this.app = app;
+    this.app.stage.sortableChildren = true;
     // this.pieces = [];
     this.gameObjects = [];
     this.frameCount = 0;
 
     autoBind(this);
+
+    // @ts-ignore
+    window['manager'] = this;
 
     // can't put `this.setup` directly or it won't bind `this`
     loadTextures(() => this.setup());
@@ -67,6 +76,8 @@ export class PixiManager {
   addObject(obj: GameObject) {
     // TODO manage systems, components, etc.
     this.gameObjects.push(obj);
+    this.app.stage.addChild(obj.object);
+    // this.app.stage.sortChildren();
   }
 
   setup() {
@@ -79,13 +90,17 @@ export class PixiManager {
     app.renderer.backgroundColor = 0x061639; // TODO set fallback color
 
     // set up background
-    let texture = cache[BG_IMAGE];
-    let bgsprite = new PIXI.TilingSprite(texture, width, height);
-    app.stage.addChild(bgsprite);
+    this.addObject(new Background(this));
 
     // set up grid
-    // this is definitely a bad way of doing it, but whatever
+    // this is definitely a bad way of doing it, but whatever TODO fix
     this.boardCoords = makeGrid({ width, height, app });
+
+    // make button to toggle b/t ships and submarines
+    const toggleButton = new ToggleButton(this);
+    this.addObject(toggleButton);
+    const botLeft = this.boardCoords[0][4];
+    toggleButton.setPosition({ x: botLeft.x, y: botLeft.y + 3 + 36 });
 
     // set up ships
     this.addObject(
@@ -108,6 +123,13 @@ export class PixiManager {
 
     this.hpBar = hpBar;
     this.goldBar = goldBar;
+
+    const shop = new Shop(this);
+    this.addObject(shop);
+    const shopX = 0.5 * (width - shop.getWidth());
+    console.log(shopX);
+    console.log(0.5 * width);
+    shop.setPosition({ x: shopX, y: height - 70 });
 
     // initialize loop
     this.loop();

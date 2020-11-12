@@ -3,14 +3,17 @@ import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 
 const CAPIT = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const LOWER = 'abcdefghijklmnopqrstuvwxyz';
-const OTHER = '0123456789.!?/:';
+const OTHER = '0123456789.!?/:-';
 const CHARS = `${CAPIT}${LOWER}${OTHER}`;
 
 const HAS_DESC = ['g', 'p', 'q', 'y'];
 
 const ROW_LEN = 13;
-const CHAR_H = 7;
-const CHAR_W = 5;
+export const CHAR_H = 7;
+export const CHAR_W = 5;
+export const LINE_SPACING = 4;
+
+// TODO make this into a GameObject - or not? many abstractions use containers now
 
 type MessageData = {
   message: string;
@@ -21,6 +24,7 @@ type MessageData = {
 
 export type FontLoader = (msg: string, color?: number) => MessageData;
 
+// TODO make this global somehow
 export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
   const charMap = new Map<string, PIXI.Texture>();
   for (let i = 0; i < CHARS.length; i++) {
@@ -43,14 +47,23 @@ export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
   return (message: string, color: number = 0xffffff) => {
     const chars = message.split('');
     const container = new PIXI.Container();
+    let lines = 0;
+    let cols = 0;
     for (let i = 0; i < chars.length; i++) {
+      if (chars[i] === '\n') {
+        cols = 0;
+        lines++;
+        continue;
+      }
       const obj = charMap.get(chars[i]);
       if (obj) {
         const sprite = new PIXI.Sprite(obj);
-        sprite.x = i * (1 + CHAR_W);
-        if (HAS_DESC.includes(chars[i])) sprite.y = 2;
+        sprite.x = cols * (1 + CHAR_W);
+        sprite.y = lines * (LINE_SPACING + CHAR_H);
+        if (HAS_DESC.includes(chars[i])) sprite.y += 2;
         container.addChild(sprite);
       } // else just add a space
+      cols++;
     }
     const shader = new ColorOverlayFilter(color);
     container.filters = [shader];

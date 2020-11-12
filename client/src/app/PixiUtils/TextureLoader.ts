@@ -3,6 +3,11 @@ import * as PIXI from 'pixi.js';
 const PATH = 'public/assets/';
 const imgUri = (file: string) => PATH + file;
 
+export const BASELINE_TEXT = 0;
+export const BASELINE_ICONS = -1;
+
+export const SPRITE_W = 32;
+
 export const BG_IMAGE = imgUri('backgroundsmall.png');
 export const FONT = imgUri('font.png');
 export const SHIPS = [
