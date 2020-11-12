@@ -1,7 +1,13 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import { getFontLoader } from '../app/PixiHelpers';
-import { blueShader, redShader } from '../app/Shaders';
+import { getFontLoader } from '../app/PixiUtils/FontLoader';
+import { blueShader, redShader } from '../app/PixiUtils/Shaders';
+import {
+  BG_IMAGE,
+  FONT,
+  loadTextures,
+  PIECES,
+} from '../app/PixiUtils/TextureLoader';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -37,14 +43,8 @@ export class PixiManager {
 
     autoBind(this);
 
-    PIXI.Loader.shared
-      .add('public/assets/background.png')
-      .add('public/assets/backgroundsmall.png')
-      .add('public/assets/font.png')
-      .add('public/assets/sprite-00.png')
-      .add('public/assets/sprite-01.png')
-      .add('public/assets/sprite-02.png')
-      .load(() => this.setup()); // can't put this.setup directly or it won't bind this
+    // can't put this.setup directly or it won't bind this
+    loadTextures(() => this.setup());
   }
 
   setup() {
@@ -55,7 +55,7 @@ export class PixiManager {
     const cache = PIXI.utils.TextureCache;
 
     // set up background
-    let texture = cache['public/assets/backgroundsmall.png'];
+    let texture = cache[BG_IMAGE];
     let bgsprite = new PIXI.TilingSprite(texture, width, height);
     app.stage.addChild(bgsprite);
 
@@ -90,7 +90,7 @@ export class PixiManager {
     this.boardCoords = myCoords;
 
     // set up font
-    const fontLoader = getFontLoader(cache['public/assets/font.png']);
+    const fontLoader = getFontLoader(cache[FONT]);
     const msg = fontLoader('Asdf?');
     app.stage.addChild(msg.object);
     const msg2 = fontLoader('Asdf.', 0x000000);
@@ -101,26 +101,26 @@ export class PixiManager {
 
     // set up ships
     let container = new PIXI.Container();
-    let sprite = new PIXI.Sprite(cache['public/assets/sprite-00.png']);
+    let sprite = new PIXI.Sprite(cache[PIECES[0]]);
     // should be unnecessary
     sprite.x = 0;
     sprite.y = 0;
-    sprite.filters = [blueShader];
+    sprite.filters = [redShader];
     container.x = this.boardCoords[0][0].x + 2;
     container.y = this.boardCoords[0][0].y + 2;
 
-    // let debugRect = new PIXI.Graphics();
-    // debugRect.beginFill(0xff0000);
-    // debugRect.drawRect(0, 0, 100, 100);
-    // debugRect.endFill();
-    // debugRect.x = -50;
-    // debugRect.y = -50;
-    // container.addChild(debugRect);
+    let debugRect = new PIXI.Graphics();
+    debugRect.beginFill(0xff0000);
+    debugRect.drawRect(0, 0, 100, 100);
+    debugRect.endFill();
+    debugRect.x = -50;
+    debugRect.y = -50;
+    container.addChild(debugRect);
 
     container.addChild(sprite);
 
     let mask = new PIXI.Graphics();
-    mask.beginFill(0x555555, 0.4);
+    mask.beginFill(0xffffff, 1.0);
     mask.drawRect(container.x, container.y, 32, 24);
     mask.endFill();
     container.mask = mask;
@@ -135,18 +135,13 @@ export class PixiManager {
     const frames = 30;
     if (this.frameCount % frames === 0) {
       const container = this.pieces[0];
-      const mask = container.mask as PIXI.Graphics | null;
-      if (mask) {
-        // mask.clear();
-        // mask.beginFill(0x555555, 0.4);
-        if (this.frameCount % (2 * frames) === 0) {
-          container.children[0].y = 2;
-          mask.drawRect(container.x, container.y, 32, 24);
-        } else {
-          container.children[0].y = 0;
-          mask.drawRect(container.x, container.y, 32, 22);
-        }
-        // mask.endFill();
+      const boat = container.children[1];
+      if (this.frameCount % (2 * frames) === 0) {
+        // TODO need a better way to specify that it's the ship
+        boat.y = 2;
+      } else {
+        // mask.drawRect(container.x, container.y, 32, 24);
+        boat.y = 0;
       }
     }
 
