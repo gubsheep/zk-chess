@@ -1,10 +1,10 @@
-import { NumericDictionary } from 'lodash';
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
+import { Player } from '../../_types/global/GlobalTypes';
 import { GameObject } from './GameObject';
 import { BoardCoords, PlayerColor, ShipType } from './PixiTypes';
-import { blueShader, redShader } from './Shaders';
-import { SHIPS } from './TextureLoader';
+import { playerShader } from './Shaders';
+import { getShipSprite, SHIPS } from './TextureLoader';
 
 const waterline = (type: ShipType): number => {
   if (type === ShipType.Mothership_00) return 28;
@@ -102,22 +102,18 @@ export class Ship extends GameObject {
     coords: BoardCoords,
     color: PlayerColor
   ) {
-    // const { boardCoords } = manager;
     const { col, row } = coords;
 
-    const cache = PIXI.utils.TextureCache;
-
     let container = new PIXI.Container();
-    let sprite = new PIXI.Sprite(cache[SHIPS[shipType]]);
+    const sprite = getShipSprite(shipType, color);
+
     sprite.anchor.set(0.5, 0.0);
     sprite.scale.x = color === PlayerColor.Red ? 1 : -1;
-    const shader = color === PlayerColor.Red ? redShader : blueShader;
-    sprite.filters = [shader];
     sprite.x = 16;
     sprite.y = 16; // doesn't work? investigate
 
-    // container.x = boardCoords[col][row].x + 2;
-    // container.y = boardCoords[col][row].y + 2;
+    const { x, y } = manager.gameBoard.getTopLeft({ row, col });
+    container.position.set(x + 2, y + 2);
     container.addChild(sprite);
 
     let mask = new PIXI.Graphics();

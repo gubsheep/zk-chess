@@ -4,12 +4,15 @@ import { GameZIndex, PixiManager } from './PixiManager';
 import { ShipType } from '../app/PixiUtils/PixiTypes';
 import {
   BASELINE_ICONS,
+  getCoinSprite,
+  getShipSprite,
   ICONS,
   SHIPS,
   SPRITE_W,
 } from '../app/PixiUtils/TextureLoader';
 import { CHAR_W } from '../app/PixiUtils/FontLoader';
 import { shipData } from '../app/PixiUtils/Ships';
+import { playerShader } from '../app/PixiUtils/Shaders';
 
 const CARD_W = 46;
 const CARD_H = 46;
@@ -23,8 +26,6 @@ const MODAL_H = 60;
 class ShopCard extends GameObject {
   modal: PIXI.Container;
   constructor(manager: PixiManager, type: ShipType) {
-    const cache = PIXI.utils.TextureCache;
-
     const cardWrapper = new PIXI.Container();
 
     // make card
@@ -35,13 +36,13 @@ class ShopCard extends GameObject {
     bg.drawRoundedRect(0, 0, CARD_W, CARD_H, 4);
     bg.endFill();
 
-    const sprite = new PIXI.Sprite(cache[SHIPS[type]]);
+    const sprite = getShipSprite(type, manager.myColor);
 
     const data = shipData[type];
 
     const textContainer = new PIXI.Container();
     const text = manager.fontLoader(`${data.cost}`).object;
-    const goldIcon = new PIXI.Sprite(cache[ICONS.COIN]);
+    const goldIcon = getCoinSprite();
     goldIcon.position.set(CHAR_W + 2, BASELINE_ICONS);
     textContainer.addChild(text, goldIcon);
 
@@ -102,7 +103,7 @@ class ShopCard extends GameObject {
 }
 
 export class Shop extends GameObject {
-  constructor(manager: PixiManager, positionSelf: boolean = false) {
+  constructor(manager: PixiManager) {
     const container = new PIXI.Container();
 
     super(manager, container, GameZIndex.Shop);
@@ -115,9 +116,7 @@ export class Shop extends GameObject {
       idx++;
     }
 
-    if (positionSelf) {
-      this.positionSelf();
-    }
+    this.positionSelf();
   }
 
   positionSelf() {

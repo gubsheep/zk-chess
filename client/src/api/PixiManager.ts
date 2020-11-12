@@ -3,17 +3,13 @@ import * as PIXI from 'pixi.js';
 import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
 import { GameObject } from '../app/PixiUtils/GameObject';
 import { Mothership, Ship } from '../app/PixiUtils/Ships';
-import {
-  CanvasCoords,
-  PlayerColor,
-  ShipType,
-} from '../app/PixiUtils/PixiTypes';
+import { PlayerColor } from '../app/PixiUtils/PixiTypes';
 import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
-import { GoldBar, HPBar, ResourceBars } from '../app/PixiUtils/ResourceBars';
-import { ToggleButton } from '../app/PixiUtils/ToggleButton';
+import { ResourceBars } from '../app/PixiUtils/ResourceBars';
 import { Shop } from './Shop';
-import { GameBoard, makeGrid } from '../app/PixiUtils/GameBoard';
+import { GameBoard } from '../app/PixiUtils/GameBoard';
 import { Background } from '../app/PixiUtils/Background';
+import { Player } from '../_types/global/GlobalTypes';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -42,6 +38,8 @@ export class PixiManager {
   gameBoard: GameBoard;
   myMothership: Mothership;
 
+  myColor: PlayerColor;
+
   // pieces: PIXI.Container[];
 
   private constructor(props: InitProps) {
@@ -62,8 +60,10 @@ export class PixiManager {
     // this.pieces = [];
     this.gameObjects = [];
     this.frameCount = 0;
+    this.myColor = PlayerColor.Red;
 
     autoBind(this);
+
 
     // can't put `this.setup` directly or it won't bind `this`
     loadTextures(() => this.setup());
@@ -89,7 +89,9 @@ export class PixiManager {
 
     // set up grid
     // this is definitely a bad way of doing it, but whatever TODO fix
-    this.addObject(new GameBoard(this));
+    const gameBoard = new GameBoard(this);
+    this.gameBoard = gameBoard;
+    this.addObject(gameBoard);
 
     // make button to toggle b/t ships and submarines
     // const toggleButton = new ToggleButton(this);
@@ -99,17 +101,15 @@ export class PixiManager {
 
     // set up ships
     const myMothership = new Mothership(this, PlayerColor.Red);
+    this.myMothership = myMothership;
     this.addObject(myMothership);
     this.addObject(new Mothership(this, PlayerColor.Blue));
 
     // set up resource bars
-    this.addObject(new ResourceBars(this, true));
+    this.addObject(new ResourceBars(this));
 
     // set up shop
-    this.addObject(new Shop(this, true));
-
-    // keep references
-    this.myMothership = myMothership;
+    this.addObject(new Shop(this));
 
     // initialize loop
     this.loop();

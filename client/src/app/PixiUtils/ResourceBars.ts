@@ -197,13 +197,13 @@ export class HPBar extends ResourceBar {
 export class ResourceBars extends GameObject {
   hpBar: HPBar;
   goldBar: GoldBar;
-  constructor(manager: PixiManager, positionSelf: boolean = true) {
+  constructor(manager: PixiManager) {
     const container = new PIXI.Container();
 
     const goldBar = new GoldBar(manager);
     const hpBar = new HPBar(manager);
 
-    super(manager, container);
+    super(manager, container, GameZIndex.UI);
 
     goldBar.setPosition({ x: 0, y: 12 });
 
@@ -213,7 +213,7 @@ export class ResourceBars extends GameObject {
     this.addChild(goldBar);
     this.addChild(hpBar);
 
-    if (positionSelf) this.positionSelf();
+    this.positionSelf();
   }
 
   setPosition(coords: CanvasCoords) {
@@ -222,7 +222,7 @@ export class ResourceBars extends GameObject {
     this.goldBar.update();
   }
 
-  private positionSelf() {
+  positionSelf() {
     this.setPosition({ x: 10, y: 10 });
   }
 }

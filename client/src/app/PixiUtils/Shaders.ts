@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { PlayerColor } from './PixiTypes';
 
-const glsl = (x: TemplateStringsArray): string => x[0];
+// const glsl = (x: TemplateStringsArray): string => x[0];
 
 /*
 interface Uniform<T> {
@@ -45,3 +45,6 @@ const getOverlayFrag = (color: PlayerColor): string => `
 
 export const redShader = new PIXI.Filter('', getOverlayFrag(PlayerColor.Red));
 export const blueShader = new PIXI.Filter('', getOverlayFrag(PlayerColor.Blue));
+
+export const playerShader = (color: PlayerColor) =>
+  color === PlayerColor.Red ? redShader : blueShader;

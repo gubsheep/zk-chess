@@ -26,6 +26,7 @@ export class GameObject {
     this.lifetime = 0;
     this.children = [];
     this.object.zIndex = zIndex;
+
     autoBind(this);
   }
 

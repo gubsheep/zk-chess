@@ -1,4 +1,4 @@
-import { CanvasCoords } from './PixiTypes';
+import { BoardCoords, CanvasCoords } from './PixiTypes';
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { GameObject } from './GameObject';
@@ -14,42 +14,56 @@ const numY = 5;
 const CELL_W = 36;
 const BORDER = 2;
 
-export function makeGrid(): CanvasCoords[][] {
-  const sumW = (BORDER + CELL_W) * numX - BORDER;
-  const sumH = (BORDER + CELL_W) * numY - BORDER;
+export class GameBoard extends GameObject {
+  grid: GridProps[][];
 
-  // const startX = Math.floor((width - sumW) / 2);
-  // const startY = Math.floor((height - sumH) / 2);
+  constructor(manager: PixiManager) {
+    const container = new PIXI.Container();
+    const grid: (GridProps | null)[][] = [...Array(7)].map((_e) =>
+      Array(5).map(() => null)
+    );
 
-  const startX = 0;
-  const startY = 0;
+    for (let i = 0; i < numX; i++) {
+      for (let j = 0; j < numY; j++) {
+        const x = i * CELL_W + (i - 1) * BORDER;
+        const y = j * CELL_W + (j - 1) * BORDER;
+        let rectangle = new PIXI.Graphics();
+        rectangle.beginFill(0x222266, 0.4);
+        rectangle.drawRect(0, 0, CELL_W, CELL_W);
+        rectangle.endFill();
+        rectangle.position.set(x, y);
+        rectangle.zIndex = GameZIndex.Board;
+        container.addChild(rectangle);
 
-  const myCoords: CanvasCoords[][] = [...Array(7)].map((_e) => Array(5));
+        grid[i][j] = { topLeft: { x, y }, ship: null, submarines: [] };
+      }
+    }
 
-  for (let i = 0; i < numX; i++) {
-    for (let j = 0; j < numY; j++) {
-      const x = startX + i * CELL_W + (i - 1) * BORDER;
-      const y = startY + j * CELL_W + (j - 1) * BORDER;
-      let rectangle = new PIXI.Graphics();
-      rectangle.beginFill(0x222266, 0.4);
-      rectangle.drawRect(0, 0, CELL_W, CELL_W);
-      rectangle.endFill();
-      rectangle.x = x;
-      rectangle.y = y;
-      rectangle.zIndex = GameZIndex.Board;
-      // app.stage.addChild(rectangle);
+    super(manager, container, GameZIndex.Board);
 
-      myCoords[i][j] = { x, y };
+    this.grid = grid as GridProps[][];
+
+    this.positionSelf();
+  }
+
+  getTopLeft({ row, col }: BoardCoords): CanvasCoords {
+    const cell = this.grid[col][row];
+    if (cell) {
+      return this.object.toGlobal(cell.topLeft);
+    } else {
+      console.error('array out of bounds on grid');
+      return { x: 0, y: 0 };
     }
   }
 
-  return myCoords;
-}
+  positionSelf() {
+    const { width, height } = this.manager.app.renderer;
+    const sumW = (BORDER + CELL_W) * numX - BORDER;
+    const sumH = (BORDER + CELL_W) * numY - BORDER;
 
-export class GameBoard extends GameObject {
-  constructor(manager: PixiManager) {
-    const container = new PIXI.Container();
+    const x = Math.floor((width - sumW) / 2);
+    const y = Math.floor((height - sumH) / 2);
 
-    super(manager, container);
+    this.setPosition({ x, y });
   }
 }

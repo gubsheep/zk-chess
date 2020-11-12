@@ -12,6 +12,6 @@ export enum ShipType {
 }
 
 export enum PlayerColor {
-  Red,
-  Blue,
+  Red = 'Red',
+  Blue = 'Blue',
 }
