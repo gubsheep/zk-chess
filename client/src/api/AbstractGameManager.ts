@@ -21,14 +21,10 @@ export enum GameManagerEvent {
 export default interface AbstractGameManager extends EventEmitter {
   destroy(): void;
 
-  getAccount(): EthAddress | null;
-  getEnemyAccount(): EthAddress | null;
-
   refreshGameIdList(): Promise<void>;
   getAllGameIds(): string[];
-  getGameAddr(): EthAddress | null;
   getGameState(): ChessGame;
-  refreshGameState(): Promise<ChessGame>;
+  refreshGameState(): Promise<void>;
   setGame(gameId: string): Promise<void>;
 
   createGame(): Promise<void>;

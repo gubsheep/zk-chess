@@ -188,8 +188,14 @@ class ContractsAPI extends EventEmitter {
       this.gameContract.on(ContractEvent.GameStart, () => {
         this.emit(ContractsAPIEvent.GameStart);
       });
-      this.gameContract.on(ContractEvent.ActionMade, () => {
-        this.emit(ContractsAPIEvent.ActionMade);
+      this.gameContract.on(ContractEvent.DidSummon, (...args) => {
+        this.emit(ContractsAPIEvent.DidSummon, ...args);
+      });
+      this.gameContract.on(ContractEvent.DidMove, (...args) => {
+        this.emit(ContractsAPIEvent.DidMove, ...args);
+      });
+      this.gameContract.on(ContractEvent.DidAttack, (...args) => {
+        this.emit(ContractsAPIEvent.DidAttack, ...args);
       });
       this.gameContract.on(ContractEvent.GameFinished, () => {
         this.emit(ContractsAPIEvent.GameFinished);
@@ -259,6 +265,7 @@ class ContractsAPI extends EventEmitter {
     const rawPieces: RawPiece[] = await contract.getPieces();
     const rawDefaults: RawDefaults[] = await contract.getDefaults();
     const turnNumber = await contract.turnNumber();
+    const sequenceNumber = await contract.sequenceNumber();
     const gameState = await contract.gameState();
 
     const pieces: ContractPiece[] = rawPieces.map(this.rawPieceToPiece);
@@ -279,6 +286,7 @@ class ContractsAPI extends EventEmitter {
       pieces,
       defaults,
       turnNumber,
+      sequenceNumber,
       gameStatus: gameState,
     };
   }
@@ -296,6 +304,7 @@ class ContractsAPI extends EventEmitter {
     this.removeGameContractListeners();
     this.gameContract = gameContract;
     this.setupGameContractListeners();
+    this.unminedTxs = new Map<string, TxIntent>();
   }
 
   public async createGame(
@@ -366,6 +375,7 @@ class ContractsAPI extends EventEmitter {
         args: [
           [
             action.turnNumber,
+            action.sequenceNumber,
             action.pieceId,
             action.pieceType,
             action.isZk ? 0 : action.row,
@@ -401,6 +411,7 @@ class ContractsAPI extends EventEmitter {
         args: [
           [
             action.turnNumber,
+            action.sequenceNumber,
             action.pieceId,
             action.isZk ? [] : action.moveToRow,
             action.isZk ? [] : action.moveToCol,
@@ -435,6 +446,7 @@ class ContractsAPI extends EventEmitter {
         args: [
           [
             action.turnNumber,
+            action.sequenceNumber,
             action.pieceId,
             action.attackedId,
             await action.zkp,
@@ -465,7 +477,7 @@ class ContractsAPI extends EventEmitter {
         txIntentId: action.txIntentId,
         contract: this.gameContract,
         method: 'endTurn',
-        args: [action.turnNumber],
+        args: [action.turnNumber, action.sequenceNumber],
         overrides,
       }
     );

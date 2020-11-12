@@ -132,6 +132,7 @@ export type ChessGameContractData = {
   defaults: Map<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
+  sequenceNumber: number;
   gameStatus: GameStatus;
 };
 
@@ -147,9 +148,11 @@ export type ChessGame = {
   player2Mana: number;
 
   pieces: Piece[];
+  pieceById: Map<number, Piece>;
   defaults: Map<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
+  sequenceNumber: number;
   gameStatus: GameStatus;
 };
 
@@ -188,3 +191,36 @@ export interface Player {
 }
 
 export type PlayerMap = Map<string, Player>;
+
+export enum GameActionType {
+  SUMMON,
+  MOVE,
+  ATTACK,
+  END_TURN,
+}
+
+export interface GameAction {
+  sequenceNumber: number;
+  actionType: GameActionType;
+  fromLocalData: boolean; // prioritize GameActions generated locally, they have more data
+}
+
+export interface SummonAction extends GameAction {
+  actionType: GameActionType.SUMMON;
+  player: EthAddress;
+  pieceType: PieceType;
+  at?: BoardLocation;
+}
+
+export interface MoveAction extends GameAction {
+  actionType: GameActionType.MOVE;
+  pieceId: number;
+  from?: BoardLocation;
+  to?: BoardLocation;
+}
+
+export interface AttackAction extends GameAction {
+  actionType: GameActionType.ATTACK;
+  attackerId: number;
+  attackedId: number;
+}

@@ -47,9 +47,56 @@ library ZKChessUtils {
         return ret;
     }
 
+    function initializeDefaults(
+        mapping(PieceType => PieceDefaultStats) storage defaultStats
+    ) public {
+        defaultStats[PieceType.KING] = PieceDefaultStats({
+            pieceType: PieceType.KING,
+            mvRange: 2,
+            atkRange: 1,
+            hp: 3,
+            atk: 2,
+            isZk: false,
+            cost: 1,
+            kamikaze: false
+        });
+        defaultStats[PieceType.KNIGHT] = PieceDefaultStats({
+            pieceType: PieceType.KNIGHT,
+            mvRange: 2,
+            atkRange: 2,
+            hp: 3,
+            atk: 2,
+            isZk: false,
+            cost: 2,
+            kamikaze: false
+        });
+        defaultStats[PieceType.GHOST] = PieceDefaultStats({
+            pieceType: PieceType.GHOST,
+            mvRange: 1,
+            atkRange: 1,
+            hp: 3,
+            atk: 1,
+            isZk: true,
+            cost: 3,
+            kamikaze: true
+        });
+        defaultStats[PieceType.PORT] = PieceDefaultStats({
+            pieceType: PieceType.PORT,
+            mvRange: 0,
+            atkRange: 2,
+            hp: 10,
+            atk: 2,
+            isZk: false,
+            cost: 100,
+            kamikaze: false
+        });
+    }
+
     function checkAction(
         uint8 claimedTurnNumber,
         uint8 turnNumber,
+        uint16 claimedSequenceNumber,
+        uint16 sequenceNumber,
         address player1,
         address player2,
         GameState gameState
@@ -66,6 +113,11 @@ library ZKChessUtils {
             require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
         }
         require(claimedTurnNumber == turnNumber, "Wrong turn number");
+
+        require(
+            claimedSequenceNumber == sequenceNumber,
+            "Wrong sequence number"
+        );
         return true;
     }
 
