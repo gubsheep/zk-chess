@@ -1,14 +1,14 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import { CHAR_H, FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
+import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
 import { GameObject } from '../app/PixiUtils/GameObject';
-import { Ship } from '../app/PixiUtils/Ships';
+import { Mothership, Ship } from '../app/PixiUtils/Ships';
 import {
   CanvasCoords,
   PlayerColor,
   ShipType,
 } from '../app/PixiUtils/PixiTypes';
-import { BG_IMAGE, FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
+import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
 import { GoldBar, HPBar } from '../app/PixiUtils/ResourceBars';
 import { ToggleButton } from '../app/PixiUtils/ToggleButton';
 import { Shop } from './Shop';
@@ -66,9 +66,6 @@ export class PixiManager {
 
     autoBind(this);
 
-    // @ts-ignore
-    window['manager'] = this;
-
     // can't put `this.setup` directly or it won't bind `this`
     loadTextures(() => this.setup());
   }
@@ -77,7 +74,6 @@ export class PixiManager {
     // TODO manage systems, components, etc.
     this.gameObjects.push(obj);
     this.app.stage.addChild(obj.object);
-    // this.app.stage.sortChildren();
   }
 
   setup() {
@@ -103,14 +99,8 @@ export class PixiManager {
     toggleButton.setPosition({ x: botLeft.x, y: botLeft.y + 3 + 36 });
 
     // set up ships
-    this.addObject(
-      new Ship(
-        this,
-        ShipType.Mothership_00,
-        { row: 0, col: 0 },
-        PlayerColor.Red
-      )
-    );
+    this.addObject(new Mothership(this, PlayerColor.Red));
+    this.addObject(new Mothership(this, PlayerColor.Blue));
 
     // set up resource bars
     const hpBar = new HPBar(this);
@@ -124,12 +114,7 @@ export class PixiManager {
     this.hpBar = hpBar;
     this.goldBar = goldBar;
 
-    const shop = new Shop(this);
-    this.addObject(shop);
-    const shopX = 0.5 * (width - shop.getWidth());
-    console.log(shopX);
-    console.log(0.5 * width);
-    shop.setPosition({ x: shopX, y: height - 70 });
+    this.addObject(new Shop(this, true));
 
     // initialize loop
     this.loop();

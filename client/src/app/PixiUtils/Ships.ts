@@ -147,3 +147,17 @@ export class Ship extends GameObject {
     }
   }
 }
+
+export const RED_MOTHERSHIP_COORDS: BoardCoords = { row: 2, col: 0 };
+export const BLUE_MOTHERSHIP_COORDS: BoardCoords = { row: 2, col: 6 };
+
+export class Mothership extends Ship {
+  constructor(manager: PixiManager, color: PlayerColor) {
+    const coords =
+      color === PlayerColor.Red
+        ? RED_MOTHERSHIP_COORDS
+        : BLUE_MOTHERSHIP_COORDS;
+
+    super(manager, ShipType.Mothership_00, coords, color);
+  }
+}

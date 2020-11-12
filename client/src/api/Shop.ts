@@ -54,13 +54,13 @@ class ShopCard extends GameObject {
     const modal = new PIXI.Container();
 
     const modalBg = new PIXI.Graphics();
-    modalBg.beginFill(0x333388, 1.0);
+    modalBg.beginFill(0x333388, 0.8);
     modalBg.lineStyle(1, 0x99ccff, 1);
     modalBg.drawRoundedRect(0, 0, MODAL_W, MODAL_H, 2);
     modalBg.endFill();
 
     const _costStr = `Cost: ${data.cost}`;
-    const atkStr = `ATK: ${data.cost}`;
+    const atkStr = `ATK: ${data.attack}`;
     const hpStr = `HP: ${data.health}`;
     const mvtStr = `Movement: ${data.movement}`;
     const rngStr = `Range: ${
@@ -92,17 +92,17 @@ class ShopCard extends GameObject {
     card.on('mouseover', this.onMouseOver).on('mouseout', this.onMouseOut);
   }
 
-  onMouseOver() {
+  private onMouseOver() {
     this.modal.visible = true;
   }
 
-  onMouseOut() {
+  private onMouseOut() {
     this.modal.visible = false;
   }
 }
 
 export class Shop extends GameObject {
-  constructor(manager: PixiManager) {
+  constructor(manager: PixiManager, positionSelf: boolean = false) {
     const container = new PIXI.Container();
 
     super(manager, container, GameZIndex.Shop);
@@ -114,6 +114,16 @@ export class Shop extends GameObject {
       this.addChild(shopEntry);
       idx++;
     }
+
+    if (positionSelf) {
+      this.positionSelf();
+    }
+  }
+
+  positionSelf() {
+    const { width, height } = this.manager.app.renderer;
+    const shopX = 0.5 * (width - this.getWidth());
+    this.setPosition({ x: shopX, y: height - 70 });
   }
 
   getWidth() {
