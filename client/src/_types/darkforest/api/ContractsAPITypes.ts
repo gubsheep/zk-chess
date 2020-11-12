@@ -90,7 +90,8 @@ export type GhostAttackArgs = [
     string, // old commit
     string, // attack row
     string, // attack col
-    string // dist
+    string, // dist
+    string // board size
   ]
 ];
 
@@ -110,11 +111,14 @@ export type RawDefaults = {
   4: number;
   atk?: number;
 
-  5: boolean;
+  5: number;
+  cost?: number;
+
+  6: boolean;
   isZk?: boolean;
 
-  6: number;
-  cost?: number;
+  7: boolean;
+  kamikaze?: boolean;
 };
 
 export type RawPiece = {
@@ -154,8 +158,7 @@ export enum EthTxType {
   JOIN_GAME = 'JOIN_GAME',
   SUMMON = 'SUMMON',
   MOVE = 'MOVE',
-  GHOST_ATTACK = 'GHOST_ATTACK',
-  GHOST_MOVE = 'GHOST_MOVE',
+  ATTACK = 'ATTACK',
   END_TURN = 'END_TURN',
 }
 
@@ -246,6 +249,39 @@ export const createEmptyMove = (): UnsubmittedMove => ({
     ],
     ['0', '0'],
     ['0', '0', '0', '0'],
+  ]),
+});
+
+export type UnsubmittedAttack = TxIntent & {
+  type: EthTxType.ATTACK;
+  turnNumber: number;
+  pieceId: number;
+  attackedId: number;
+  row: number;
+  col: number;
+  isZk: boolean;
+  zkp: Promise<GhostAttackArgs>;
+};
+
+export type SubmittedAttack = UnsubmittedAttack & SubmittedTx;
+
+export const createEmptyAttack = (): UnsubmittedAttack => ({
+  txIntentId: getRandomTxIntentId(),
+  turnNumber: 0,
+  type: EthTxType.ATTACK,
+  pieceId: 0,
+  attackedId: 0,
+  row: 0,
+  col: 0,
+  isZk: false,
+  zkp: Promise.resolve([
+    ['0', '0'],
+    [
+      ['0', '0'],
+      ['0', '0'],
+    ],
+    ['0', '0'],
+    ['0', '0', '0', '0', '0'],
   ]),
 });
 

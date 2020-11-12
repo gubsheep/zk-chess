@@ -1,5 +1,6 @@
 import {
   ContractCallArgs,
+  GhostAttackArgs,
   GhostMoveArgs,
   GhostSummonArgs,
 } from '../_types/darkforest/api/ContractsAPITypes';
@@ -22,7 +23,7 @@ class SnarkArgsHelper {
     return snarkArgsHelper;
   }
 
-  async getDist1Proof(
+  async getSummonProof(
     x1: number,
     y1: number,
     salt1: string,
@@ -58,7 +59,7 @@ class SnarkArgsHelper {
     }
   }
 
-  async getDist2Proof(
+  async getMoveProve(
     x1: number,
     y1: number,
     salt1: string,
@@ -94,6 +95,18 @@ class SnarkArgsHelper {
       console.error(e);
       throw new Error('error calculating zkSNARK.');
     }
+  }
+
+  async getAttackProof(
+    x1: number,
+    y1: number,
+    salt1: string,
+    x2: number,
+    y2: number,
+    dist: number,
+    boardSize: number
+  ): Promise<GhostAttackArgs> {
+    return this.getSummonProof(x1, y1, salt1, x2, y2, dist, boardSize);
   }
 
   private callArgsFromProofAndSignals(

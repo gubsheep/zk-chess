@@ -31,13 +31,14 @@ module.exports = async function (deployer, network, accounts) {
   const hasher = await Hasher.deployed();
   await ZKChessUtils.link(Hasher, hasher.address);
 
+  await deployer.deploy(Verifier);
+  const verifier = await Verifier.deployed();
+  await ZKChessUtils.link(Verifier, verifier.address);
+  await ZKChessGame.link(Verifier, verifier.address);
+
   await deployer.deploy(ZKChessUtils);
   const zkChessUtils = await ZKChessUtils.deployed();
   await ZKChessGame.link(ZKChessUtils, zkChessUtils.address);
-
-  await deployer.deploy(Verifier);
-  const verifier = await Verifier.deployed();
-  await ZKChessGame.link(Verifier, verifier.address);
 
   await deployer.deploy(ZKChessGame);
   const coreContract = await ZKChessGame.deployed();
