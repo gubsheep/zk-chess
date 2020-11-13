@@ -96,6 +96,8 @@ export const shipData: ShipData[] = [
 ];
 
 export class Ship extends GameObject {
+  coords: BoardCoords;
+
   constructor(
     manager: PixiManager,
     shipType: ShipType,
@@ -123,6 +125,8 @@ export class Ship extends GameObject {
     container.mask = mask;
 
     super(manager, container, GameZIndex.Ships);
+
+    this.coords = coords;
   }
 
   loop() {

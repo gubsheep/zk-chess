@@ -15,3 +15,9 @@ export enum PlayerColor {
   Red = 'Red',
   Blue = 'Blue',
 }
+
+export enum LineAlignment {
+  Inner = 0,
+  Middle = 0.5,
+  Outer = 1,
+}

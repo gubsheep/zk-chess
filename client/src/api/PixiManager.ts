@@ -10,6 +10,7 @@ import { Shop } from './Shop';
 import { GameBoard } from '../app/PixiUtils/GameBoard';
 import { Background } from '../app/PixiUtils/Background';
 import { Player } from '../_types/global/GlobalTypes';
+import { MouseManager } from '../app/PixiUtils/MouseManager';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -32,6 +33,7 @@ export class PixiManager {
   frameCount: number;
 
   fontLoader: FontLoader;
+  mouseManager: MouseManager;
 
   gameObjects: GameObject[];
 
@@ -61,9 +63,9 @@ export class PixiManager {
     this.gameObjects = [];
     this.frameCount = 0;
     this.myColor = PlayerColor.Red;
+    this.mouseManager = new MouseManager(this);
 
     autoBind(this);
-
 
     // can't put `this.setup` directly or it won't bind `this`
     loadTextures(() => this.setup());
@@ -80,7 +82,6 @@ export class PixiManager {
     this.fontLoader = getFontLoader(cache[FONT]);
 
     const app = this.app;
-    const { width, height } = this.app.renderer;
 
     app.renderer.backgroundColor = 0x061639; // TODO set fallback color
 

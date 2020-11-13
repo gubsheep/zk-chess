@@ -1,7 +1,7 @@
 import { GameObject } from '../app/PixiUtils/GameObject';
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from './PixiManager';
-import { ShipType } from '../app/PixiUtils/PixiTypes';
+import { LineAlignment, ShipType } from '../app/PixiUtils/PixiTypes';
 import {
   BASELINE_ICONS,
   getCoinSprite,
@@ -13,6 +13,7 @@ import {
 import { CHAR_W } from '../app/PixiUtils/FontLoader';
 import { shipData } from '../app/PixiUtils/Ships';
 import { playerShader } from '../app/PixiUtils/Shaders';
+import { ClickState } from '../app/PixiUtils/MouseManager';
 
 const CARD_W = 46;
 const CARD_H = 46;
@@ -25,6 +26,9 @@ const MODAL_H = 60;
 
 class ShopCard extends GameObject {
   modal: PIXI.Container;
+  hovering: boolean;
+  bgOverlay: PIXI.DisplayObject;
+  type: ShipType;
   constructor(manager: PixiManager, type: ShipType) {
     const cardWrapper = new PIXI.Container();
 
@@ -35,6 +39,13 @@ class ShopCard extends GameObject {
     bg.beginFill(0x333388, 0.4);
     bg.drawRoundedRect(0, 0, CARD_W, CARD_H, 4);
     bg.endFill();
+
+    const bgOverlay = new PIXI.Graphics();
+    bgOverlay.beginFill(0x666699, 0.7);
+    bgOverlay.lineStyle(2, 0x9999cc, 0.8, LineAlignment.Inner);
+    bgOverlay.drawRoundedRect(0, 0, CARD_W, CARD_H, 4);
+    bgOverlay.endFill();
+    bgOverlay.visible = false;
 
     const sprite = getShipSprite(type, manager.myColor);
 
@@ -49,7 +60,7 @@ class ShopCard extends GameObject {
     sprite.position.set(0.5 * (CARD_W - SPRITE_W), CARD_H - SPRITE_W - 3);
     textContainer.position.set(CARD_W - textContainer.width - 3, 3);
 
-    card.addChild(bg, sprite, textContainer);
+    card.addChild(bg, bgOverlay, sprite, textContainer);
 
     // make modal
     const modal = new PIXI.Container();
@@ -79,26 +90,49 @@ class ShopCard extends GameObject {
     modal.addChild(modalBg, shopText);
 
     modal.position.set(-0.5 * (MODAL_W - CARD_W), -MODAL_H - 4);
+    modal.visible = false;
 
     // finally, add things
     cardWrapper.addChild(modal, card);
 
     super(manager, cardWrapper);
 
+    this.type = type;
+
     this.modal = modal;
-    this.modal.visible = false;
+    this.bgOverlay = bgOverlay;
+
+    this.hovering = false;
 
     card.interactive = true;
     card.hitArea = new PIXI.Rectangle(0, 0, CARD_W, CARD_H);
-    card.on('mouseover', this.onMouseOver).on('mouseout', this.onMouseOut);
+    card
+      .on('mouseover', this.onMouseOver)
+      .on('mouseout', this.onMouseOut)
+      .on('click', this.onClick);
+  }
+
+  private onClick() {
+    this.manager.mouseManager.buyShip(this.type);
   }
 
   private onMouseOver() {
-    this.modal.visible = true;
+    this.hovering = true;
   }
 
   private onMouseOut() {
-    this.modal.visible = false;
+    this.hovering = false;
+  }
+
+  loop() {
+    super.loop();
+    const { mouseManager: mm } = this.manager;
+
+    const buyingThis =
+      mm.clickState === ClickState.Deploying && mm.deployType === this.type;
+
+    this.bgOverlay.visible = this.hovering || buyingThis;
+    this.modal.visible = this.hovering && mm.clickState === ClickState.None;
   }
 }
 

@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import { BoardCoords, CanvasCoords } from './PixiTypes';
 
 // general-purpose, smaller utils
 export function makeDebugRect(
@@ -13,3 +14,25 @@ export function makeDebugRect(
 
   return debugRect;
 }
+
+export const compareBoardCoords = (
+  a: BoardCoords | null,
+  b: BoardCoords | null
+) => {
+  if (!a || !b) return false;
+  return a.row === b.row && a.col === b.col;
+};
+export const compareCanvasCoords = (
+  a: CanvasCoords | null,
+  b: CanvasCoords | null
+) => {
+  if (!a || !b) return false;
+  return a.x === b.x && a.y === b.y;
+};
+
+export const idxsIncludes = (idxs: BoardCoords[], idx: BoardCoords | null) => {
+  for (const myIdx of idxs) {
+    if (compareBoardCoords(myIdx, idx)) return true;
+  }
+  return false;
+};
