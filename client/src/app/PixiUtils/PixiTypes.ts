@@ -21,3 +21,10 @@ export enum LineAlignment {
   Middle = 0.5,
   Outer = 1,
 }
+
+export type BoxBounds = {
+  top: number;
+  left: number;
+  bottom: number;
+  right: number;
+}

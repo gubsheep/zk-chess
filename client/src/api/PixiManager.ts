@@ -11,9 +11,13 @@ import { GameBoard } from '../app/PixiUtils/GameBoard';
 import { Background } from '../app/PixiUtils/Background';
 import { Player } from '../_types/global/GlobalTypes';
 import { MouseManager } from '../app/PixiUtils/MouseManager';
+import { ConfirmCancelButtons } from '../app/PixiUtils/Buttons';
+import AbstractGameManager from './AbstractGameManager';
+import { GameAPI } from './GameAPI';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
+  // gameManager: AbstractGameManager;
 };
 
 export enum GameZIndex {
@@ -34,6 +38,7 @@ export class PixiManager {
 
   fontLoader: FontLoader;
   mouseManager: MouseManager;
+  gameApi: GameAPI;
 
   gameObjects: GameObject[];
 
@@ -42,7 +47,7 @@ export class PixiManager {
 
   myColor: PlayerColor;
 
-  // pieces: PIXI.Container[];
+  pieces: Ship[];
 
   private constructor(props: InitProps) {
     const { canvas } = props;
@@ -59,11 +64,12 @@ export class PixiManager {
     });
     this.app = app;
     this.app.stage.sortableChildren = true;
-    // this.pieces = [];
+    this.pieces = [];
     this.gameObjects = [];
     this.frameCount = 0;
     this.myColor = PlayerColor.Red;
     this.mouseManager = new MouseManager(this);
+    this.gameApi = new GameAPI(this);
 
     autoBind(this);
 
@@ -75,6 +81,11 @@ export class PixiManager {
     // TODO manage systems, components, etc.
     this.gameObjects.push(obj);
     this.app.stage.addChild(obj.object);
+  }
+
+  addShip(obj: Ship) {
+    this.addObject(obj);
+    this.pieces.push(obj);
   }
 
   setup() {
@@ -100,11 +111,13 @@ export class PixiManager {
     // const botLeft = this.boardCoords[0][4];
     // toggleButton.setPosition({ x: botLeft.x, y: botLeft.y + 3 + 36 });
 
+    this.addObject(new ConfirmCancelButtons(this));
+
     // set up ships
     const myMothership = new Mothership(this, PlayerColor.Red);
     this.myMothership = myMothership;
-    this.addObject(myMothership);
-    this.addObject(new Mothership(this, PlayerColor.Blue));
+    this.addShip(myMothership);
+    this.addShip(new Mothership(this, PlayerColor.Blue));
 
     // set up resource bars
     this.addObject(new ResourceBars(this));

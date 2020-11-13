@@ -132,7 +132,7 @@ class ShopCard extends GameObject {
       mm.clickState === ClickState.Deploying && mm.deployType === this.type;
 
     this.bgOverlay.visible = this.hovering || buyingThis;
-    this.modal.visible = this.hovering && mm.clickState === ClickState.None;
+    this.modal.visible = this.hovering;
   }
 }
 

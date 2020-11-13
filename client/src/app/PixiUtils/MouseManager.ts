@@ -2,7 +2,7 @@ import { PixiManager } from '../../api/PixiManager';
 import { BoardCell } from './GameBoard';
 import { BoardCoords, ShipType } from './PixiTypes';
 import { Ship } from './Ships';
-import { idxsIncludes } from './Utils';
+import { compareBoardCoords, idxsIncludes } from './Utils';
 
 export enum ClickState {
   None,
@@ -46,6 +46,20 @@ export class MouseManager {
   }
 
   // callable events
+  confirm() {
+    if (this.clickState === ClickState.Deploying) {
+      if (this.deployStaged && this.deployType) {
+        this.manager.gameApi.deployShip(this.deployType, this.deployStaged);
+      } else console.error('something went wrong in confirm');
+    }
+
+    this.setClickState(ClickState.None);
+  }
+
+  cancel() {
+    this.setClickState(ClickState.None);
+  }
+
   buyShip(type: ShipType) {
     if (type === ShipType.Mothership_00) {
       console.error('cant buy a mothership');
@@ -57,14 +71,20 @@ export class MouseManager {
 
     const { myMothership: mothership } = this.manager;
     const { row: my, col: mx } = mothership.coords;
-    this.deployIdxs = [
+    const deployIdxs = [
       { row: my + 1, col: mx },
       { row: my - 1, col: mx },
       { row: my, col: mx + 1 },
       { row: my, col: mx - 1 },
     ];
+    for (let i = 0; i < deployIdxs.length; i++) {
+      const loc = deployIdxs[i];
+      for (const piece of this.manager.pieces) {
+        if (compareBoardCoords(piece.coords, loc)) deployIdxs.splice(i--, 1);
+      }
+    }
 
-    console.log('bought a ship!');
+    this.deployIdxs = deployIdxs;
   }
 
   cellClicked(idx: BoardCoords) {

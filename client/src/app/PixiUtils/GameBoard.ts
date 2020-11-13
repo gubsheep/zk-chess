@@ -1,5 +1,6 @@
 import {
   BoardCoords,
+  BoxBounds,
   CanvasCoords,
   LineAlignment,
   PlayerColor,
@@ -136,6 +137,7 @@ export class BoardCell extends GameObject {
 
 export class GameBoard extends GameObject {
   cells: BoardCell[][];
+  bounds: BoxBounds;
 
   constructor(manager: PixiManager) {
     const container = new PIXI.Container();
@@ -161,6 +163,10 @@ export class GameBoard extends GameObject {
     this.positionSelf();
   }
 
+  at({ row, col }: BoardCoords): BoardCell | null {
+    return this.cells[row][col] || null;
+  }
+
   getTopLeft({ row, col }: BoardCoords): CanvasCoords {
     const cell = this.cells[row][col];
     if (cell) {
@@ -177,8 +183,10 @@ export class GameBoard extends GameObject {
     const sumH = (BORDER + CELL_W) * numY - BORDER;
 
     const x = Math.floor((width - sumW) / 2);
-    const y = Math.floor((height - sumH) / 2);
+    const y = Math.floor((height - sumH) / 2) - 20;
 
     this.setPosition({ x, y });
+
+    this.bounds = { left: x, top: y, right: x + sumW, bottom: y + sumH };
   }
 }
