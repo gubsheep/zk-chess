@@ -53,6 +53,7 @@ contract ZKChessGame is Initializable {
     event GameStart(address p1, address p2);
     event DidSummon(
         address player,
+        uint8 pieceId,
         uint16 sequenceNumber,
         PieceType pieceType,
         uint8 atRow,
@@ -185,7 +186,9 @@ contract ZKChessGame is Initializable {
             commitment: 0,
             initialized: true,
             hp: defaultStats[PieceType.PORT].hp,
-            initializedOnTurn: 0
+            initializedOnTurn: 0,
+            lastMove: 0,
+            lastAttack: 0
         });
         pieceIds.push(1);
         boardPieces[0][3] = 1;
@@ -199,7 +202,9 @@ contract ZKChessGame is Initializable {
             commitment: 0,
             initialized: true,
             hp: defaultStats[PieceType.PORT].hp,
-            initializedOnTurn: 0
+            initializedOnTurn: 0,
+            lastMove: 0,
+            lastAttack: 0
         });
         pieceIds.push(2);
         boardPieces[6][3] = 2;
@@ -288,7 +293,9 @@ contract ZKChessGame is Initializable {
             commitment: summon.zkp.input[0],
             initialized: true,
             hp: defaultStats[summon.pieceType].hp,
-            initializedOnTurn: turnNumber
+            initializedOnTurn: turnNumber,
+            lastMove: turnNumber,
+            lastAttack: turnNumber
         });
         pieceIds.push(summon.pieceId);
         boardPieces[summon.row][summon.col] = summon.pieceId;
@@ -298,7 +305,8 @@ contract ZKChessGame is Initializable {
         hasAttacked[summon.turnNumber][summon.pieceId] = true;
         emit DidSummon(
             msg.sender,
-            sequenceNumber,
+            summon.pieceId,
+            summon.sequenceNumber,
             summon.pieceType,
             summon.row,
             summon.col
@@ -348,21 +356,14 @@ contract ZKChessGame is Initializable {
             piece.col = toCol;
         }
         hasMoved[move.turnNumber][piece.id] = true;
-        uint8 destRow;
-        uint8 destCol;
-        if (move.moveToRow.length > 0) {
-            destRow = move.moveToRow[move.moveToRow.length - 1];
-        }
-        if (move.moveToCol.length > 0) {
-            destCol = move.moveToCol[move.moveToCol.length - 1];
-        }
+        piece.lastMove = move.turnNumber;
         emit DidMove(
-            sequenceNumber,
+            move.sequenceNumber,
             move.pieceId,
             originRow,
             originCol,
-            destRow,
-            destCol
+            piece.row,
+            piece.col
         );
         sequenceNumber++;
     }
@@ -389,7 +390,7 @@ contract ZKChessGame is Initializable {
             BOARD_SIZE
         );
         emit DidAttack(
-            sequenceNumber,
+            attack.sequenceNumber,
             attack.pieceId,
             attack.attackedId,
             pieces[attack.pieceId].hp,
@@ -418,7 +419,7 @@ contract ZKChessGame is Initializable {
             }
             gameState = GameState.P1_TO_MOVE;
         }
-        emit DidEndTurn(msg.sender, turnNumber, sequenceNumber);
+        emit DidEndTurn(msg.sender, _turnNumber, _sequenceNumber);
         sequenceNumber++;
 
         if (gameShouldBeCompleted()) {

@@ -13,6 +13,9 @@ import {
   SummonAction,
   MoveAction,
   Locatable,
+  AttackAction,
+  EndTurnAction,
+  isLocatable,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -36,8 +39,8 @@ import {
   UnsubmittedEndTurn,
   UnsubmittedJoin,
 } from '../_types/darkforest/api/ContractsAPITypes';
-import {address, emptyAddress} from '../utils/CheckedTypeUtils';
-import {findPath, getRandomTxIntentId} from '../utils/Utils';
+import {address} from '../utils/CheckedTypeUtils';
+import {findPath, getRandomTxIntentId, taxiDist} from '../utils/Utils';
 import bigInt from 'big-integer';
 import mimcHash from '../hash/mimc';
 import {LOCATION_ID_UB, SIZE} from '../utils/constants';
@@ -52,6 +55,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   private gameState: GameState | null;
   private gameActions: GameAction[];
+
+  private refreshInterval: ReturnType<typeof setInterval> | null;
 
   private constructor(
     account: EthAddress | null,
@@ -69,6 +74,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     this.gameActions = [];
 
     this.gameState = null;
+    this.refreshInterval = null;
     this.setupEventListeners();
   }
 
@@ -115,6 +121,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       ContractsAPIEvent.DidSummon,
       async (
         player: string,
+        pieceId: number,
         sequenceNumber: number,
         pieceType: number,
         atRow: number,
@@ -125,15 +132,14 @@ class GameManager extends EventEmitter implements AbstractGameManager {
           sequenceNumber,
           actionType: GameActionType.SUMMON,
           fromLocalData: false,
+          pieceId,
           player: address(player),
           pieceType,
         };
         if (!this.gameState.defaults.get(pieceType)?.isZk) {
           action.at = [atCol, atRow];
         }
-        this.addGameAction(action);
-        await this.refreshGameState();
-        this.emit(GameManagerEvent.ActionMade, this.getGameState());
+        this.gameState.addGameAction(action);
       }
     );
     contractsAPI.on(
@@ -159,43 +165,123 @@ class GameManager extends EventEmitter implements AbstractGameManager {
           action.from = [fromCol, fromRow];
           action.to = [toCol, toRow];
         }
-        this.addGameAction(action);
-        await this.refreshGameState();
-        this.emit(GameManagerEvent.ActionMade, this.getGameState());
+        this.gameState.addGameAction(action);
       }
     );
-    contractsAPI.on(ContractsAPIEvent.DidAttack, async () => {
-      await this.refreshGameState();
-      this.emit(GameManagerEvent.ActionMade, this.getGameState());
-    });
-    contractsAPI.on(ContractsAPIEvent.DidEndTurn, async () => {
-      await this.refreshGameState();
-      this.emit(GameManagerEvent.ActionMade, this.getGameState());
-    });
-    contractsAPI.on(ContractsAPIEvent.GameFinished, async () => {
-      console.log('game finished');
-      await this.refreshGameState();
-      this.emit(GameManagerEvent.GameFinished, this.getGameState());
-    });
+    contractsAPI.on(
+      ContractsAPIEvent.DidAttack,
+      async (
+        sequenceNumber: number,
+        attackerId: number,
+        attackedId: number,
+        attackerHp: number,
+        attackedHp: number
+      ) => {
+        if (!this.gameState) throw new Error('no game set');
+        const action: AttackAction = {
+          sequenceNumber,
+          actionType: GameActionType.ATTACK,
+          fromLocalData: false,
+          attackerId,
+          attackedId,
+          attackerHp,
+          attackedHp,
+        };
+        this.gameState.addGameAction(action);
+      }
+    );
+    contractsAPI.on(
+      ContractsAPIEvent.DidEndTurn,
+      async (player: string, turnNumber: number, sequenceNumber: number) => {
+        if (!this.gameState) throw new Error('no game set');
+        const action: EndTurnAction = {
+          sequenceNumber,
+          actionType: GameActionType.END_TURN,
+          fromLocalData: false,
+          player: address(player),
+          turnNumber,
+        };
+        this.gameState.addGameAction(action);
+      }
+    );
 
     contractsAPI.on(
       ContractsAPIEvent.TxInitialized,
-      async (unminedTx: TxIntent) => {
-        if (!this.gameState) throw new Error('no game set');
-        if (
-          isSummon(unminedTx) ||
-          isMove(unminedTx) ||
-          isAttack(unminedTx) ||
-          isEndTurn(unminedTx)
-        ) {
-          // TODO
+      async (txIntent: TxIntent) => {
+        if (isSummon(txIntent)) {
+          if (!this.gameState) throw new Error('no game set');
+          const action: SummonAction = {
+            sequenceNumber: txIntent.sequenceNumber,
+            actionType: GameActionType.SUMMON,
+            player: this.gameState.myAddress,
+            fromLocalData: true,
+            pieceType: txIntent.pieceType,
+            pieceId: txIntent.pieceId,
+            at: [txIntent.col, txIntent.row],
+          };
+          this.gameState.addGameAction(action);
+        } else if (isMove(txIntent)) {
+          if (!this.gameState) throw new Error('no game set');
+          const piece = this.gameState.pieceById.get(txIntent.pieceId);
+          const toRow = txIntent.moveToRow[txIntent.moveToRow.length - 1];
+          const toCol = txIntent.moveToCol[txIntent.moveToCol.length - 1];
+          if (piece) {
+            const action: MoveAction = {
+              sequenceNumber: txIntent.sequenceNumber,
+              actionType: GameActionType.MOVE,
+              pieceId: piece.id,
+              fromLocalData: true,
+              from: (piece as Locatable).location,
+              to: [toCol, toRow],
+            };
+            this.gameState.addGameAction(action);
+          }
+        } else if (isAttack(txIntent)) {
+          if (!this.gameState) throw new Error('no game set');
+          const attacker = this.gameState.pieceById.get(txIntent.pieceId);
+          const attacked = this.gameState.pieceById.get(txIntent.attackedId);
+          if (
+            attacker &&
+            attacked &&
+            isLocatable(attacker) &&
+            isLocatable(attacked)
+          ) {
+            let attackerHp = attacker.hp;
+            let attackedHp = attacked.hp;
+            const dist = taxiDist(attacker.location, attacked.location);
+            attackedHp = Math.max(0, attackedHp - attacker.atk);
+            if (dist <= attacked.atkRange)
+              attackerHp = Math.max(0, attackerHp - attacked.atk);
+            if (attacker.kamikaze) attackerHp = 0;
+            const action: AttackAction = {
+              sequenceNumber: txIntent.sequenceNumber,
+              actionType: GameActionType.ATTACK,
+              fromLocalData: true,
+              attackerId: attacker.id,
+              attackedId: attacked.id,
+              attackerHp,
+              attackedHp,
+            };
+            this.gameState.addGameAction(action);
+          }
+        } else if (isEndTurn(txIntent)) {
+          if (!this.gameState) throw new Error('no game set');
+          const action: EndTurnAction = {
+            sequenceNumber: txIntent.sequenceNumber,
+            actionType: GameActionType.END_TURN,
+            fromLocalData: true,
+            turnNumber: txIntent.turnNumber,
+            player: this.gameState.myAddress,
+          };
+          this.gameState.addGameAction(action);
         }
-        this.emit(GameManagerEvent.TxInitialized, unminedTx);
+        this.emit(GameManagerEvent.TxInitialized, txIntent);
       }
     );
     contractsAPI.on(
       ContractsAPIEvent.TxInitFailed,
       async (unminedTx: TxIntent, error: Error) => {
+        // TODO: handle error
         this.emit(GameManagerEvent.TxInitFailed, unminedTx, error);
       }
     );
@@ -208,6 +294,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     contractsAPI.on(
       ContractsAPIEvent.TxFailed,
       async (unminedTx: SubmittedTx, error: Error) => {
+        // TODO: handle submit errors and reverts separately!
         this.emit(GameManagerEvent.TxFailed, unminedTx, error);
       }
     );
@@ -219,15 +306,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     );
   }
 
-  public addGameAction(action: GameAction) {
-    if (
-      action.fromLocalData ||
-      !this.gameActions[action.sequenceNumber]?.fromLocalData
-    ) {
-      this.gameActions[action.sequenceNumber] = action;
-    }
-  }
-
   public destroy(): void {
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.CreatedGame);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.GameStart);
@@ -235,7 +313,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.DidMove);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.DidAttack);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.DidEndTurn);
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.GameFinished);
 
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxInitialized);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxInitFailed);
@@ -261,14 +338,51 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   async refreshGameState(): Promise<void> {
+    if (!this.gameState) throw new Error('no game set');
+    const oldGameState = this.gameState.getGameState();
+    console.log('CHECKING DIFF APPLICATION');
+    console.log(JSON.stringify(oldGameState, null, 2));
+    const diff = this.gameState.getActions()[oldGameState.sequenceNumber];
+    console.log(this.gameState.getActions());
+    const oldSequenceNumber = oldGameState.sequenceNumber;
     const contractGameState = await this.contractsAPI.getGameState();
-    this.gameState?.update(contractGameState);
+    this.gameState.update(contractGameState);
+    const newGameState = this.gameState.getGameState();
+    if (diff) {
+      const appliedState = this.gameState.applyAction(oldGameState, diff);
+      console.log(diff);
+      console.log(appliedState);
+      console.log(newGameState);
+      console.log(this.gameState.checkEquals(appliedState, newGameState));
+    }
+    const newSequenceNumber = this.gameState.getGameState().sequenceNumber;
+    if (newSequenceNumber > oldSequenceNumber) {
+      // note that the action at sequenceNumber will only be a part of
+      this.emit(
+        GameManagerEvent.StateAdvanced,
+        this.gameState.getGameState(),
+        this.gameState.getActions()
+      );
+    } else if (newSequenceNumber < oldSequenceNumber) {
+      this.emit(
+        GameManagerEvent.StateRewinded,
+        this.gameState.getGameState(),
+        this.gameState.getActions()
+      );
+    }
   }
 
   async setGame(gameId: string): Promise<void> {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
+    }
     await this.contractsAPI.setGame(gameId);
     const contractGameState = await this.contractsAPI.getGameState();
     this.gameState = new GameState(contractGameState);
+    this.refreshInterval = setInterval(() => {
+      this.refreshGameState();
+    }, 5000);
   }
 
   createGame(): Promise<void> {
@@ -295,22 +409,23 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   summonPiece(pieceType: PieceType, at: BoardLocation): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
-    const newPieceId = Math.max(...this.gameState.pieces.map((p) => p.id)) + 1;
+    const gameState = this.gameState.getLatestState();
+    const newPieceId = Math.max(...gameState.pieces.map((p) => p.id)) + 1;
     let unsubmittedSummon = createEmptySummon();
-    unsubmittedSummon.turnNumber = this.gameState.turnNumber;
+    unsubmittedSummon.turnNumber = gameState.turnNumber;
     unsubmittedSummon.pieceId = newPieceId;
     unsubmittedSummon.pieceType = pieceType;
     unsubmittedSummon.row = at[1];
     unsubmittedSummon.col = at[0];
-    unsubmittedSummon.sequenceNumber = this.gameState.sequenceNumber;
-    if (this.gameState.defaults.get(pieceType)?.isZk) {
+    unsubmittedSummon.sequenceNumber = gameState.sequenceNumber;
+    if (gameState.defaults.get(pieceType)?.isZk) {
       unsubmittedSummon.isZk = true;
       const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
       const zkp = this.snarkHelper.getSummonProof(
         at[1],
         at[0],
         newSalt,
-        this.gameState.myAddress === this.gameState.player1.address ? 0 : 6,
+        gameState.myAddress === gameState.player1.address ? 0 : 6,
         3,
         1,
         SIZE
@@ -328,16 +443,17 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   movePiece(pieceId: number, to: BoardLocation): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
+    const gameState = this.gameState.getLatestState();
     let piece: Piece | null = null;
-    for (const p of this.gameState.pieces) {
+    for (const p of gameState.pieces) {
       if (p.id === pieceId) piece = p;
     }
     if (!piece) throw new Error('piece not found');
     let unsubmittedMove = createEmptyMove();
     if (isZKPiece(piece) && !isKnown(piece))
       throw new Error('cant find ghost piece');
-    const obstacles: Locatable[] = this.gameState.pieces.filter(
-      (p) => !isZKPiece(p)
+    const obstacles: Locatable[] = gameState.pieces.filter(
+      (p) => !isZKPiece(p) && p.alive
     ) as Locatable[]; // typescript isn't smart enough to infer that these are all visible pieces
     const path = findPath(
       piece.location,
@@ -347,11 +463,11 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       isZKPiece(piece)
     );
     if (!path) throw new Error('no path found');
-    unsubmittedMove.turnNumber = this.gameState.turnNumber;
+    unsubmittedMove.turnNumber = gameState.turnNumber;
     unsubmittedMove.pieceId = pieceId;
     unsubmittedMove.moveToRow = path.map((loc) => loc[1]);
     unsubmittedMove.moveToCol = path.map((loc) => loc[0]);
-    unsubmittedMove.sequenceNumber = this.gameState.sequenceNumber;
+    unsubmittedMove.sequenceNumber = gameState.sequenceNumber;
     if (isZKPiece(piece)) {
       const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
       const zkp = this.snarkHelper.getMoveProve(
@@ -379,22 +495,21 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   attack(pieceId: number, attackedId: number): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
-    const attacker = this.gameState.pieces.filter((p) => p.id === pieceId)[0];
-    const attacked = this.gameState.pieces.filter(
-      (p) => p.id === attackedId
-    )[0];
+    const gameState = this.gameState.getLatestState();
+    const attacker = gameState.pieces.filter((p) => p.id === pieceId)[0];
+    const attacked = gameState.pieces.filter((p) => p.id === attackedId)[0];
     console.log(attacker);
     console.log(attacked);
     if (!attacker || !attacked) throw new Error('piece not found');
     if (isZKPiece(attacked) && !isKnown(attacked))
       throw new Error('attacking location not found');
     let unsubmittedAttack = createEmptyAttack();
-    unsubmittedAttack.turnNumber = this.gameState.turnNumber;
+    unsubmittedAttack.turnNumber = gameState.turnNumber;
     unsubmittedAttack.pieceId = pieceId;
     unsubmittedAttack.row = attacked.location[1];
     unsubmittedAttack.col = attacked.location[0];
     unsubmittedAttack.attackedId = attackedId;
-    unsubmittedAttack.sequenceNumber = this.gameState.sequenceNumber;
+    unsubmittedAttack.sequenceNumber = gameState.sequenceNumber;
     console.log(unsubmittedAttack);
     if (isZKPiece(attacker)) {
       if (!isKnown(attacker)) throw new Error('attacker location not found');
@@ -417,11 +532,12 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   endTurn(): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
+    const gameState = this.gameState.getLatestState();
     const unsubmittedEndTurn: UnsubmittedEndTurn = {
       txIntentId: getRandomTxIntentId(),
       type: EthTxType.END_TURN,
-      turnNumber: this.gameState.turnNumber,
-      sequenceNumber: this.gameState.sequenceNumber,
+      turnNumber: gameState.turnNumber,
+      sequenceNumber: gameState.sequenceNumber,
     };
     this.contractsAPI.onTxInit(unsubmittedEndTurn);
     this.contractsAPI.endTurn(unsubmittedEndTurn);

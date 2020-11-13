@@ -26,7 +26,7 @@ export enum ContractEvent {
   CreatedGame = 'CreatedGame',
 
   GameStart = 'GameStart',
-  DidSummon = 'DidSummon', // args: (player: string, sequenceNumber: number, pieceType: number, atRow: number, atCol: number)
+  DidSummon = 'DidSummon', // args: (player: string, pieceId: number, sequenceNumber: number, pieceType: number, atRow: number, atCol: number)
   DidMove = 'DidMove', // args: (sequenceNumber: number, pieceId: number, fromRow: number, fromCol: number, toRow: number, toCol: number)
   DidAttack = 'DidAttack', // args: (sequenceNumber: number, attackerId: number, attackedId: number, attackerHp: number, attackedHp: number)
   DidEndTurn = 'DidEndTurn', // args: (player: string, turnNumber: number, sequenceNumber: number)
@@ -158,6 +158,12 @@ export type RawPiece = {
 
   9: EthersBN;
   commitment?: EthersBN;
+
+  10: number;
+  lastMove?: number;
+
+  11: number;
+  lastAttack?: number;
 };
 
 export enum EthTxType {

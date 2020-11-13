@@ -93,7 +93,8 @@ class TxExecutor extends EventEmitter {
       }
       */
 
-      if (Date.now() - this.nonceLastUpdated > 1000) {
+      // TODO: test out seqNum failures by fucking up the nonce
+      if (Date.now() - this.nonceLastUpdated > 10000) {
         this.nonce = await EthereumAccountManager.getInstance().getNonce();
       }
       // await this.popupConfirmationWindow(txRequest);
@@ -197,6 +198,9 @@ class ContractsAPI extends EventEmitter {
       this.gameContract.on(ContractEvent.DidAttack, (...args) => {
         this.emit(ContractsAPIEvent.DidAttack, ...args);
       });
+      this.gameContract.on(ContractEvent.DidEndTurn, (...args) => {
+        this.emit(ContractsAPIEvent.DidEndTurn, ...args);
+      });
       this.gameContract.on(ContractEvent.GameFinished, () => {
         this.emit(ContractsAPIEvent.GameFinished);
       });
@@ -253,6 +257,7 @@ class ContractsAPI extends EventEmitter {
   }
 
   public async getGameState(): Promise<ChessGameContractData> {
+    console.log('getting game state from contract');
     const contract = this.gameContract;
     if (!contract) {
       throw new Error('no contract set');
@@ -504,6 +509,8 @@ class ContractsAPI extends EventEmitter {
         commitment: rawPiece[9].toString(),
         hp: rawPiece[7],
         initializedOnTurn: rawPiece[8],
+        lastMove: rawPiece[10],
+        lastAttack: rawPiece[11],
       };
     } else {
       return {
@@ -514,6 +521,8 @@ class ContractsAPI extends EventEmitter {
         location: [rawPiece[4], rawPiece[3]],
         hp: rawPiece[7],
         initializedOnTurn: rawPiece[8],
+        lastMove: rawPiece[10],
+        lastAttack: rawPiece[11],
       };
     }
   }

@@ -290,5 +290,6 @@ library ZKChessUtils {
         }
 
         hasAttacked[attack.turnNumber][piece.id] = true;
+        piece.lastAttack = attack.turnNumber;
     }
 }

@@ -1,9 +1,5 @@
 import {EventEmitter} from 'events';
-import {
-  BoardLocation,
-  ChessGame,
-  EthAddress,
-} from '../_types/global/GlobalTypes';
+import {BoardLocation, ChessGame} from '../_types/global/GlobalTypes';
 
 export enum GameManagerEvent {
   TxInitialized = 'TxInitialized', // args: (unminedTx: UnconfirmedTx)
@@ -14,8 +10,9 @@ export enum GameManagerEvent {
 
   CreatedGame = 'CreatedGame', // args: (gameId: number)
   GameStart = 'GameStart', // args: (updatedGameState: ChessGame)
-  ActionMade = 'ActionMade', // args: (updatedGameState: ChessGame)
-  GameFinished = 'GameFinished', // args: (updatedGameState: ChessGame)
+  StateAdvanced = 'StateAdvanced', // args: (gameState: ChessGame, actions: GameAction[])
+  StateRewinded = 'StateRewinded', // args: (gameState: ChessGame, actions: GameAction[])
+  ActionsUpdated = 'ActionsUpdated', // args: (actions: GameAction[])
 }
 
 export default interface AbstractGameManager extends EventEmitter {

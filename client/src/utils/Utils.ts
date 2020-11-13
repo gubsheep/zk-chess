@@ -71,6 +71,10 @@ export const isChrome = () => /Google Inc/.test(navigator.vendor);
 export const isBrave = async () =>
   !!((navigator as any).brave && (await (navigator as any).brave.isBrave())); // eslint-disable-line @typescript-eslint/no-explicit-any
 
+export const taxiDist = (loc1: BoardLocation, loc2: BoardLocation): number => {
+  return Math.abs(loc1[0] - loc2[0]) + Math.abs(loc1[1] - loc2[1]);
+};
+
 export const findPath = (
   from: BoardLocation,
   to: BoardLocation,

@@ -35,6 +35,8 @@ struct Piece {
     uint8 hp;
     uint8 initializedOnTurn;
     uint256 commitment; // only for ghosts
+    uint8 lastMove;
+    uint8 lastAttack;
 }
 
 struct SummonZKP {

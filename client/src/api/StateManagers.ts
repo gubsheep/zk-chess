@@ -67,15 +67,13 @@ export const useSyncGame = (): void => {
       dispatch.updateSession({selected: null});
     };
     gm.addListener(GameManagerEvent.GameStart, syncState);
-    gm.addListener(GameManagerEvent.ActionMade, syncState);
-    gm.addListener(GameManagerEvent.GameFinished, syncState);
+    gm.addListener(GameManagerEvent.StateAdvanced, syncState);
 
     syncState();
 
     return () => {
       gm.removeAllListeners(GameManagerEvent.GameStart);
-      gm.removeAllListeners(GameManagerEvent.ActionMade);
-      gm.removeAllListeners(GameManagerEvent.GameFinished);
+      gm.removeAllListeners(GameManagerEvent.StateAdvanced);
     };
   }, [gm]);
 
