@@ -35,9 +35,14 @@ export class GameObject {
     this.children.push(child);
   }
 
+  setActive(active: boolean) {
+    this.active = active;
+    this.object.visible = active;
+  }
+
   loop() {
     for (const obj of this.children) {
-      obj.loop();
+      if (obj.active) obj.loop();
     }
     this.lifetime++;
   }

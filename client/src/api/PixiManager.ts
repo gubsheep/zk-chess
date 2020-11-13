@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
 import { GameObject } from '../app/PixiUtils/GameObject';
 import { Mothership, Ship } from '../app/PixiUtils/Ships';
-import { PlayerColor } from '../app/PixiUtils/PixiTypes';
+import { PlayerColor, ShipType } from '../app/PixiUtils/PixiTypes';
 import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
 import { ResourceBars } from '../app/PixiUtils/ResourceBars';
 import { Shop } from './Shop';
@@ -47,7 +47,7 @@ export class PixiManager {
 
   myColor: PlayerColor;
 
-  pieces: Ship[];
+  ships: Ship[];
 
   private constructor(props: InitProps) {
     const { canvas } = props;
@@ -64,7 +64,7 @@ export class PixiManager {
     });
     this.app = app;
     this.app.stage.sortableChildren = true;
-    this.pieces = [];
+    this.ships = [];
     this.gameObjects = [];
     this.frameCount = 0;
     this.myColor = PlayerColor.Red;
@@ -85,7 +85,7 @@ export class PixiManager {
 
   addShip(obj: Ship) {
     this.addObject(obj);
-    this.pieces.push(obj);
+    this.ships.push(obj);
   }
 
   setup() {
@@ -118,6 +118,10 @@ export class PixiManager {
     this.myMothership = myMothership;
     this.addShip(myMothership);
     this.addShip(new Mothership(this, PlayerColor.Blue));
+
+    this.addShip(
+      new Ship(this, ShipType.Cruiser_01, { row: 2, col: 5 }, PlayerColor.Blue)
+    );
 
     // set up resource bars
     this.addObject(new ResourceBars(this));

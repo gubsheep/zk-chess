@@ -1,7 +1,8 @@
 import { BoardCoords, ShipType } from '../app/PixiUtils/PixiTypes';
 import { shipData } from '../app/PixiUtils/ShipData';
-import { Ship } from '../app/PixiUtils/Ships';
-import { taxiCab } from '../app/PixiUtils/Utils';
+import { Ship, ShipState } from '../app/PixiUtils/Ships';
+import { compareBoardCoords, taxiCab } from '../app/PixiUtils/Utils';
+import { compareLoc } from '../utils/ChessUtils';
 import { Player } from '../_types/global/GlobalTypes';
 import AbstractGameManager from './AbstractGameManager';
 import { PixiManager } from './PixiManager';
@@ -43,6 +44,15 @@ export class GameAPI {
     return dist > 0 && dist <= data.maxRange + data.movement;
   }
 
+  shipAt(coords: BoardCoords): Ship | null {
+    const ships = this.pixiManager.ships;
+    for (const ship of ships) {
+      if (compareBoardCoords(ship.coords, coords)) return ship;
+    }
+
+    return null;
+  }
+
   deployShip(type: ShipType, coords: BoardCoords): void {
     const ship = new Ship(
       this.pixiManager,
@@ -55,6 +65,14 @@ export class GameAPI {
 
   moveShip(ship: Ship, to: BoardCoords): void {
     ship.setCoords(to);
+    ship.hasMoved = true;
+  }
+
+  attack(from: Ship, to: BoardCoords): void {
+    const toShip = this.shipAt(to);
+    if (toShip) {
+      toShip.setActive(false);
+    }
   }
 
   findAttacks(type: ShipType, coords: BoardCoords): BoardCoords[] {

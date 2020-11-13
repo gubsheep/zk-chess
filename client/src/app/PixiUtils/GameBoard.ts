@@ -25,6 +25,7 @@ enum CellZIndex {
   Deploy,
   Move,
   Attack,
+  Target,
 }
 
 class StagedShip extends GameObject {
@@ -71,6 +72,7 @@ export class BoardCell extends GameObject {
   deployRect: PIXI.DisplayObject;
   moveRect: PIXI.DisplayObject;
   attackRect: PIXI.DisplayObject;
+  targetRect: PIXI.DisplayObject;
 
   stagedShip: StagedShip;
 
@@ -78,6 +80,7 @@ export class BoardCell extends GameObject {
     const container = new PIXI.Container();
     super(manager, container);
 
+    // TODO refactor these into a single rect
     const rectangle = makeRect(CELL_W, CELL_W, 0x222266, 0.4);
     rectangle.zIndex = CellZIndex.Base;
 
@@ -96,10 +99,15 @@ export class BoardCell extends GameObject {
     atkRect.visible = false;
     this.attackRect = atkRect;
 
+    const target = makeRect(CELL_W, CELL_W, 0x995555, 0.8, 0x663333, 2, 0.8);
+    target.zIndex = CellZIndex.Target;
+    target.visible = false;
+    this.targetRect = target;
+
     const stagedShip = new StagedShip(manager);
     this.stagedShip = stagedShip;
 
-    container.addChild(rectangle, depRect, movRect, atkRect);
+    container.addChild(rectangle, depRect, movRect, atkRect, target);
     this.addChild(stagedShip);
 
     this.setPosition(topLeft);
@@ -141,23 +149,28 @@ export class BoardCell extends GameObject {
         moveAttackIdxs,
         moveStaged,
         selectedShip,
+        attackStaged,
       },
     } = this.manager;
 
     this.deployRect.visible =
       clickState === ClickState.Deploying && idxsIncludes(deployIdxs, this.idx);
     this.moveRect.visible =
-      clickState === ClickState.Moving && idxsIncludes(moveIdxs, this.idx);
+      clickState === ClickState.Acting && idxsIncludes(moveIdxs, this.idx);
 
     this.attackRect.visible =
       !this.moveRect.visible &&
-      clickState === ClickState.Moving &&
+      clickState === ClickState.Acting &&
       idxsIncludes(moveAttackIdxs, this.idx);
+
+    this.targetRect.visible =
+      clickState === ClickState.Acting &&
+      compareBoardCoords(attackStaged, this.idx);
 
     if (clickState === ClickState.Deploying) {
       const show = compareBoardCoords(this.idx, deployStaged);
       this.stagedShip.setType(show ? deployType : null);
-    } else if (clickState === ClickState.Moving) {
+    } else if (clickState === ClickState.Acting) {
       const show = compareBoardCoords(this.idx, moveStaged);
       this.stagedShip.setType(selectedShip && show ? selectedShip.type : null);
     } else {

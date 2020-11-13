@@ -15,6 +15,8 @@ const waterline = (type: ShipType): number => {
 export enum ShipState {
   Summoned,
   Active,
+  Moved,
+  Attacked,
 }
 
 export class Ship extends GameObject {
@@ -22,7 +24,7 @@ export class Ship extends GameObject {
   id: number;
   type: ShipType;
 
-  shipState: ShipState;
+  hasMoved: boolean;
 
   mask: PIXI.Graphics;
 
@@ -34,6 +36,8 @@ export class Ship extends GameObject {
   ) {
     let container = new PIXI.Container();
     super(manager, container, GameZIndex.Ships);
+
+    this.hasMoved = false;
 
     // probably gets rolled up into general props
     this.id = Math.random();

@@ -1,13 +1,12 @@
 import { PixiManager } from '../../api/PixiManager';
 import { BoardCoords, ShipType } from './PixiTypes';
-import { Ship } from './Ships';
+import { Ship, ShipState } from './Ships';
 import { compareBoardCoords, idxsIncludes } from './Utils';
 
 export enum ClickState {
   None,
   Deploying,
-  Moving,
-  Attacking,
+  Acting,
 }
 
 export class MouseManager {
@@ -25,6 +24,7 @@ export class MouseManager {
   moveIdxs: BoardCoords[] = [];
   moveAttackIdxs: BoardCoords[] = [];
   moveStaged: BoardCoords | null = null;
+  attackStaged: BoardCoords | null = null;
 
   constructor(manager: PixiManager) {
     this.manager = manager;
@@ -38,13 +38,18 @@ export class MouseManager {
 
   private clearMove() {
     this.moveStaged = null;
+    this.attackStaged = null;
     this.moveIdxs = [];
     this.moveAttackIdxs = [];
   }
 
-  private setClickState(state: ClickState) {
+  private clearAll() {
     this.clearDeploy();
     this.clearMove();
+  }
+
+  private setClickState(state: ClickState) {
+    this.clearAll();
     this.clickState = state;
   }
 
@@ -63,8 +68,10 @@ export class MouseManager {
       if (this.deployStaged && this.deployType) {
         this.manager.gameApi.deployShip(this.deployType, this.deployStaged);
       } else console.error('something went wrong in confirm');
-    } else if (this.clickState === ClickState.Moving) {
-      if (this.selectedShip && this.moveStaged) {
+    } else if (this.clickState === ClickState.Acting) {
+      if (this.selectedShip && this.attackStaged) {
+        this.manager.gameApi.attack(this.selectedShip, this.attackStaged);
+      } else if (this.selectedShip && this.moveStaged) {
         this.manager.gameApi.moveShip(this.selectedShip, this.moveStaged);
       } else console.error('something went wrong in confirm');
     }
@@ -96,7 +103,7 @@ export class MouseManager {
     ];
     for (let i = 0; i < deployIdxs.length; i++) {
       const loc = deployIdxs[i];
-      for (const piece of this.manager.pieces) {
+      for (const piece of this.manager.ships) {
         if (compareBoardCoords(piece.coords, loc)) deployIdxs.splice(i--, 1);
       }
     }
@@ -109,8 +116,14 @@ export class MouseManager {
       if (idxsIncludes(this.deployIdxs, idx)) {
         this.deployStaged = idx;
       }
-    } else if (this.clickState === ClickState.Moving) {
-      if (idxsIncludes(this.moveIdxs, idx)) {
+    } else if (this.clickState === ClickState.Acting) {
+      // first, check if there is an enemy boat
+      const ship = this.manager.gameApi.shipAt(idx);
+      if (ship && idxsIncludes(this.moveAttackIdxs, idx)) {
+        this.attackStaged = idx;
+        this.moveStaged = null;
+      } else if (idxsIncludes(this.moveIdxs, idx)) {
+        this.attackStaged = null;
         this.moveStaged = idx;
       }
     }
@@ -121,14 +134,20 @@ export class MouseManager {
 
     const { gameApi: api } = this.manager;
     if (this.clickState === ClickState.None) {
-      this.setClickState(ClickState.Moving);
+      // initiate ship movement
+      this.setClickState(ClickState.Acting);
       this.selectedShip = ship;
 
-      this.moveIdxs = api.findMoves(ship.type, ship.coords);
-      this.moveAttackIdxs = api.findAttacksWithMove(ship.type, ship.coords);
-
-      console.log(this.moveAttackIdxs);
-      console.log(this.moveIdxs);
+      if (!ship.hasMoved) {
+        this.moveIdxs = api.findMoves(ship.type, ship.coords);
+        this.moveAttackIdxs = api.findAttacksWithMove(ship.type, ship.coords);
+      } else {
+        this.moveIdxs = [];
+        this.moveAttackIdxs = api.findAttacks(ship.type, ship.coords);
+      }
     }
+
+    // bubble the event
+    this.cellClicked(ship.coords);
   }
 }
