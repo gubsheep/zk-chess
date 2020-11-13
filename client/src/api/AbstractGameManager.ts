@@ -8,9 +8,9 @@ import {
 export enum GameManagerEvent {
   // INTERNAL USE ONLY
   TxInitialized = 'TxInitialized', // args: (unminedTx: UnconfirmedTx)
-  TxInitFailed = 'TxInitFailed', // args: (unminedTx: UnconfirmedTx, error: Error)
+  TxSubmitFailed = 'TxSubmitFailed', // args: (unminedTx: UnconfirmedTx, error: Error)
   TxSubmitted = 'TxSubmitted', // args: (unminedTx: SubmtitedTx)
-  TxFailed = 'TxFailed', // args: (unminedTx: SubmittedTx, error: Error)
+  TxReverted = 'TxReverted', // args: (unminedTx: SubmittedTx, error: Error)
   TxConfirmed = 'TxConfirmed', // args: (unminedTx: SubmittedTx)
 
   // EMITTED FOR UI

@@ -12,7 +12,7 @@ import {
 // in particular, the below is bad!
 // import {TransactionReceipt, Provider, TransactionResponse, Web3Provider} from "ethers/providers";
 import {Contract, providers, BigNumber as EthersBN} from 'ethers';
-import _ from 'lodash';
+import _, {reject} from 'lodash';
 
 import {address, emptyAddress} from '../utils/CheckedTypeUtils';
 import {
@@ -59,12 +59,15 @@ class TxExecutor extends EventEmitter {
   makeRequest(
     txRequest: QueuedTxRequest
   ): Promise<providers.TransactionResponse> {
-    this.txRequests.push(txRequest);
-    if (!this.pendingExec) {
-      const toExec = this.txRequests.shift();
-      if (toExec) this.execute(toExec);
-    }
     return new Promise<providers.TransactionResponse>((resolve, reject) => {
+      setTimeout(() => {
+        reject('tx submission timed out');
+      }, 10000);
+      this.txRequests.push(txRequest);
+      if (!this.pendingExec) {
+        const toExec = this.txRequests.shift();
+        if (toExec) this.execute(toExec);
+      }
       this.once(
         txRequest.txIntentId,
         (res: providers.TransactionResponse, e: Error) => {
@@ -246,10 +249,19 @@ class ContractsAPI extends EventEmitter {
       });
   }
 
-  private onTxConfirmation(unminedTx: SubmittedTx, success: boolean) {
-    this.unminedTxs.delete(unminedTx.txIntentId);
-    if (success) this.emit(ContractsAPIEvent.TxConfirmed, unminedTx);
-    else this.emit(ContractsAPIEvent.TxFailed, new Error('tx reverted'));
+  public onTxSubmitFail(action: TxIntent, error: Error) {
+    this.emit(ContractsAPIEvent.TxSubmitFailed, action, error);
+  }
+
+  private onTxConfirmation(submittedTx: SubmittedTx, success: boolean) {
+    this.unminedTxs.delete(submittedTx.txIntentId);
+    if (success) this.emit(ContractsAPIEvent.TxConfirmed, submittedTx);
+    else
+      this.emit(
+        ContractsAPIEvent.TxReverted,
+        submittedTx,
+        new Error('tx reverted')
+      );
   }
 
   public async getAllGameIds(): Promise<string[]> {
@@ -316,25 +328,29 @@ class ContractsAPI extends EventEmitter {
   public async createGame(
     action: UnsubmittedCreateGame
   ): Promise<providers.TransactionReceipt> {
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-    console.log('creating game');
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        txIntentId: action.txIntentId,
-        contract: this.factoryContract,
-        method: 'createGame',
-        args: [action.gameId],
-        overrides,
-      }
-    );
+    try {
+      const overrides: providers.TransactionRequest = {
+        gasPrice: 1000000000,
+        gasLimit: 2000000,
+      };
+      const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+        {
+          txIntentId: action.txIntentId,
+          contract: this.factoryContract,
+          method: 'createGame',
+          args: [action.gameId],
+          overrides,
+        }
+      );
 
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
+      if (tx.hash) {
+        this.onTxSubmit(action, tx.hash);
+      }
+      return tx.wait();
+    } catch (e) {
+      this.onTxSubmitFail(action, e);
+      throw e;
     }
-    return tx.wait();
   }
 
   public async joinGame(
@@ -343,24 +359,29 @@ class ContractsAPI extends EventEmitter {
     if (!this.gameContract) {
       throw new Error('no game contract set');
     }
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        txIntentId: action.txIntentId,
-        contract: this.gameContract,
-        method: 'joinGame',
-        args: [],
-        overrides,
-      }
-    );
+    try {
+      const overrides: providers.TransactionRequest = {
+        gasPrice: 1000000000,
+        gasLimit: 2000000,
+      };
+      const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+        {
+          txIntentId: action.txIntentId,
+          contract: this.gameContract,
+          method: 'joinGame',
+          args: [],
+          overrides,
+        }
+      );
 
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
+      if (tx.hash) {
+        this.onTxSubmit(action, tx.hash);
+      }
+      return tx.wait();
+    } catch (e) {
+      this.onTxSubmitFail(action, e);
+      throw e;
     }
-    return tx.wait();
   }
 
   public async doSummon(
@@ -369,34 +390,39 @@ class ContractsAPI extends EventEmitter {
     if (!this.gameContract) {
       throw new Error('no game contract set');
     }
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        txIntentId: action.txIntentId,
-        contract: this.gameContract,
-        method: 'doSummon',
-        args: [
-          [
-            action.turnNumber,
-            action.sequenceNumber,
-            action.pieceId,
-            action.pieceType,
-            action.isZk ? 0 : action.row,
-            action.isZk ? 0 : action.col,
-            await action.zkp,
+    try {
+      const overrides: providers.TransactionRequest = {
+        gasPrice: 1000000000,
+        gasLimit: 2000000,
+      };
+      const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+        {
+          txIntentId: action.txIntentId,
+          contract: this.gameContract,
+          method: 'doSummon',
+          args: [
+            [
+              action.turnNumber,
+              action.sequenceNumber,
+              action.pieceId,
+              action.pieceType,
+              action.isZk ? 0 : action.row,
+              action.isZk ? 0 : action.col,
+              await action.zkp,
+            ],
           ],
-        ],
-        overrides,
-      }
-    );
+          overrides,
+        }
+      );
 
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
+      if (tx.hash) {
+        this.onTxSubmit(action, tx.hash);
+      }
+      return tx.wait();
+    } catch (e) {
+      this.onTxSubmitFail(action, e);
+      throw e;
     }
-    return tx.wait();
   }
 
   public async doMove(
@@ -405,33 +431,38 @@ class ContractsAPI extends EventEmitter {
     if (!this.gameContract) {
       throw new Error('no game contract set');
     }
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        txIntentId: action.txIntentId,
-        contract: this.gameContract,
-        method: 'doMove',
-        args: [
-          [
-            action.turnNumber,
-            action.sequenceNumber,
-            action.pieceId,
-            action.isZk ? [] : action.moveToRow,
-            action.isZk ? [] : action.moveToCol,
-            await action.zkp,
+    try {
+      const overrides: providers.TransactionRequest = {
+        gasPrice: 1000000000,
+        gasLimit: 2000000,
+      };
+      const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+        {
+          txIntentId: action.txIntentId,
+          contract: this.gameContract,
+          method: 'doMove',
+          args: [
+            [
+              action.turnNumber,
+              action.sequenceNumber,
+              action.pieceId,
+              action.isZk ? [] : action.moveToRow,
+              action.isZk ? [] : action.moveToCol,
+              await action.zkp,
+            ],
           ],
-        ],
-        overrides,
-      }
-    );
+          overrides,
+        }
+      );
 
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
+      if (tx.hash) {
+        this.onTxSubmit(action, tx.hash);
+      }
+      return tx.wait();
+    } catch (e) {
+      this.onTxSubmitFail(action, e);
+      throw e;
     }
-    return tx.wait();
   }
 
   public async doAttack(
@@ -440,32 +471,37 @@ class ContractsAPI extends EventEmitter {
     if (!this.gameContract) {
       throw new Error('no game contract set');
     }
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        txIntentId: action.txIntentId,
-        contract: this.gameContract,
-        method: 'doAttack',
-        args: [
-          [
-            action.turnNumber,
-            action.sequenceNumber,
-            action.pieceId,
-            action.attackedId,
-            await action.zkp,
+    try {
+      const overrides: providers.TransactionRequest = {
+        gasPrice: 1000000000,
+        gasLimit: 2000000,
+      };
+      const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+        {
+          txIntentId: action.txIntentId,
+          contract: this.gameContract,
+          method: 'doAttack',
+          args: [
+            [
+              action.turnNumber,
+              action.sequenceNumber,
+              action.pieceId,
+              action.attackedId,
+              await action.zkp,
+            ],
           ],
-        ],
-        overrides,
-      }
-    );
+          overrides,
+        }
+      );
 
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
+      if (tx.hash) {
+        this.onTxSubmit(action, tx.hash);
+      }
+      return tx.wait();
+    } catch (e) {
+      this.onTxSubmitFail(action, e);
+      throw e;
     }
-    return tx.wait();
   }
 
   public async endTurn(
@@ -474,24 +510,29 @@ class ContractsAPI extends EventEmitter {
     if (!this.gameContract) {
       throw new Error('no game contract set');
     }
-    const overrides: providers.TransactionRequest = {
-      gasPrice: 1000000000,
-      gasLimit: 2000000,
-    };
-    const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
-      {
-        txIntentId: action.txIntentId,
-        contract: this.gameContract,
-        method: 'endTurn',
-        args: [action.turnNumber, action.sequenceNumber],
-        overrides,
-      }
-    );
+    try {
+      const overrides: providers.TransactionRequest = {
+        gasPrice: 1000000000,
+        gasLimit: 2000000,
+      };
+      const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+        {
+          txIntentId: action.txIntentId,
+          contract: this.gameContract,
+          method: 'endTurn',
+          args: [action.turnNumber, action.sequenceNumber],
+          overrides,
+        }
+      );
 
-    if (tx.hash) {
-      this.onTxSubmit(action, tx.hash);
+      if (tx.hash) {
+        this.onTxSubmit(action, tx.hash);
+      }
+      return tx.wait();
+    } catch (e) {
+      this.onTxSubmitFail(action, e);
+      throw e;
     }
-    return tx.wait();
   }
 
   private rawPieceToPiece(rawPiece: RawPiece): ContractPiece {

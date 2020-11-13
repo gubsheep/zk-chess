@@ -45,11 +45,11 @@ export enum ContractsAPIEvent {
   DidEndTurn = 'DidEndTurn', // args: (player: string, turnNumber: number, sequenceNumber: number)
   GameFinished = 'GameFinished', // args: ()
 
-  TxInitialized = 'TxInitialized', // args: (unminedTx: UnconfirmedTx)
-  TxInitFailed = 'TxInitFailed', // args: (unminedTx: UnconfirmedTx, error: Error)
-  TxSubmitted = 'TxSubmitted', // args: (unminedTx: SubmittedTx)
-  TxFailed = 'TxFailed', // args: (unminedTx: SubmittedTx, error: Error)
-  TxConfirmed = 'TxConfirmed', // args: (unminedTx: SubmittedTx)
+  TxInitialized = 'TxInitialized', // args: (txIntent: TxIntent)
+  TxSubmitFailed = 'TxSubmitFailed', // args: (txIntent: TxIntent, error: Error)
+  TxSubmitted = 'TxSubmitted', // args: (txIntent: SubmittedTx)
+  TxReverted = 'TxReverted', // args: (txIntent: SubmittedTx, error: Error)
+  TxConfirmed = 'TxConfirmed', // args: (txIntent: SubmittedTx)
 }
 
 export type GhostSummonArgs = [

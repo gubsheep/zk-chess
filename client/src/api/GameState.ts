@@ -99,6 +99,15 @@ export class GameState {
       this.pieces.push(piece);
       this.pieceById.set(piece.id, piece);
     }
+    if (this.myAddress === this.player1.address) {
+      if (this.gameStatus === GameStatus.P2_TO_MOVE) {
+        this.gameActions = this.gameActions.slice(0, this.sequenceNumber);
+      }
+    } else if (this.myAddress === this.player2.address) {
+      if (this.gameStatus === GameStatus.P1_TO_MOVE) {
+        this.gameActions = this.gameActions.slice(0, this.sequenceNumber);
+      }
+    }
   }
 
   public addGameAction(action: GameAction) {
@@ -113,7 +122,10 @@ export class GameState {
   }
 
   public gameActionFailed(sequenceNumber: number) {
-    this.gameActions = this.gameActions.slice(0, sequenceNumber);
+    this.gameActions = this.gameActions.slice(
+      0,
+      Math.min(sequenceNumber, this.gameActions.length)
+    );
   }
 
   public getGameState(): ChessGame {
