@@ -46,10 +46,12 @@ export class PixiManager {
 
   ships: Ship[];
 
+  myColor: PlayerColor.Red;
+
   private constructor(props: InitProps) {
-    const { canvas, gameManager } = props;
+    const {canvas, gameManager} = props;
     this.canvas = canvas;
-    const { width, height } = canvas;
+    const {width, height} = canvas;
 
     // set up app
     let app = new PIXI.Application({

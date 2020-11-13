@@ -26,6 +26,9 @@ export class GameState {
   gameAddress: EthAddress;
   gameId: string;
 
+  nRows: number;
+  nCols: number;
+
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
@@ -50,6 +53,8 @@ export class GameState {
 
   public update(contractData: ChessGameContractData) {
     this.gameId = contractData.gameId;
+    this.nRows = contractData.nRows;
+    this.nCols = contractData.nCols;
     this.myAddress = contractData.myAddress;
     this.player1 = contractData.player1;
     this.player2 = contractData.player2;
@@ -99,6 +104,15 @@ export class GameState {
       this.pieces.push(piece);
       this.pieceById.set(piece.id, piece);
     }
+    if (this.myAddress === this.player1.address) {
+      if (this.gameStatus === GameStatus.P2_TO_MOVE) {
+        this.gameActions = this.gameActions.slice(0, this.sequenceNumber);
+      }
+    } else if (this.myAddress === this.player2.address) {
+      if (this.gameStatus === GameStatus.P1_TO_MOVE) {
+        this.gameActions = this.gameActions.slice(0, this.sequenceNumber);
+      }
+    }
   }
 
   public addGameAction(action: GameAction) {
@@ -113,7 +127,10 @@ export class GameState {
   }
 
   public gameActionFailed(sequenceNumber: number) {
-    this.gameActions = this.gameActions.slice(0, sequenceNumber);
+    this.gameActions = this.gameActions.slice(
+      0,
+      Math.min(sequenceNumber, this.gameActions.length)
+    );
   }
 
   public getGameState(): ChessGame {
@@ -121,6 +138,8 @@ export class GameState {
     return _.cloneDeep({
       gameAddress: this.gameAddress,
       gameId: this.gameId,
+      nRows: this.nRows,
+      nCols: this.nCols,
       myAddress: this.myAddress,
       player1: this.player1,
       player2: this.player2,

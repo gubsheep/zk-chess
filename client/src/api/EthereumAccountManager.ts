@@ -9,6 +9,8 @@ import {XDAI_CHAIN_ID} from '../utils/constants';
 class EthereumAccountManager extends EventEmitter {
   static instance: EthereumAccountManager | null = null;
 
+  private readonly TIMEOUT_MS = 15000;
+
   private provider: JsonRpcProvider;
   private signer: Wallet | null;
   private rpcURL: string;

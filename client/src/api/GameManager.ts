@@ -43,7 +43,7 @@ import {address} from '../utils/CheckedTypeUtils';
 import {findPath, getRandomTxIntentId, taxiDist} from '../utils/Utils';
 import bigInt from 'big-integer';
 import mimcHash from '../hash/mimc';
-import {LOCATION_ID_UB, SIZE} from '../utils/constants';
+import {LOCATION_ID_UB} from '../utils/constants';
 import {GameState} from './GameState';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
@@ -54,7 +54,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly snarkHelper: SnarkHelper;
 
   private gameState: GameState | null;
-  private gameActions: GameAction[];
 
   private refreshInterval: ReturnType<typeof setInterval> | null;
 
@@ -71,7 +70,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
     this.contractsAPI = contractsAPI;
     this.snarkHelper = snarkHelper;
-    this.gameActions = [];
 
     this.gameState = null;
     this.refreshInterval = null;
@@ -85,10 +83,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     const gameIds = await contractsAPI.getAllGameIds();
     const account = contractsAPI.account;
     const snarkHelper = SnarkHelper.create();
-    localStorage.setItem(
-      `COMMIT_${mimcHash(3, 3, 0).toString()}`,
-      JSON.stringify([3, 3, '0'])
-    );
 
     // get data from the contract
     const gameManager = new GameManager(
@@ -279,10 +273,18 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       }
     );
     contractsAPI.on(
-      ContractsAPIEvent.TxInitFailed,
-      async (unminedTx: TxIntent, error: Error) => {
-        // TODO: handle error
-        this.emit(GameManagerEvent.TxInitFailed, unminedTx, error);
+      ContractsAPIEvent.TxSubmitFailed,
+      async (txIntent: TxIntent, error: Error) => {
+        if (
+          this.gameState &&
+          (isSummon(txIntent) ||
+            isMove(txIntent) ||
+            isAttack(txIntent) ||
+            isEndTurn(txIntent))
+        ) {
+          this.gameState.gameActionFailed(txIntent.sequenceNumber);
+        }
+        this.emit(GameManagerEvent.TxSubmitFailed, txIntent, error);
       }
     );
     contractsAPI.on(
@@ -292,10 +294,18 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       }
     );
     contractsAPI.on(
-      ContractsAPIEvent.TxFailed,
-      async (unminedTx: SubmittedTx, error: Error) => {
-        // TODO: handle submit errors and reverts separately!
-        this.emit(GameManagerEvent.TxFailed, unminedTx, error);
+      ContractsAPIEvent.TxReverted,
+      async (txIntent: SubmittedTx, error: Error) => {
+        if (
+          this.gameState &&
+          (isSummon(txIntent) ||
+            isMove(txIntent) ||
+            isAttack(txIntent) ||
+            isEndTurn(txIntent))
+        ) {
+          this.gameState.gameActionFailed(txIntent.sequenceNumber);
+        }
+        this.emit(GameManagerEvent.TxReverted, txIntent, error);
       }
     );
     contractsAPI.on(
@@ -315,9 +325,9 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.DidEndTurn);
 
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxInitialized);
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxInitFailed);
+    this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxSubmitFailed);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxSubmitted);
-    this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxFailed);
+    this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxReverted);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.TxConfirmed);
 
     this.contractsAPI.destroy();
@@ -356,13 +366,13 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     this.gameState.update(contractGameState);
     const newSequenceNumber = this.gameState.getGameState().sequenceNumber;
     if (newSequenceNumber > oldSequenceNumber) {
-      // note that the action at sequenceNumber will only be a part of
       this.emit(
         GameManagerEvent.StateAdvanced,
         this.gameState.getGameState(),
         this.gameState.getActions()
       );
     } else if (newSequenceNumber < oldSequenceNumber) {
+      // some sort of reorg probably
       this.emit(
         GameManagerEvent.StateRewinded,
         this.gameState.getGameState(),
@@ -392,7 +402,11 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     };
     console.log('creating game');
     this.contractsAPI.onTxInit(unsubmittedCreateGame);
-    this.contractsAPI.createGame(unsubmittedCreateGame);
+    try {
+      this.contractsAPI.createGame(unsubmittedCreateGame);
+    } catch (e) {
+      console.error(e);
+    }
     return Promise.resolve();
   }
 
@@ -402,7 +416,11 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       type: EthTxType.JOIN_GAME,
     };
     this.contractsAPI.onTxInit(unsubmittedJoin);
-    this.contractsAPI.joinGame(unsubmittedJoin);
+    try {
+      this.contractsAPI.joinGame(unsubmittedJoin);
+    } catch (e) {
+      console.error(e);
+    }
     return Promise.resolve();
   }
 
@@ -420,14 +438,23 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     if (gameState.defaults.get(pieceType)?.isZk) {
       unsubmittedSummon.isZk = true;
       const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
+      let homeRow = 0;
+      let homeCol = 0;
+      const mothershipId =
+        gameState.myAddress === gameState.player1.address ? 1 : 2;
+      homeRow = (gameState.pieceById.get(mothershipId) as Locatable)
+        .location[1];
+      homeCol = (gameState.pieceById.get(mothershipId) as Locatable)
+        .location[0];
       const zkp = this.snarkHelper.getSummonProof(
         at[1],
         at[0],
         newSalt,
-        gameState.myAddress === gameState.player1.address ? 0 : 6,
-        3,
+        homeRow,
+        homeCol,
         1,
-        SIZE
+        gameState.nRows,
+        gameState.nCols
       );
       localStorage.setItem(
         `COMMIT_${mimcHash(at[1], at[0], newSalt).toString()}`,
@@ -436,7 +463,11 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       unsubmittedSummon.zkp = zkp;
     }
     this.contractsAPI.onTxInit(unsubmittedSummon);
-    this.contractsAPI.doSummon(unsubmittedSummon);
+    try {
+      this.contractsAPI.doSummon(unsubmittedSummon);
+    } catch (e) {
+      console.error(e);
+    }
     return Promise.resolve();
   }
 
@@ -457,7 +488,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     const path = findPath(
       piece.location,
       to,
-      SIZE,
+      gameState.nRows,
+      gameState.nCols,
       obstacles,
       isZKPiece(piece)
     );
@@ -478,7 +510,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         newSalt,
         Math.abs(to[1] - piece.location[1]) +
           Math.abs(to[0] - piece.location[0]),
-        SIZE
+        gameState.nRows,
+        gameState.nCols
       );
       localStorage.setItem(
         `COMMIT_${mimcHash(to[1], to[0], newSalt).toString()}`,
@@ -488,7 +521,11 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       unsubmittedMove.zkp = zkp;
     }
     this.contractsAPI.onTxInit(unsubmittedMove);
-    this.contractsAPI.doMove(unsubmittedMove);
+    try {
+      this.contractsAPI.doMove(unsubmittedMove);
+    } catch (e) {
+      console.error(e);
+    }
     return Promise.resolve();
   }
 
@@ -520,12 +557,17 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         attacked.location[1],
         attacked.location[0],
         attacker.atkRange,
-        SIZE
+        gameState.nRows,
+        gameState.nCols
       );
       unsubmittedAttack.zkp = zkp;
     }
     this.contractsAPI.onTxInit(unsubmittedAttack);
-    this.contractsAPI.doAttack(unsubmittedAttack);
+    try {
+      this.contractsAPI.doAttack(unsubmittedAttack);
+    } catch (e) {
+      console.error(e);
+    }
     return Promise.resolve();
   }
 
@@ -539,7 +581,11 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       sequenceNumber: gameState.sequenceNumber,
     };
     this.contractsAPI.onTxInit(unsubmittedEndTurn);
-    this.contractsAPI.endTurn(unsubmittedEndTurn);
+    try {
+      this.contractsAPI.endTurn(unsubmittedEndTurn);
+    } catch (e) {
+      console.error(e);
+    }
     return Promise.resolve();
   }
 }

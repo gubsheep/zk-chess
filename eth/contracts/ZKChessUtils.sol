@@ -148,7 +148,8 @@ library ZKChessUtils {
         uint8[][] storage boardPieces,
         mapping(uint8 => Piece) storage pieces,
         mapping(PieceType => PieceDefaultStats) storage defaultStats,
-        uint256 BOARD_SIZE
+        uint8 NROWS,
+        uint8 NCOLS
     ) public view returns (bool) {
         uint8 currentRow = piece.row;
         uint8 currentCol = piece.col;
@@ -163,7 +164,7 @@ library ZKChessUtils {
             uint8 nextCol = toCol[i];
             // must be in range [0, SIZE - 1]
             require(
-                nextRow < BOARD_SIZE || nextCol < BOARD_SIZE,
+                nextRow < NROWS || nextCol < NCOLS,
                 "tried to move out of bounds"
             );
             // (nextRow, nextCol) must be adjacent to (currentRow, currentCol)
@@ -213,7 +214,8 @@ library ZKChessUtils {
         mapping(uint8 => Piece) storage pieces,
         mapping(PieceType => PieceDefaultStats) storage defaultStats,
         mapping(uint8 => mapping(uint8 => bool)) storage hasAttacked,
-        uint256 BOARD_SIZE
+        uint8 NROWS,
+        uint8 NCOLS
     ) public view returns (bool) {
         Piece storage piece = pieces[attack.pieceId];
         Piece storage attacked = pieces[attack.attackedId];
@@ -245,7 +247,8 @@ library ZKChessUtils {
                 attack.zkp.input[3] <= defaultStats[piece.pieceType].mvRange,
                 "out of attack range"
             );
-            require(attack.zkp.input[4] == BOARD_SIZE, "ZKP invalid");
+            require(attack.zkp.input[4] == NROWS, "ZKP invalid");
+            require(attack.zkp.input[5] == NCOLS, "ZKP invalid");
             require(
                 Verifier.verifyDist1Proof(
                     attack.zkp.a,
@@ -270,8 +273,7 @@ library ZKChessUtils {
         mapping(uint8 => Piece) storage pieces,
         uint8[][] storage boardPieces,
         mapping(PieceType => PieceDefaultStats) storage defaultStats,
-        mapping(uint8 => mapping(uint8 => bool)) storage hasAttacked,
-        uint256 BOARD_SIZE
+        mapping(uint8 => mapping(uint8 => bool)) storage hasAttacked
     ) public {
         Piece storage piece = pieces[attack.pieceId];
         Piece storage attacked = pieces[attack.attackedId];
