@@ -94,6 +94,7 @@ class TxExecutor extends EventEmitter {
       */
 
       // TODO: test out seqNum failures by fucking up the nonce
+      // TODO: Throw error if txs time out
       if (Date.now() - this.nonceLastUpdated > 10000) {
         this.nonce = await EthereumAccountManager.getInstance().getNonce();
       }
@@ -235,7 +236,7 @@ class ContractsAPI extends EventEmitter {
       txHash,
       sentAtTimestamp: Math.floor(Date.now() / 1000),
     };
-    // TODO encapsulate this into terminalemitter
+    // TODO: Throw error if txs time out
     this.unminedTxs.set(unminedTx.txIntentId, unminedTx);
     this.emit(ContractsAPIEvent.TxSubmitted, unminedTx);
     EthereumAccountManager.getInstance()
