@@ -68,6 +68,7 @@ export class BoardCell extends GameObject {
     );
     const alphaFilter = new PIXI.filters.AlphaFilter(0.7);
     stagedShip.setFilters([alphaFilter]);
+    stagedShip.setPosition({ x: 2, y: 2 });
     this.stagedShip = stagedShip;
 
     container.addChild(rectangle, depRect, movRect, atkRect, target);
@@ -75,12 +76,12 @@ export class BoardCell extends GameObject {
 
     this.setPosition(topLeft);
 
-    container.interactive = true;
-    container.hitArea = new PIXI.Rectangle(0, 0, CELL_W, CELL_W);
-    container
-      .on('mouseover', this.onMouseOver)
-      .on('mouseout', this.onMouseOut)
-      .on('click', this.onClick);
+    this.setInteractive({
+      hitArea: new PIXI.Rectangle(0, 0, CELL_W, CELL_W),
+      mouseover: this.onMouseOver,
+      mouseout: this.onMouseOut,
+      click: this.onClick,
+    });
 
     this.topLeft = topLeft;
     this.ship = null;

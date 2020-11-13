@@ -1,8 +1,14 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { Piece, PieceType, Player } from '../../_types/global/GlobalTypes';
+import {
+  Piece,
+  PieceType,
+  Player,
+  VisiblePiece,
+} from '../../_types/global/GlobalTypes';
 import { GameObject } from './GameObject';
 import { BoardCoords, CanvasCoords, PlayerColor } from './PixiTypes';
+import { boardCoordsFromLoc } from './PixiUtils';
 import { ShipSprite } from './ShipSprite';
 import { SHIPS, SPRITE_W } from './TextureLoader';
 
@@ -27,14 +33,17 @@ export class Ship extends GameObject {
   hasMoved: boolean;
 
   mask: PIXI.Graphics;
+  pieceData: VisiblePiece;
 
-  constructor(
-    manager: PixiManager,
-    PieceType: PieceType,
-    coords: BoardCoords,
-    color: PlayerColor
-  ) {
+  constructor(manager: PixiManager, data: VisiblePiece) {
     super(manager, GameZIndex.Ships);
+
+    this.pieceData = data;
+
+    const { pieceType: PieceType, location, owner } = data;
+    const color = manager.api.getColor(owner);
+    const coords = boardCoordsFromLoc(location);
+
     const container = this.object;
 
     this.hasMoved = false;
@@ -114,13 +123,3 @@ export class Ship extends GameObject {
 
 export const RED_MOTHERSHIP_COORDS: BoardCoords = { row: 2, col: 0 };
 export const BLUE_MOTHERSHIP_COORDS: BoardCoords = { row: 2, col: 6 };
-
-export const getMothership = (
-  manager: PixiManager,
-  color: PlayerColor
-): Ship => {
-  const coords =
-    color === PlayerColor.Red ? RED_MOTHERSHIP_COORDS : BLUE_MOTHERSHIP_COORDS;
-
-  return new Ship(manager, PieceType.Mothership_00, coords, color);
-};

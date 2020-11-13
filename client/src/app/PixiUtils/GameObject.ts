@@ -7,6 +7,13 @@ const autoIncrement = (() => {
   let count = 0;
   return () => count++;
 })();
+
+export type GameObjectInteractiveProps = {
+  hitArea?: PIXI.Rectangle;
+  mouseover?: Function;
+  mouseout?: Function;
+  click?: Function;
+};
 // top-level game object abstraction. all of our game things should be wrapped in these guys
 export class GameObject {
   id: number;
@@ -21,10 +28,7 @@ export class GameObject {
   active: boolean = true;
 
   // TODO refactor this so that it doesn't need to be given a container
-  constructor(
-    manager: PixiManager,
-    zIndex: number = 0
-  ) {
+  constructor(manager: PixiManager, zIndex: number = 0) {
     this.id = autoIncrement();
     this.manager = manager;
 
@@ -36,33 +40,49 @@ export class GameObject {
     autoBind(this);
   }
 
-  addChild(...children: GameObject[]) {
+  addChild(...children: GameObject[]): void {
     children.forEach((child) => {
       this.object.addChild(child.object);
       this.children.push(child);
     });
   }
 
-  setActive(active: boolean) {
+  setActive(active: boolean): void {
     this.active = active;
     this.object.visible = active;
   }
 
-  loop() {
+  loop(): void {
     for (const obj of this.children) {
       if (obj.active) obj.loop();
     }
     this.lifetime++;
   }
 
-  destroy() {
+  destroy(): void {
     this.active = false;
     this.manager.app.stage.removeChild(this.object);
     // technically we should deallocate the object but whatever
     // this.object = null;
   }
 
-  setPosition({ x, y }: CanvasCoords) {
+  setPosition({ x, y }: CanvasCoords): void {
     this.object.position.set(x, y);
   }
+
+  setInteractive(props: GameObjectInteractiveProps | null): void {
+    if (props === null) {
+      this.object.interactive = false;
+      this.object.removeAllListeners();
+      return;
+    } else {
+      this.object.interactive = true;
+      const { hitArea, mouseover, click, mouseout } = props;
+      if (hitArea) this.object.hitArea = hitArea;
+      if (mouseover) this.object.on('mouseover', mouseover);
+      if (mouseout) this.object.on('mouseout', mouseout);
+      if (click) this.object.on('click', click);
+    }
+  }
+
 }

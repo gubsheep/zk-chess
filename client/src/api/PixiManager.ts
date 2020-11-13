@@ -2,7 +2,7 @@ import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
 import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
 import { GameObject } from '../app/PixiUtils/GameObject';
-import { getMothership, Ship } from '../app/PixiUtils/Ships';
+import { Ship } from '../app/PixiUtils/Ships';
 import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
 import { ResourceBars } from '../app/PixiUtils/ResourceBars';
 import { Shop } from './Shop';

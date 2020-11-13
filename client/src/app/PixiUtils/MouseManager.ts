@@ -84,6 +84,10 @@ export class MouseManager {
     this.setClickState(ClickState.None);
   }
 
+  endTurn() {
+    this.manager.api.endTurn();
+  }
+
   buyShip(type: PieceType) {
     if (type === PieceType.Mothership_00) {
       console.error('cant buy a mothership');

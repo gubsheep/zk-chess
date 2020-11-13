@@ -2,9 +2,7 @@ import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { GameObject } from './GameObject';
 import * as PIXI from 'pixi.js';
 import { BASELINE_ICONS, BASELINE_TEXT, ICONS } from './TextureLoader';
-import { ThemeProvider } from 'styled-components';
 import { CanvasCoords } from './PixiTypes';
-import { getFontLoader } from './FontLoader';
 
 const LABEL_WIDTH = 32; // width of 'Gold:'
 const LABEL_M_RIGHT = 2; // right margin
@@ -159,7 +157,7 @@ export class GoldBar extends ResourceBar {
   // overrides
   getText(value: number): string {
     const valueStr = value < 10 ? '0' + value : value;
-    const maxStr = this.value < 10 ? '0' + this.value : this.value;
+    const maxStr = this.max < 10 ? '0' + this.max : this.max;
     return `${valueStr}/${maxStr}`;
   }
   setMax(max: number): void {
@@ -173,6 +171,8 @@ export class GoldBar extends ResourceBar {
   }
 }
 
+const MAX_HEALTH = 20;
+
 export class HPBar extends ResourceBar {
   constructor(manager: PixiManager) {
     const iconContainer = new PIXI.Container();
@@ -180,7 +180,7 @@ export class HPBar extends ResourceBar {
 
     iconContainer.addChild(hpRow);
 
-    super(manager, 'HP:', 20, iconContainer, hpRow);
+    super(manager, 'HP:', MAX_HEALTH, iconContainer, hpRow);
   }
 
   // overrides
@@ -221,5 +221,12 @@ export class ResourceBars extends GameObject {
 
   positionSelf() {
     this.setPosition({ x: 10, y: 10 });
+  }
+
+  loop() {
+    const api = this.manager.api;
+    this.goldBar.setValue(api.getGold());
+    this.goldBar.setMax(api.getMaxGold());
+    this.hpBar.setValue(api.getHealth());
   }
 }
