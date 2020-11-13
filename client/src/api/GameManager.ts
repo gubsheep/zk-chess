@@ -337,6 +337,16 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     return this.gameState.getGameState();
   }
 
+  getLatestGameState(): ChessGame {
+    if (!this.gameState) throw new Error('no game set');
+    return this.gameState.getLatestState();
+  }
+
+  getActions(): (GameAction | undefined)[] {
+    if (!this.gameState) throw new Error('no game set');
+    return this.gameState.getActions();
+  }
+
   async refreshGameState(): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
     const oldGameState = this.gameState.getGameState();

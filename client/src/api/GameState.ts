@@ -137,7 +137,7 @@ export class GameState {
     return state;
   }
 
-  public getActions(): GameAction[] {
+  public getActions(): (GameAction | undefined)[] {
     return this.gameActions;
   }
 
