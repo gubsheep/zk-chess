@@ -28,6 +28,11 @@ export const boardCoordsFromLoc = (loc: BoardLocation): BoardCoords => ({
   row: loc[1],
 });
 
+export const boardLocFromCoords = (coords: BoardCoords): BoardLocation => [
+  coords.col,
+  coords.row,
+];
+
 export const compareBoardCoords = (
   a: BoardCoords | null,
   b: BoardCoords | null

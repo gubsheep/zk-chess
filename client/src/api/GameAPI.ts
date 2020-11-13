@@ -1,7 +1,11 @@
 import { BoardCoords, PlayerColor } from '../app/PixiUtils/PixiTypes';
 import { shipData } from '../app/PixiUtils/ShipData';
 import { Ship } from '../app/PixiUtils/Ships';
-import { compareBoardCoords, taxiCab } from '../app/PixiUtils/PixiUtils';
+import {
+  boardLocFromCoords,
+  compareBoardCoords,
+  taxiCab,
+} from '../app/PixiUtils/PixiUtils';
 import {
   ChessGame,
   EthAddress,
@@ -11,21 +15,35 @@ import {
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 import { PixiManager } from './PixiManager';
 import { GAME_HEIGHT, GAME_WIDTH } from '../app/PixiUtils/GameBoard';
+import GameManager from './GameManager';
+import autoBind from 'auto-bind';
 
 export class GameAPI {
   private pixiManager: PixiManager;
-  private gameManager: AbstractGameManager;
+  private gameManager: GameManager;
   private myMothership: Ship;
 
   gameState: ChessGame;
 
   constructor(pixiManager: PixiManager, gameManager: AbstractGameManager) {
     this.pixiManager = pixiManager;
-    this.gameManager = gameManager;
+    this.gameManager = gameManager as GameManager;
 
     this.syncGameState();
 
-    this.gameManager.addListener(GameManagerEvent.CreatedGame, () => {});
+    autoBind(this);
+
+    this.gameManager.addListener(
+      GameManagerEvent.StateAdvanced,
+      this.stateAdvanced
+    );
+  }
+
+  // event listeners
+  private stateAdvanced() {
+    this.syncGameState();
+
+    this.syncShips();
   }
 
   // purges all existing ships and adds new ones
@@ -51,10 +69,13 @@ export class GameAPI {
 
   // callable
   endTurn(): void {
+    console.log('sending endTurn from api');
     this.gameManager.endTurn();
   }
 
-  deployShip(type: PieceType, coords: BoardCoords): void {}
+  deployShip(type: PieceType, coords: BoardCoords): void {
+    this.gameManager.summonPiece(type, boardLocFromCoords(coords));
+  }
 
   moveShip(ship: Ship, to: BoardCoords): void {
     ship.setCoords(to);
@@ -117,7 +138,7 @@ export class GameAPI {
   isMyTurn(): boolean {
     const amP1 = this.amPlayer1();
     const modulo = this.gameState.turnNumber % 2;
-    return amP1 ? modulo === 0 : modulo === 1;
+    return amP1 ? modulo === 1 : modulo === 0;
   }
 
   // p1 is red, p2 is blue
@@ -147,12 +168,11 @@ export class GameAPI {
   getGold(): number {
     const amP1 = this.amPlayer1();
     if (amP1) return this.gameState.player1Mana;
-    else return this.gameState.player1Mana;
+    else return this.gameState.player2Mana;
   }
 
   getMaxGold(): number {
-    return 10;
-    // const rounds =  this.gameState.turnNumber / 2
+    return this.gameState.turnNumber;
   }
 
   getHealth(): number {
