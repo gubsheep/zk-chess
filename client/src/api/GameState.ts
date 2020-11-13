@@ -102,12 +102,18 @@ export class GameState {
   }
 
   public addGameAction(action: GameAction) {
+    // add this action unless it's a blockchain action that would overwrite
+    // a local action
     if (
       action.fromLocalData ||
       !this.gameActions[action.sequenceNumber]?.fromLocalData
     ) {
       this.gameActions[action.sequenceNumber] = action;
     }
+  }
+
+  public gameActionFailed(sequenceNumber: number) {
+    this.gameActions = this.gameActions.slice(0, sequenceNumber);
   }
 
   public getGameState(): ChessGame {

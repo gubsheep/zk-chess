@@ -180,8 +180,8 @@ contract ZKChessGame is Initializable {
             id: 1,
             pieceType: PieceType.MOTHERSHIP_00,
             owner: player1,
-            row: 0,
-            col: 3,
+            row: 2,
+            col: 0,
             alive: true,
             commitment: 0,
             initialized: true,
@@ -196,8 +196,8 @@ contract ZKChessGame is Initializable {
             id: 2,
             pieceType: PieceType.MOTHERSHIP_00,
             owner: player2,
-            row: 6,
-            col: 3,
+            row: 2,
+            col: 6,
             alive: true,
             commitment: 0,
             initialized: true,
@@ -221,11 +221,13 @@ contract ZKChessGame is Initializable {
 
         // PORT tile
         uint8 homeRow;
-        uint8 homeCol = 3;
+        uint8 homeCol;
         if (msg.sender == player1) {
-            homeRow = 0;
+            homeRow = pieces[1].row;
+            homeCol = pieces[1].col;
         } else {
-            homeRow = 6;
+            homeRow = pieces[2].row;
+            homeCol = pieces[2].col;
         }
 
         // MANA checks
