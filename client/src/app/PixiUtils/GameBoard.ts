@@ -4,16 +4,16 @@ import {
   CanvasCoords,
   LineAlignment,
   PlayerColor,
-  ShipType,
 } from './PixiTypes';
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { GameObject } from './GameObject';
 import { Ship } from './Ships';
-import { compareBoardCoords, idxsIncludes, makeRect } from './Utils';
+import { compareBoardCoords, idxsIncludes, makeRect } from './PixiUtils';
 import { ClickState } from './MouseManager';
 import { SHIPS, SPRITE_W } from './TextureLoader';
 import { playerShader } from './Shaders';
+import { PieceType } from '../../_types/global/GlobalTypes';
 
 const numX = 7;
 const numY = 5;
@@ -29,7 +29,7 @@ enum CellZIndex {
 }
 
 class StagedShip extends GameObject {
-  type: ShipType | null;
+  type: PieceType | null;
   rect: PIXI.Graphics;
 
   constructor(manager: PixiManager) {
@@ -41,7 +41,7 @@ class StagedShip extends GameObject {
 
     rect.position.set(2, 2);
     const alphaFilter = new PIXI.filters.AlphaFilter(0.7);
-    rect.filters = [playerShader(manager.myColor), alphaFilter];
+    rect.filters = [playerShader(manager.api.getMyColor()), alphaFilter];
     container.addChild(rect);
 
     this.rect = rect;
@@ -58,7 +58,7 @@ class StagedShip extends GameObject {
     this.rect.endFill();
   }
 
-  setType(type: ShipType | null) {
+  setType(type: PieceType | null) {
     this.type = type;
   }
 }
@@ -219,12 +219,11 @@ export class GameBoard extends GameObject {
   }
 
   getTopLeft({ row, col }: BoardCoords): CanvasCoords {
-    const cell = this.cells[row][col];
-    if (cell) {
-      return this.object.toGlobal(cell.topLeft);
-    } else {
+    if (!this.cells[row] || !this.cells[row][col]) {
       console.error('array out of bounds on grid');
       return { x: 0, y: 0 };
+    } else {
+      return this.object.toGlobal(this.cells[row][col].topLeft);
     }
   }
 

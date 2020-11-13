@@ -353,7 +353,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     // console.log('CHECKING DIFF APPLICATION');
     // console.log(JSON.stringify(oldGameState, null, 2));
     const diff = this.gameState.getActions()[oldGameState.sequenceNumber];
-    console.log(this.gameState.getActions());
+    // console.log(this.gameState.getActions());
     const oldSequenceNumber = oldGameState.sequenceNumber;
     const contractGameState = await this.contractsAPI.getGameState();
     this.gameState.update(contractGameState);

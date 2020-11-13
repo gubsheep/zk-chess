@@ -1,6 +1,6 @@
-import {EventEmitter} from 'events';
-import {Dispatch} from 'react';
-import {SetStateAction} from 'react';
+import { EventEmitter } from 'events';
+import { Dispatch } from 'react';
+import { SetStateAction } from 'react';
 
 interface WindowEthereumObject extends EventEmitter {
   enable: () => void;
@@ -33,7 +33,7 @@ export enum PieceType {
   Submarine_04,
   Warship_05,
 }
-
+// as col, row
 export type BoardLocation = [number, number];
 
 export type GameObject = {
@@ -107,6 +107,10 @@ export function isLocatable(piece: any): piece is Locatable {
 
 export function isZKPiece(piece: Piece): piece is ZKPiece {
   return (piece as ZKPiece).commitment !== undefined;
+}
+
+export function isVisiblePiece(piece: Piece): piece is VisiblePiece {
+  return !isZKPiece(piece);
 }
 
 export function isKnown(piece: ZKPiece): piece is KnownZKPiece {

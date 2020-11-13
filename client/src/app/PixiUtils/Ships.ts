@@ -1,14 +1,14 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { Player } from '../../_types/global/GlobalTypes';
+import { Piece, PieceType, Player } from '../../_types/global/GlobalTypes';
 import { GameObject } from './GameObject';
-import { BoardCoords, CanvasCoords, PlayerColor, ShipType } from './PixiTypes';
+import { BoardCoords, CanvasCoords, PlayerColor } from './PixiTypes';
 import { playerShader } from './Shaders';
 import { getShipSprite, SHIPS, SPRITE_W } from './TextureLoader';
 
-const waterline = (type: ShipType): number => {
-  if (type === ShipType.Mothership_00) return 28;
-  else if (type === ShipType.Submarine_04) return 32;
+const waterline = (type: PieceType): number => {
+  if (type === PieceType.Mothership_00) return 28;
+  else if (type === PieceType.Submarine_04) return 32;
   else return 25;
 };
 
@@ -22,7 +22,7 @@ export enum ShipState {
 export class Ship extends GameObject {
   coords: BoardCoords;
   id: number;
-  type: ShipType;
+  type: PieceType;
 
   hasMoved: boolean;
 
@@ -30,7 +30,7 @@ export class Ship extends GameObject {
 
   constructor(
     manager: PixiManager,
-    shipType: ShipType,
+    PieceType: PieceType,
     coords: BoardCoords,
     color: PlayerColor
   ) {
@@ -41,9 +41,9 @@ export class Ship extends GameObject {
 
     // probably gets rolled up into general props
     this.id = Math.random();
-    this.type = shipType;
+    this.type = PieceType;
 
-    const sprite = getShipSprite(shipType, color);
+    const sprite = getShipSprite(PieceType, color);
 
     sprite.anchor.set(0.5, 0.0);
     sprite.scale.x = color === PlayerColor.Red ? 1 : -1;
@@ -60,7 +60,7 @@ export class Ship extends GameObject {
 
     let mask = new PIXI.Graphics();
     mask.beginFill(0xffffff, 1.0);
-    mask.drawRect(container.x, container.y, SPRITE_W, waterline(shipType));
+    mask.drawRect(container.x, container.y, SPRITE_W, waterline(PieceType));
     mask.endFill();
     container.mask = mask;
     this.mask = mask;
@@ -124,5 +124,5 @@ export const getMothership = (
   const coords =
     color === PlayerColor.Red ? RED_MOTHERSHIP_COORDS : BLUE_MOTHERSHIP_COORDS;
 
-  return new Ship(manager, ShipType.Mothership_00, coords, color);
+  return new Ship(manager, PieceType.Mothership_00, coords, color);
 };

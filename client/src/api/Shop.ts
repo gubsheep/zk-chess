@@ -1,7 +1,7 @@
 import { GameObject } from '../app/PixiUtils/GameObject';
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from './PixiManager';
-import { LineAlignment, ShipType } from '../app/PixiUtils/PixiTypes';
+import { LineAlignment } from '../app/PixiUtils/PixiTypes';
 import {
   BASELINE_ICONS,
   getCoinSprite,
@@ -14,6 +14,7 @@ import { CHAR_W } from '../app/PixiUtils/FontLoader';
 import { playerShader } from '../app/PixiUtils/Shaders';
 import { ClickState } from '../app/PixiUtils/MouseManager';
 import { shipData } from '../app/PixiUtils/ShipData';
+import { PieceType } from '../_types/global/GlobalTypes';
 
 const CARD_W = 46;
 const CARD_H = 46;
@@ -28,8 +29,8 @@ class ShopCard extends GameObject {
   modal: PIXI.Container;
   hovering: boolean;
   bgOverlay: PIXI.DisplayObject;
-  type: ShipType;
-  constructor(manager: PixiManager, type: ShipType) {
+  type: PieceType;
+  constructor(manager: PixiManager, type: PieceType) {
     const cardWrapper = new PIXI.Container();
 
     // make card
@@ -47,7 +48,7 @@ class ShopCard extends GameObject {
     bgOverlay.endFill();
     bgOverlay.visible = false;
 
-    const sprite = getShipSprite(type, manager.myColor);
+    const sprite = getShipSprite(type, manager.api.getMyColor());
 
     const data = shipData[type];
 
@@ -143,7 +144,7 @@ export class Shop extends GameObject {
     super(manager, container, GameZIndex.Shop);
 
     let idx = 0;
-    for (let type = ShipType.Cruiser_01; type <= ShipType.Warship_05; type++) {
+    for (let type = PieceType.Cruiser_01; type <= PieceType.Warship_05; type++) {
       const shopEntry = new ShopCard(manager, type);
       shopEntry.setPosition({ x: idx * (CARD_W + CARD_MARGIN), y: 0 });
       this.addChild(shopEntry);

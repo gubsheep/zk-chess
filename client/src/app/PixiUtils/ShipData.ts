@@ -1,7 +1,7 @@
-import { ShipType } from './PixiTypes';
+import { PieceType } from "../../_types/global/GlobalTypes";
 
 export type ShipData = {
-  type: ShipType;
+  type: PieceType;
   cost: number;
   attack: number;
   health: number;
@@ -13,7 +13,7 @@ export type ShipData = {
 };
 
 const mothership: ShipData = {
-  type: ShipType.Mothership_00,
+  type: PieceType.Mothership_00,
   cost: NaN,
   attack: NaN,
   health: 20,
@@ -23,7 +23,7 @@ const mothership: ShipData = {
   name: 'Mothership',
 };
 const cruiser: ShipData = {
-  type: ShipType.Cruiser_01,
+  type: PieceType.Cruiser_01,
   cost: 1,
   attack: 2,
   health: 3,
@@ -33,7 +33,7 @@ const cruiser: ShipData = {
   name: 'Cruiser',
 };
 const frigate: ShipData = {
-  type: ShipType.Frigate_02,
+  type: PieceType.Frigate_02,
   cost: 2,
   attack: 2,
   health: 3,
@@ -43,7 +43,7 @@ const frigate: ShipData = {
   name: 'Frigate',
 };
 const corvette: ShipData = {
-  type: ShipType.Corvette_03,
+  type: PieceType.Corvette_03,
   cost: 3,
   attack: 2,
   health: 3,
@@ -53,7 +53,7 @@ const corvette: ShipData = {
   name: 'Corvette',
 };
 const submarine: ShipData = {
-  type: ShipType.Submarine_04,
+  type: PieceType.Submarine_04,
   cost: 4,
   attack: 4,
   health: 1,
@@ -64,7 +64,7 @@ const submarine: ShipData = {
   isZk: true,
 };
 const warship: ShipData = {
-  type: ShipType.Warship_05,
+  type: PieceType.Warship_05,
   cost: 5,
   attack: 3,
   health: 3,

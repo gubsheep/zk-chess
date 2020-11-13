@@ -1,8 +1,21 @@
-import { BoardCoords, PlayerColor, ShipType } from '../app/PixiUtils/PixiTypes';
+import { BoardCoords, PlayerColor } from '../app/PixiUtils/PixiTypes';
 import { shipData } from '../app/PixiUtils/ShipData';
 import { Ship, ShipState } from '../app/PixiUtils/Ships';
-import { compareBoardCoords, taxiCab } from '../app/PixiUtils/Utils';
-import { ChessGame } from '../_types/global/GlobalTypes';
+import {
+  boardCoordsFromLoc,
+  compareBoardCoords,
+  taxiCab,
+} from '../app/PixiUtils/PixiUtils';
+import {
+  ChessGame,
+  EthAddress,
+  isVisiblePiece,
+  Locatable,
+  Piece,
+  PieceType,
+  Player,
+  VisiblePiece,
+} from '../_types/global/GlobalTypes';
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 import { GameState } from './GameState';
 import { PixiManager } from './PixiManager';
@@ -29,21 +42,37 @@ export class GameAPI {
   // purges all existing ships and adds new ones
   syncShips(): void {
     this.syncGameState();
+
     this.pixiManager.clearShips();
     const { pieces } = this.gameState;
     for (const piece of pieces) {
-      // this.pixiManager.addShip();
+      if (isVisiblePiece(piece)) {
+        this.pixiManager.addShip(this.shipFromData(piece));
+      }
     }
   }
 
-  private canMove(type: ShipType, from: BoardCoords, to: BoardCoords): boolean {
+  private shipFromData(data: VisiblePiece): Ship {
+    return new Ship(
+      this.pixiManager,
+      data.pieceType,
+      boardCoordsFromLoc(data.location),
+      this.getColor(data.owner)
+    );
+  }
+
+  private canMove(
+    type: PieceType,
+    from: BoardCoords,
+    to: BoardCoords
+  ): boolean {
     const data = shipData[type];
     const dist = taxiCab(from, to);
     return dist > 0 && dist <= data.movement;
   }
 
   private canAttack(
-    type: ShipType,
+    type: PieceType,
     from: BoardCoords,
     to: BoardCoords
   ): boolean {
@@ -53,7 +82,7 @@ export class GameAPI {
   }
 
   private canAttackWithMove(
-    type: ShipType,
+    type: PieceType,
     from: BoardCoords,
     to: BoardCoords
   ): boolean {
@@ -64,9 +93,13 @@ export class GameAPI {
 
   // p1 is red, p2 is blue
   getMyColor(): PlayerColor {
-    const { myAddress, player1, player2 } = this.gameState;
-    if (myAddress === player1.address) return PlayerColor.Red;
-    else if (myAddress === player2.address) return PlayerColor.Blue;
+    return this.getColor(this.gameState.myAddress);
+  }
+
+  getColor(address: EthAddress | null): PlayerColor {
+    const { player1, player2 } = this.gameState;
+    if (address === player1.address) return PlayerColor.Red;
+    else if (address === player2.address) return PlayerColor.Blue;
     else {
       console.error('error getting color');
       return PlayerColor.Red;
@@ -82,7 +115,7 @@ export class GameAPI {
     return null;
   }
 
-  deployShip(type: ShipType, coords: BoardCoords): void {
+  deployShip(type: PieceType, coords: BoardCoords): void {
     const ship = new Ship(
       this.pixiManager,
       type,
@@ -104,7 +137,7 @@ export class GameAPI {
     }
   }
 
-  findAttacks(type: ShipType, coords: BoardCoords): BoardCoords[] {
+  findAttacks(type: PieceType, coords: BoardCoords): BoardCoords[] {
     const { width, height } = this.pixiManager.gameBoard;
     const attacks: BoardCoords[] = [];
 
@@ -118,7 +151,7 @@ export class GameAPI {
     return attacks;
   }
 
-  findMoves(type: ShipType, coords: BoardCoords): BoardCoords[] {
+  findMoves(type: PieceType, coords: BoardCoords): BoardCoords[] {
     const { width, height } = this.pixiManager.gameBoard;
     const paths: BoardCoords[] = [];
     // TODO minor optimization using range
@@ -131,7 +164,7 @@ export class GameAPI {
     return paths;
   }
 
-  findAttacksWithMove(type: ShipType, coords: BoardCoords): BoardCoords[] {
+  findAttacksWithMove(type: PieceType, coords: BoardCoords): BoardCoords[] {
     const { width, height } = this.pixiManager.gameBoard;
     const allAttacks: BoardCoords[] = [];
     // TODO minor optimization using range

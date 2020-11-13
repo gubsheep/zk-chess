@@ -1,7 +1,8 @@
 import { PixiManager } from '../../api/PixiManager';
-import { BoardCoords, ShipType } from './PixiTypes';
+import { PieceType } from '../../_types/global/GlobalTypes';
+import { BoardCoords } from './PixiTypes';
 import { Ship, ShipState } from './Ships';
-import { compareBoardCoords, idxsIncludes } from './Utils';
+import { compareBoardCoords, idxsIncludes } from './PixiUtils';
 
 export enum ClickState {
   None,
@@ -16,7 +17,7 @@ export class MouseManager {
   hoveringCell: BoardCoords | null = null;
   hoveringShip: number | null = null;
 
-  deployType: ShipType | null = null;
+  deployType: PieceType | null = null;
   deployIdxs: BoardCoords[] = [];
   deployStaged: BoardCoords | null = null;
 
@@ -83,8 +84,8 @@ export class MouseManager {
     this.setClickState(ClickState.None);
   }
 
-  buyShip(type: ShipType) {
-    if (type === ShipType.Mothership_00) {
+  buyShip(type: PieceType) {
+    if (type === PieceType.Mothership_00) {
       console.error('cant buy a mothership');
       return;
     }
@@ -130,7 +131,7 @@ export class MouseManager {
   }
 
   shipClicked(ship: Ship) {
-    if (ship.type === ShipType.Mothership_00) return;
+    if (ship.type === PieceType.Mothership_00) return;
 
     const { api: api } = this.manager;
     if (this.clickState === ClickState.None) {
