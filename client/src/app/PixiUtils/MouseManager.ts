@@ -1,5 +1,4 @@
 import { PixiManager } from '../../api/PixiManager';
-import { BoardCell } from './GameBoard';
 import { BoardCoords, ShipType } from './PixiTypes';
 import { Ship } from './Ships';
 import { compareBoardCoords, idxsIncludes } from './Utils';
@@ -12,27 +11,40 @@ export enum ClickState {
 }
 
 export class MouseManager {
-  clickState: ClickState;
+  clickState: ClickState = ClickState.None;
   manager: PixiManager;
 
-  hoveringCell: BoardCoords | null;
-  hoveringShip: Ship;
+  hoveringCell: BoardCoords | null = null;
+  hoveringShip: number | null = null;
 
-  deployType: ShipType | null;
-  deployIdxs: BoardCoords[];
-  deployStaged: BoardCoords | null;
+  deployType: ShipType | null = null;
+  deployIdxs: BoardCoords[] = [];
+  deployStaged: BoardCoords | null = null;
+
+  selectedShip: Ship | null = null;
+  moveIdxs: BoardCoords[] = [];
+  moveAttackIdxs: BoardCoords[] = [];
+  moveStaged: BoardCoords | null = null;
 
   constructor(manager: PixiManager) {
-    this.clickState = ClickState.None;
     this.manager = manager;
   }
 
+  private clearDeploy() {
+    this.deployType = null;
+    this.deployIdxs = [];
+    this.deployStaged = null;
+  }
+
+  private clearMove() {
+    this.moveStaged = null;
+    this.moveIdxs = [];
+    this.moveAttackIdxs = [];
+  }
+
   private setClickState(state: ClickState) {
-    if (state !== ClickState.Deploying) {
-      this.deployType = null;
-      this.deployIdxs = [];
-      this.deployStaged = null;
-    }
+    this.clearDeploy();
+    this.clearMove();
     this.clickState = state;
   }
 
@@ -41,8 +53,8 @@ export class MouseManager {
     this.hoveringCell = cell;
   }
 
-  setHoveringShip(ship: Ship) {
-    this.hoveringShip = ship;
+  setHoveringShip(id: number | null) {
+    this.hoveringShip = id;
   }
 
   // callable events
@@ -50,6 +62,10 @@ export class MouseManager {
     if (this.clickState === ClickState.Deploying) {
       if (this.deployStaged && this.deployType) {
         this.manager.gameApi.deployShip(this.deployType, this.deployStaged);
+      } else console.error('something went wrong in confirm');
+    } else if (this.clickState === ClickState.Moving) {
+      if (this.selectedShip && this.moveStaged) {
+        this.manager.gameApi.moveShip(this.selectedShip, this.moveStaged);
       } else console.error('something went wrong in confirm');
     }
 
@@ -67,6 +83,7 @@ export class MouseManager {
     }
 
     this.setClickState(ClickState.Deploying);
+
     this.deployType = type;
 
     const { myMothership: mothership } = this.manager;
@@ -92,6 +109,26 @@ export class MouseManager {
       if (idxsIncludes(this.deployIdxs, idx)) {
         this.deployStaged = idx;
       }
+    } else if (this.clickState === ClickState.Moving) {
+      if (idxsIncludes(this.moveIdxs, idx)) {
+        this.moveStaged = idx;
+      }
+    }
+  }
+
+  shipClicked(ship: Ship) {
+    if (ship.type === ShipType.Mothership_00) return;
+
+    const { gameApi: api } = this.manager;
+    if (this.clickState === ClickState.None) {
+      this.setClickState(ClickState.Moving);
+      this.selectedShip = ship;
+
+      this.moveIdxs = api.findMoves(ship.type, ship.coords);
+      this.moveAttackIdxs = api.findAttacksWithMove(ship.type, ship.coords);
+
+      console.log(this.moveAttackIdxs);
+      console.log(this.moveIdxs);
     }
   }
 }

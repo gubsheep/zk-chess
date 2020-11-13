@@ -11,9 +11,9 @@ import {
   SPRITE_W,
 } from '../app/PixiUtils/TextureLoader';
 import { CHAR_W } from '../app/PixiUtils/FontLoader';
-import { shipData } from '../app/PixiUtils/Ships';
 import { playerShader } from '../app/PixiUtils/Shaders';
 import { ClickState } from '../app/PixiUtils/MouseManager';
+import { shipData } from '../app/PixiUtils/ShipData';
 
 const CARD_W = 46;
 const CARD_H = 46;

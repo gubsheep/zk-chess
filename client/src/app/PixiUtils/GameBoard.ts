@@ -10,7 +10,7 @@ import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { GameObject } from './GameObject';
 import { Ship } from './Ships';
-import { compareBoardCoords, idxsIncludes } from './Utils';
+import { compareBoardCoords, idxsIncludes, makeRect } from './Utils';
 import { ClickState } from './MouseManager';
 import { SHIPS, SPRITE_W } from './TextureLoader';
 import { playerShader } from './Shaders';
@@ -23,6 +23,8 @@ const BORDER = 2;
 enum CellZIndex {
   Base,
   Deploy,
+  Move,
+  Attack,
 }
 
 class StagedShip extends GameObject {
@@ -67,34 +69,40 @@ export class BoardCell extends GameObject {
   idx: BoardCoords;
 
   deployRect: PIXI.DisplayObject;
+  moveRect: PIXI.DisplayObject;
+  attackRect: PIXI.DisplayObject;
+
   stagedShip: StagedShip;
 
   constructor(manager: PixiManager, idx: BoardCoords, topLeft: CanvasCoords) {
     const container = new PIXI.Container();
     super(manager, container);
 
-    const rectangle = new PIXI.Graphics();
-    rectangle.beginFill(0x222266, 0.4);
-    rectangle.drawRect(0, 0, CELL_W, CELL_W);
-    rectangle.endFill();
+    const rectangle = makeRect(CELL_W, CELL_W, 0x222266, 0.4);
     rectangle.zIndex = CellZIndex.Base;
 
-    const deployRect = new PIXI.Graphics();
-    deployRect.beginFill(0xaa7777, 0.8);
-    deployRect.lineStyle(2, 0x995555, 0.8, LineAlignment.Inner);
-    deployRect.drawRect(0, 0, CELL_W, CELL_W);
-    deployRect.endFill();
-    rectangle.zIndex = CellZIndex.Deploy;
-    deployRect.visible = false;
+    const depRect = makeRect(CELL_W, CELL_W, 0xaa7777, 0.8, 0x995555, 2, 0.8);
+    depRect.zIndex = CellZIndex.Deploy;
+    depRect.visible = false;
+    this.deployRect = depRect;
+
+    const movRect = makeRect(CELL_W, CELL_W, 0x7777bb, 0.8, 0x555599, 2, 0.8);
+    movRect.zIndex = CellZIndex.Move;
+    movRect.visible = false;
+    this.moveRect = movRect;
+
+    const atkRect = makeRect(CELL_W, CELL_W, 0xaa7777, 0.8, 0x995555, 2, 0.8);
+    atkRect.zIndex = CellZIndex.Attack;
+    atkRect.visible = false;
+    this.attackRect = atkRect;
 
     const stagedShip = new StagedShip(manager);
     this.stagedShip = stagedShip;
 
-    container.addChild(rectangle, deployRect);
+    container.addChild(rectangle, depRect, movRect, atkRect);
     this.addChild(stagedShip);
 
     this.setPosition(topLeft);
-    this.deployRect = deployRect;
 
     container.interactive = true;
     container.hitArea = new PIXI.Rectangle(0, 0, CELL_W, CELL_W);
@@ -124,14 +132,38 @@ export class BoardCell extends GameObject {
   loop() {
     super.loop();
     const {
-      mouseManager: { clickState, deployStaged, deployIdxs, deployType },
+      mouseManager: {
+        clickState,
+        deployStaged,
+        deployIdxs,
+        deployType,
+        moveIdxs,
+        moveAttackIdxs,
+        moveStaged,
+        selectedShip,
+      },
     } = this.manager;
 
     this.deployRect.visible =
       clickState === ClickState.Deploying && idxsIncludes(deployIdxs, this.idx);
-    this.stagedShip.setType(
-      compareBoardCoords(this.idx, deployStaged) ? deployType : null
-    );
+    this.moveRect.visible =
+      clickState === ClickState.Moving && idxsIncludes(moveIdxs, this.idx);
+
+    this.attackRect.visible =
+      !this.moveRect.visible &&
+      clickState === ClickState.Moving &&
+      idxsIncludes(moveAttackIdxs, this.idx);
+
+    if (clickState === ClickState.Deploying) {
+      const show = compareBoardCoords(this.idx, deployStaged);
+      this.stagedShip.setType(show ? deployType : null);
+    } else if (clickState === ClickState.Moving) {
+      const show = compareBoardCoords(this.idx, moveStaged);
+      this.stagedShip.setType(selectedShip && show ? selectedShip.type : null);
+    } else {
+      // none
+      this.stagedShip.setType(null);
+    }
   }
 }
 
@@ -139,13 +171,19 @@ export class GameBoard extends GameObject {
   cells: BoardCell[][];
   bounds: BoxBounds;
 
+  width: number;
+  height: number;
+
   constructor(manager: PixiManager) {
     const container = new PIXI.Container();
-    const grid: (BoardCell | null)[][] = [...Array(numY)].map((_e) =>
-      Array(numX).map(() => null)
-    );
-
     super(manager, container, GameZIndex.Board);
+
+    this.width = numX;
+    this.height = numY;
+
+    const grid: (BoardCell | null)[][] = [...Array(this.height)].map((_e) =>
+      Array(this.width).map(() => null)
+    );
 
     for (let i = 0; i < numY; i++) {
       for (let j = 0; j < numX; j++) {

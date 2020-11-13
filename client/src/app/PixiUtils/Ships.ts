@@ -2,9 +2,9 @@ import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { Player } from '../../_types/global/GlobalTypes';
 import { GameObject } from './GameObject';
-import { BoardCoords, PlayerColor, ShipType } from './PixiTypes';
+import { BoardCoords, CanvasCoords, PlayerColor, ShipType } from './PixiTypes';
 import { playerShader } from './Shaders';
-import { getShipSprite, SHIPS } from './TextureLoader';
+import { getShipSprite, SHIPS, SPRITE_W } from './TextureLoader';
 
 const waterline = (type: ShipType): number => {
   if (type === ShipType.Mothership_00) return 28;
@@ -12,91 +12,19 @@ const waterline = (type: ShipType): number => {
   else return 25;
 };
 
-export type ShipData = {
-  type: ShipType;
-  cost: number;
-  attack: number;
-  health: number;
-  minRange: number;
-  maxRange: number;
-  movement: number;
-  name: string;
-  isZk?: boolean;
-};
-
-const mothership: ShipData = {
-  type: ShipType.Mothership_00,
-  cost: NaN,
-  attack: NaN,
-  health: 20,
-  minRange: NaN,
-  maxRange: NaN,
-  movement: 2,
-  name: 'Mothership',
-};
-const cruiser: ShipData = {
-  type: ShipType.Cruiser_01,
-  cost: 1,
-  attack: 2,
-  health: 3,
-  minRange: 1,
-  maxRange: 1,
-  movement: 2,
-  name: 'Cruiser',
-};
-const frigate: ShipData = {
-  type: ShipType.Frigate_02,
-  cost: 2,
-  attack: 2,
-  health: 3,
-  minRange: 2,
-  maxRange: 2,
-  movement: 2,
-  name: 'Frigate',
-};
-const corvette: ShipData = {
-  type: ShipType.Corvette_03,
-  cost: 3,
-  attack: 2,
-  health: 3,
-  minRange: 2,
-  maxRange: 2,
-  movement: 4,
-  name: 'Corvette',
-};
-const submarine: ShipData = {
-  type: ShipType.Submarine_04,
-  cost: 4,
-  attack: 4,
-  health: 1,
-  minRange: 0,
-  maxRange: 0,
-  movement: 2,
-  name: 'Submarine',
-  isZk: true,
-};
-const warship: ShipData = {
-  type: ShipType.Warship_05,
-  cost: 5,
-  attack: 3,
-  health: 3,
-  minRange: 2,
-  maxRange: 3,
-  movement: 1,
-  name: 'Warship',
-};
-
-export const shipData: ShipData[] = [
-  mothership, // Mothership_00,
-  cruiser, // Cruiser_01,
-  frigate, // Frigate_02,
-  corvette, // Corvette_03,
-  submarine, // Submarine_04,
-  warship, // Warship_05,
-];
+export enum ShipState {
+  Summoned,
+  Active,
+}
 
 export class Ship extends GameObject {
-  coords: BoardCoords;
+  coords: BoardCoords;
+  id: number;
+  type: ShipType;
+
+  shipState: ShipState;
+
+  mask: PIXI.Graphics;
 
   constructor(
     manager: PixiManager,
@@ -104,29 +32,67 @@ export class Ship extends GameObject {
     coords: BoardCoords,
     color: PlayerColor
   ) {
-    const { col, row } = coords;
-
     let container = new PIXI.Container();
+    super(manager, container, GameZIndex.Ships);
+
+    // probably gets rolled up into general props
+    this.id = Math.random();
+    this.type = shipType;
+
     const sprite = getShipSprite(shipType, color);
 
     sprite.anchor.set(0.5, 0.0);
     sprite.scale.x = color === PlayerColor.Red ? 1 : -1;
     sprite.x = 16;
-    sprite.y = 16; // doesn't work? investigate
+    // sprite.y = 16; // doesn't work? investigate
 
-    const { x, y } = manager.gameBoard.getTopLeft({ row, col });
-    container.position.set(x + 2, y + 2);
     container.addChild(sprite);
+    container.interactive = true;
+    container.hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
+    container
+      .on('mouseover', this.onMouseOver)
+      .on('mouseout', this.onMouseOut)
+      .on('click', this.onClick);
 
     let mask = new PIXI.Graphics();
     mask.beginFill(0xffffff, 1.0);
-    mask.drawRect(container.x, container.y, 32, waterline(shipType));
+    mask.drawRect(container.x, container.y, SPRITE_W, waterline(shipType));
     mask.endFill();
     container.mask = mask;
+    this.mask = mask;
 
-    super(manager, container, GameZIndex.Ships);
+    this.setCoords(coords);
 
     this.coords = coords;
+  }
+
+  setPosition({ x, y }: CanvasCoords) {
+    super.setPosition({ x, y });
+    const mask = this.mask;
+    const container = this.object;
+    mask.clear();
+    mask.beginFill(0xffffff, 1.0);
+    mask.drawRect(container.x, container.y, SPRITE_W, waterline(this.type));
+    mask.endFill();
+  }
+
+  setCoords(coords: BoardCoords) {
+    this.coords = coords;
+    const { x, y } = this.manager.gameBoard.getTopLeft(coords);
+    this.setPosition({ x: x + 2, y: y + 2 });
+    console.log(x, y);
+  }
+
+  onMouseOver() {
+    this.manager.mouseManager.setHoveringShip(this.id);
+  }
+
+  onMouseOut() {
+    this.manager.mouseManager.setHoveringShip(null);
+  }
+
+  onClick() {
+    this.manager.mouseManager.shipClicked(this);
   }
 
   loop() {
@@ -134,16 +100,12 @@ export class Ship extends GameObject {
     const { frameCount } = this.manager;
 
     const frames = 30;
-    if (frameCount % frames === 0) {
-      const container = this.object as PIXI.Container;
-      const boat = container.children[0];
-      if (frameCount % (2 * frames) === 0) {
-        // TODO need a better way to specify that it's the ship
-        boat.y = 2;
-      } else {
-        // mask.drawRect(container.x, container.y, 32, 24);
-        boat.y = 0;
-      }
+    const container = this.object;
+    const boat = container.children[0];
+    if (frameCount % (2 * frames) < frames) {
+      boat.y = 2;
+    } else {
+      boat.y = 0;
     }
   }
 }
