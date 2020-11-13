@@ -3,15 +3,12 @@ import * as PIXI from 'pixi.js';
 import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
 import { GameObject } from '../app/PixiUtils/GameObject';
 import { getMothership, Ship } from '../app/PixiUtils/Ships';
-import { PlayerColor } from '../app/PixiUtils/PixiTypes';
 import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
 import { ResourceBars } from '../app/PixiUtils/ResourceBars';
 import { Shop } from './Shop';
 import { GameBoard } from '../app/PixiUtils/GameBoard';
 import { Background } from '../app/PixiUtils/Background';
-import { PieceType } from '../_types/global/GlobalTypes';
 import { MouseManager } from '../app/PixiUtils/MouseManager';
-import { ConfirmCancelButtons } from '../app/PixiUtils/Buttons';
 import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
 
@@ -46,7 +43,6 @@ export class PixiManager {
   gameObjects: GameObject[];
 
   gameBoard: GameBoard;
-  myMothership: Ship;
 
   ships: Ship[];
 
@@ -137,9 +133,6 @@ export class PixiManager {
     const gameBoard = new GameBoard(this);
     this.gameBoard = gameBoard;
     this.addObject(gameBoard);
-
-    // add buttons
-    this.addObject(new ConfirmCancelButtons(this));
 
     // set up ships
     // const myMothership = getMothership(this, PlayerColor.Red);

@@ -34,8 +34,8 @@ export class Ship extends GameObject {
     coords: BoardCoords,
     color: PlayerColor
   ) {
-    let container = new PIXI.Container();
-    super(manager, container, GameZIndex.Ships);
+    super(manager, GameZIndex.Ships);
+    const container = this.object;
 
     this.hasMoved = false;
 
@@ -44,10 +44,6 @@ export class Ship extends GameObject {
     this.type = PieceType;
 
     const sprite = getShipSprite(PieceType, color);
-
-    sprite.anchor.set(0.5, 0.0);
-    sprite.scale.x = color === PlayerColor.Red ? 1 : -1;
-    sprite.x = 16;
     // sprite.y = 16; // doesn't work? investigate
 
     container.addChild(sprite);
@@ -59,11 +55,9 @@ export class Ship extends GameObject {
       .on('click', this.onClick);
 
     let mask = new PIXI.Graphics();
-    mask.beginFill(0xffffff, 1.0);
-    mask.drawRect(container.x, container.y, SPRITE_W, waterline(PieceType));
-    mask.endFill();
     container.mask = mask;
     this.mask = mask;
+    this.updateMask();
 
     this.setCoords(coords);
 
@@ -72,8 +66,12 @@ export class Ship extends GameObject {
 
   setPosition({ x, y }: CanvasCoords) {
     super.setPosition({ x, y });
-    const mask = this.mask;
+    this.updateMask();
+  }
+
+  private updateMask() {
     const container = this.object;
+    const mask = this.mask;
     mask.clear();
     mask.beginFill(0xffffff, 1.0);
     mask.drawRect(container.x, container.y, SPRITE_W, waterline(this.type));
@@ -84,7 +82,6 @@ export class Ship extends GameObject {
     this.coords = coords;
     const { x, y } = this.manager.gameBoard.getTopLeft(coords);
     this.setPosition({ x: x + 2, y: y + 2 });
-    console.log(x, y);
   }
 
   onMouseOver() {

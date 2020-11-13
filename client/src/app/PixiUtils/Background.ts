@@ -5,10 +5,11 @@ import * as PIXI from 'pixi.js';
 
 export class Background extends GameObject {
   constructor(manager: PixiManager) {
+    super(manager, GameZIndex.Background);
     const cache = PIXI.utils.TextureCache;
     let texture = cache[BG_IMAGE];
     const { width, height } = manager.app.renderer;
     let bgsprite = new PIXI.TilingSprite(texture, width, height);
-    super(manager, bgsprite, GameZIndex.Background);
+    this.object.addChild(bgsprite);
   }
 }

@@ -20,15 +20,15 @@ export class GameObject {
   // skip inactive ones; we don't have enough objects to care about killing
   active: boolean = true;
 
+  // TODO refactor this so that it doesn't need to be given a container
   constructor(
     manager: PixiManager,
-    object: PIXI.Container,
     zIndex: number = 0
   ) {
     this.id = autoIncrement();
     this.manager = manager;
 
-    this.object = object;
+    this.object = new PIXI.Container();
     this.lifetime = 0;
     this.children = [];
     this.object.zIndex = zIndex;
@@ -36,9 +36,11 @@ export class GameObject {
     autoBind(this);
   }
 
-  addChild(child: GameObject) {
-    this.object.addChild(child.object);
-    this.children.push(child);
+  addChild(...children: GameObject[]) {
+    children.forEach((child) => {
+      this.object.addChild(child.object);
+      this.children.push(child);
+    });
   }
 
   setActive(active: boolean) {

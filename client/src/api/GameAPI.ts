@@ -19,10 +19,12 @@ import {
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 import { GameState } from './GameState';
 import { PixiManager } from './PixiManager';
+import { GAME_HEIGHT, GAME_WIDTH } from '../app/PixiUtils/GameBoard';
 
 export class GameAPI {
   private pixiManager: PixiManager;
   private gameManager: AbstractGameManager;
+  private myMothership: Ship;
 
   gameState: ChessGame;
 
@@ -44,12 +46,24 @@ export class GameAPI {
     this.syncGameState();
 
     this.pixiManager.clearShips();
-    const { pieces } = this.gameState;
+    const { pieces, myAddress } = this.gameState;
     for (const piece of pieces) {
       if (isVisiblePiece(piece)) {
-        this.pixiManager.addShip(this.shipFromData(piece));
+        const ship = this.shipFromData(piece);
+        if (
+          piece.owner === myAddress &&
+          piece.pieceType === PieceType.Mothership_00
+        ) {
+          this.myMothership = ship;
+        }
+
+        this.pixiManager.addShip(ship);
       }
     }
+  }
+
+  getMyMothership(): Ship {
+    return this.myMothership;
   }
 
   private shipFromData(data: VisiblePiece): Ship {
@@ -138,11 +152,10 @@ export class GameAPI {
   }
 
   findAttacks(type: PieceType, coords: BoardCoords): BoardCoords[] {
-    const { width, height } = this.pixiManager.gameBoard;
     const attacks: BoardCoords[] = [];
 
-    for (let row = 0; row < height; row++) {
-      for (let col = 0; col < width; col++) {
+    for (let row = 0; row < GAME_HEIGHT; row++) {
+      for (let col = 0; col < GAME_WIDTH; col++) {
         if (this.canAttack(type, coords, { row, col }))
           attacks.push({ row, col });
       }
@@ -152,11 +165,10 @@ export class GameAPI {
   }
 
   findMoves(type: PieceType, coords: BoardCoords): BoardCoords[] {
-    const { width, height } = this.pixiManager.gameBoard;
     const paths: BoardCoords[] = [];
     // TODO minor optimization using range
-    for (let row = 0; row < height; row++) {
-      for (let col = 0; col < width; col++) {
+    for (let row = 0; row < GAME_HEIGHT; row++) {
+      for (let col = 0; col < GAME_WIDTH; col++) {
         if (this.canMove(type, coords, { row, col })) paths.push({ row, col });
       }
     }
@@ -165,11 +177,10 @@ export class GameAPI {
   }
 
   findAttacksWithMove(type: PieceType, coords: BoardCoords): BoardCoords[] {
-    const { width, height } = this.pixiManager.gameBoard;
     const allAttacks: BoardCoords[] = [];
     // TODO minor optimization using range
-    for (let row = 0; row < height; row++) {
-      for (let col = 0; col < width; col++) {
+    for (let row = 0; row < GAME_HEIGHT; row++) {
+      for (let col = 0; col < GAME_WIDTH; col++) {
         if (this.canAttackWithMove(type, coords, { row, col }))
           allAttacks.push({ row, col });
       }

@@ -42,12 +42,20 @@ const cache = PIXI.utils.TextureCache;
 export const getShipSprite = (
   type: PieceType,
   color?: PlayerColor
-): PIXI.Sprite => {
+): PIXI.Container => {
+  const container = new PIXI.Container();
   const sprite = new PIXI.Sprite(cache[SHIPS[type]]);
+  container.addChild(sprite);
+
   if (color) {
     sprite.filters = [playerShader(color)];
+    if (color === PlayerColor.Blue) {
+      sprite.scale.x = -1;
+      sprite.x = SPRITE_W;
+    }
   }
-  return sprite;
+
+  return container;
 };
 
 export const getCoinSprite = () => new PIXI.Sprite(cache[ICONS.COIN]);

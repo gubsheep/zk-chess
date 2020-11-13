@@ -49,9 +49,10 @@ class ResourceBar extends GameObject {
     iconContainer: PIXI.Container,
     maskable: PIXI.DisplayObject
   ) {
+    super(manager, GameZIndex.UI);
     const { fontLoader } = manager;
 
-    const container = new PIXI.Container();
+    const container = this.object;
 
     const { object: labelObj } = fontLoader(label);
     labelObj.position.set(0, BASELINE_TEXT);
@@ -67,8 +68,6 @@ class ResourceBar extends GameObject {
     maskable.mask = mask;
 
     container.addChild(iconContainer);
-
-    super(manager, container, GameZIndex.UI);
 
     this.label = labelObj;
     this.numbersContainer = numbersContainer;
@@ -198,12 +197,10 @@ export class ResourceBars extends GameObject {
   hpBar: HPBar;
   goldBar: GoldBar;
   constructor(manager: PixiManager) {
-    const container = new PIXI.Container();
+    super(manager, GameZIndex.UI);
 
     const goldBar = new GoldBar(manager);
     const hpBar = new HPBar(manager);
-
-    super(manager, container, GameZIndex.UI);
 
     goldBar.setPosition({ x: 0, y: 12 });
 

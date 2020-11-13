@@ -31,7 +31,8 @@ class ShopCard extends GameObject {
   bgOverlay: PIXI.DisplayObject;
   type: PieceType;
   constructor(manager: PixiManager, type: PieceType) {
-    const cardWrapper = new PIXI.Container();
+    super(manager);
+    const cardWrapper = this.object;
 
     // make card
     const card = new PIXI.Container();
@@ -96,8 +97,6 @@ class ShopCard extends GameObject {
     // finally, add things
     cardWrapper.addChild(modal, card);
 
-    super(manager, cardWrapper);
-
     this.type = type;
 
     this.modal = modal;
@@ -139,12 +138,14 @@ class ShopCard extends GameObject {
 
 export class Shop extends GameObject {
   constructor(manager: PixiManager) {
-    const container = new PIXI.Container();
-
-    super(manager, container, GameZIndex.Shop);
+    super(manager, GameZIndex.Shop);
 
     let idx = 0;
-    for (let type = PieceType.Cruiser_01; type <= PieceType.Warship_05; type++) {
+    for (
+      let type = PieceType.Cruiser_01;
+      type <= PieceType.Warship_05;
+      type++
+    ) {
       const shopEntry = new ShopCard(manager, type);
       shopEntry.setPosition({ x: idx * (CARD_W + CARD_MARGIN), y: 0 });
       this.addChild(shopEntry);

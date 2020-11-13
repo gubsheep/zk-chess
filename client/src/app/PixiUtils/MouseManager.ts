@@ -94,7 +94,7 @@ export class MouseManager {
 
     this.deployType = type;
 
-    const { myMothership: mothership } = this.manager;
+    const mothership = this.manager.api.getMyMothership();
     const { row: my, col: mx } = mothership.coords;
     const deployIdxs = [
       { row: my + 1, col: mx },
