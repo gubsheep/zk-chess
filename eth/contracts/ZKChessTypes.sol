@@ -2,7 +2,7 @@
 pragma solidity ^0.6.7;
 
 enum GameState {WAITING_FOR_PLAYERS, P1_TO_MOVE, P2_TO_MOVE, COMPLETE}
-enum PieceType {KING, KNIGHT, GHOST, PORT}
+enum PieceType {MOTHERSHIP_00, CRUISER_01, FRIGATE_02, CORVETTE_03, SUBMARINE_04, WARSHIP_05}
 
 struct GameInfo {
     uint8 turnNumber;

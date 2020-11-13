@@ -66,45 +66,6 @@ export const inBounds = (loc: BoardLocation, size: number): boolean => {
   return loc[0] >= 0 && loc[1] < size && loc[1] >= 0 && loc[0] < size;
 };
 
-export const getCanMoveLoc = (
-  loc: BoardLocation,
-  pieceType: PieceType
-): BoardLocation[] => {
-  if (pieceType === PieceType.King) {
-    return [
-      [loc[0] + 1, loc[1]],
-      [loc[0] - 1, loc[1]],
-      [loc[0], loc[1] + 1],
-      [loc[0], loc[1] - 1],
-      [loc[0] + 1, loc[1] + 1],
-      [loc[0] - 1, loc[1] - 1],
-      [loc[0] + 1, loc[1] - 1],
-      [loc[0] - 1, loc[1] + 1],
-    ];
-  } else if (pieceType === PieceType.Knight) {
-    return [
-      [loc[0] + 1, loc[1] + 2],
-      [loc[0] + 1, loc[1] - 2],
-      [loc[0] - 1, loc[1] + 2],
-      [loc[0] - 1, loc[1] - 2],
-
-      [loc[0] + 2, loc[1] + 1],
-      [loc[0] + 2, loc[1] - 1],
-      [loc[0] - 2, loc[1] + 1],
-      [loc[0] - 2, loc[1] - 1],
-    ];
-  }
-
-  return [];
-};
-
-export const getCanMove = (obj: Piece): BoardLocation[] => {
-  if (!obj) return [];
-  if (isZKPiece(obj) && !isKnown(obj)) return [];
-  const loc = obj.location;
-  if (isGhost(obj)) return getCanMoveLoc(loc, PieceType.King);
-  else return getCanMoveLoc(loc, obj.pieceType);
-};
 
 export const boardFromGame = (game: ChessGame | null): ChessBoard => {
   if (!game) return [];

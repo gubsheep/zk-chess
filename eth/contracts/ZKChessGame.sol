@@ -178,14 +178,14 @@ contract ZKChessGame is Initializable {
         // set pieces
         pieces[1] = Piece({
             id: 1,
-            pieceType: PieceType.PORT,
+            pieceType: PieceType.MOTHERSHIP_00,
             owner: player1,
             row: 0,
             col: 3,
             alive: true,
             commitment: 0,
             initialized: true,
-            hp: defaultStats[PieceType.PORT].hp,
+            hp: defaultStats[PieceType.MOTHERSHIP_00].hp,
             initializedOnTurn: 0,
             lastMove: 0,
             lastAttack: 0
@@ -194,14 +194,14 @@ contract ZKChessGame is Initializable {
         boardPieces[0][3] = 1;
         pieces[2] = Piece({
             id: 2,
-            pieceType: PieceType.PORT,
+            pieceType: PieceType.MOTHERSHIP_00,
             owner: player2,
             row: 6,
             col: 3,
             alive: true,
             commitment: 0,
             initialized: true,
-            hp: defaultStats[PieceType.PORT].hp,
+            hp: defaultStats[PieceType.MOTHERSHIP_00].hp,
             initializedOnTurn: 0,
             lastMove: 0,
             lastAttack: 0

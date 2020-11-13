@@ -225,7 +225,7 @@ export const createEmptySummon = (): UnsubmittedSummon => ({
   sequenceNumber: 0,
   type: EthTxType.SUMMON,
   pieceId: 0,
-  pieceType: PieceType.King,
+  pieceType: PieceType.Cruiser_01,
   row: 0,
   col: 0,
   isZk: false,

@@ -83,17 +83,6 @@ const StyledChessPiece = styled(StyledBasePiece)<{
   opacity: ${(props) => (props.staged ? '0.5' : '1.0')};
 `;
 
-const whitePieceUrls: Record<PieceType, string> = {
-  [PieceType.King]: './public/chess/white_king.svg',
-  [PieceType.Knight]: './public/chess/white_knight.svg',
-  [PieceType.Ghost]: './public/chess/white_ghost.svg',
-};
-
-const blackPieceUrls: Record<PieceType, string> = {
-  [PieceType.King]: './public/chess/black_king.svg',
-  [PieceType.Knight]: './public/chess/black_knight.svg',
-  [PieceType.Ghost]: './public/chess/black_ghost.svg',
-};
 
 type HoverProps = {
   disabled?: boolean;
@@ -123,13 +112,16 @@ export const ChessPiece = React.forwardRef(
         color === Color.BLACK
           ? './public/chess/black_ghost.svg'
           : './public/chess/white_ghost.svg';
-    } else {
+    } 
+    /*
+    else {
       const chessPiece = piece as Piece;
       url =
         color === Color.BLACK
           ? blackPieceUrls[chessPiece.pieceType]
           : whitePieceUrls[chessPiece.pieceType];
     }
+    */
 
     // todo make this not shitty
     if (!(piece as Piece).alive) {

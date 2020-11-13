@@ -499,7 +499,7 @@ class ContractsAPI extends EventEmitter {
       owner = null;
     }
     const pieceType = rawPiece[1];
-    if (pieceType === PieceType.Ghost) {
+    if (pieceType === PieceType.Submarine_04) {
       // return a ZKPiece that is not Locatable
       return {
         id: rawPiece[0],

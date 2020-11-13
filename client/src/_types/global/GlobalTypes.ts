@@ -26,9 +26,12 @@ export type SetFn<S> = Dispatch<SetStateAction<S>>;
 export type Hook<S> = [S, SetFn<S>];
 
 export enum PieceType {
-  King,
-  Knight,
-  Ghost,
+  Mothership_00,
+  Cruiser_01,
+  Frigate_02,
+  Corvette_03,
+  Submarine_04,
+  Warship_05,
 }
 
 export type BoardLocation = [number, number];

@@ -50,8 +50,18 @@ library ZKChessUtils {
     function initializeDefaults(
         mapping(PieceType => PieceDefaultStats) storage defaultStats
     ) public {
-        defaultStats[PieceType.KING] = PieceDefaultStats({
-            pieceType: PieceType.KING,
+        defaultStats[PieceType.MOTHERSHIP_00] = PieceDefaultStats({
+            pieceType: PieceType.MOTHERSHIP_00,
+            mvRange: 0,
+            atkRange: 2,
+            hp: 20,
+            atk: 2,
+            isZk: false,
+            cost: 100,
+            kamikaze: false
+        });
+        defaultStats[PieceType.CRUISER_01] = PieceDefaultStats({
+            pieceType: PieceType.CRUISER_01,
             mvRange: 2,
             atkRange: 1,
             hp: 3,
@@ -60,8 +70,8 @@ library ZKChessUtils {
             cost: 1,
             kamikaze: false
         });
-        defaultStats[PieceType.KNIGHT] = PieceDefaultStats({
-            pieceType: PieceType.KNIGHT,
+        defaultStats[PieceType.FRIGATE_02] = PieceDefaultStats({
+            pieceType: PieceType.FRIGATE_02,
             mvRange: 2,
             atkRange: 2,
             hp: 3,
@@ -70,24 +80,34 @@ library ZKChessUtils {
             cost: 2,
             kamikaze: false
         });
-        defaultStats[PieceType.GHOST] = PieceDefaultStats({
-            pieceType: PieceType.GHOST,
-            mvRange: 1,
+        defaultStats[PieceType.CORVETTE_03] = PieceDefaultStats({
+            pieceType: PieceType.CORVETTE_03,
+            mvRange: 4,
             atkRange: 1,
             hp: 3,
-            atk: 1,
-            isZk: true,
-            cost: 3,
-            kamikaze: true
-        });
-        defaultStats[PieceType.PORT] = PieceDefaultStats({
-            pieceType: PieceType.PORT,
-            mvRange: 0,
-            atkRange: 2,
-            hp: 10,
             atk: 2,
             isZk: false,
-            cost: 100,
+            cost: 3,
+            kamikaze: false
+        });
+        defaultStats[PieceType.SUBMARINE_04] = PieceDefaultStats({
+            pieceType: PieceType.SUBMARINE_04,
+            mvRange: 1,
+            atkRange: 0,
+            hp: 1,
+            atk: 3,
+            isZk: true,
+            cost: 4,
+            kamikaze: true
+        });
+        defaultStats[PieceType.WARSHIP_05] = PieceDefaultStats({
+            pieceType: PieceType.WARSHIP_05,
+            mvRange: 1,
+            atkRange: 3,
+            hp: 2,
+            atk: 3,
+            isZk: false,
+            cost: 5,
             kamikaze: false
         });
     }

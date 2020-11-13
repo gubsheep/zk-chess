@@ -5,7 +5,6 @@ import {TurnState} from '../app/Game';
 import {
   boardFromGame,
   enemyGhostMoved,
-  getCanMove,
   inBounds,
   isGhost,
 } from '../utils/ChessUtils';
@@ -116,6 +115,7 @@ export const useComputed = (): void => {
     dispatch.updateComputed({gamePaused});
   }, [state.session.turnState, gameState]);
 
+  /*
   // sync canmove to selected
   useLayoutEffect(() => {
     if (!state.game.gameState) return;
@@ -139,6 +139,7 @@ export const useComputed = (): void => {
 
     dispatch.updateComputed({canMove});
   }, [selected, gameState]);
+  */
 
   useEffect(() => {
     if (!selected || staged || !isGhost(selected)) {
