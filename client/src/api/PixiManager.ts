@@ -2,7 +2,7 @@ import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
 import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
 import { GameObject } from '../app/PixiUtils/GameObject';
-import { Mothership, Ship } from '../app/PixiUtils/Ships';
+import { getMothership, Ship } from '../app/PixiUtils/Ships';
 import { PlayerColor, ShipType } from '../app/PixiUtils/PixiTypes';
 import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
 import { ResourceBars } from '../app/PixiUtils/ResourceBars';
@@ -14,10 +14,11 @@ import { MouseManager } from '../app/PixiUtils/MouseManager';
 import { ConfirmCancelButtons } from '../app/PixiUtils/Buttons';
 import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
+import GameManager from './GameManager';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
-  // gameManager: AbstractGameManager;
+  gameManager: AbstractGameManager;
 };
 
 export enum GameZIndex {
@@ -27,6 +28,9 @@ export enum GameZIndex {
   UI,
   Shop,
 }
+
+// this guy should only have to think about game objects and how they interact
+// game logic, api stuff should be offloaded
 
 export class PixiManager {
   static instance: PixiManager | null;
@@ -38,43 +42,73 @@ export class PixiManager {
 
   fontLoader: FontLoader;
   mouseManager: MouseManager;
-  gameApi: GameAPI;
+  api: GameAPI;
 
   gameObjects: GameObject[];
 
   gameBoard: GameBoard;
-  myMothership: Mothership;
-
-  myColor: PlayerColor;
+  myMothership: Ship;
 
   ships: Ship[];
 
   private constructor(props: InitProps) {
-    const { canvas } = props;
+    const { canvas, gameManager } = props;
     this.canvas = canvas;
+    const { width, height } = canvas;
 
-    const width = canvas.width;
-    const height = canvas.height;
-
+    // set up app
     let app = new PIXI.Application({
       width,
       height,
       view: canvas,
       resolution: 1,
     });
-    this.app = app;
     this.app.stage.sortableChildren = true;
+    this.app = app;
+
+    // initialize defaults
     this.ships = [];
     this.gameObjects = [];
     this.frameCount = 0;
-    this.myColor = PlayerColor.Red;
+
+    // set up managers
     this.mouseManager = new MouseManager(this);
-    this.gameApi = new GameAPI(this);
+    this.api = new GameAPI(this, gameManager);
 
     autoBind(this);
 
     // can't put `this.setup` directly or it won't bind `this`
     loadTextures(() => this.setup());
+  }
+
+  removeObject(obj: GameObject) {
+    for (let i = 0; i < this.gameObjects.length; i++) {
+      if (this.gameObjects[i].id === obj.id) {
+        this.gameObjects.splice(i, 1);
+        this.app.stage.removeChild(obj.object);
+        return;
+      }
+    }
+  }
+
+  removeLazy(obj: GameObject) {
+    obj.setActive(false);
+  }
+
+  flush() {
+    const objs = this.gameObjects;
+    for (let i = 0; i < objs.length; i++) {
+      if (!objs[i].active) {
+        objs.splice(i--, 1);
+        this.app.stage.removeChild(objs[i].object);
+      }
+    }
+  }
+
+  clearShips() {
+    for (const ship of this.ships) this.removeLazy(ship);
+    this.flush();
+    this.ships = [];
   }
 
   addObject(obj: GameObject) {
@@ -88,7 +122,7 @@ export class PixiManager {
     this.ships.push(obj);
   }
 
-  setup() {
+  private setup() {
     const cache = PIXI.utils.TextureCache;
     this.fontLoader = getFontLoader(cache[FONT]);
 
@@ -105,19 +139,14 @@ export class PixiManager {
     this.gameBoard = gameBoard;
     this.addObject(gameBoard);
 
-    // make button to toggle b/t ships and submarines
-    // const toggleButton = new ToggleButton(this);
-    // this.addObject(toggleButton);
-    // const botLeft = this.boardCoords[0][4];
-    // toggleButton.setPosition({ x: botLeft.x, y: botLeft.y + 3 + 36 });
-
+    // add buttons
     this.addObject(new ConfirmCancelButtons(this));
 
     // set up ships
-    const myMothership = new Mothership(this, PlayerColor.Red);
+    const myMothership = getMothership(this, PlayerColor.Red);
     this.myMothership = myMothership;
     this.addShip(myMothership);
-    this.addShip(new Mothership(this, PlayerColor.Blue));
+    this.addShip(getMothership(this, PlayerColor.Blue));
 
     this.addShip(
       new Ship(this, ShipType.Cruiser_01, { row: 2, col: 5 }, PlayerColor.Blue)
@@ -133,7 +162,7 @@ export class PixiManager {
     this.loop();
   }
 
-  loop() {
+  private loop() {
     for (const obj of this.gameObjects) {
       if (obj.active) obj.loop();
     }

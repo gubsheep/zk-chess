@@ -66,13 +66,13 @@ export class MouseManager {
   confirm() {
     if (this.clickState === ClickState.Deploying) {
       if (this.deployStaged && this.deployType) {
-        this.manager.gameApi.deployShip(this.deployType, this.deployStaged);
+        this.manager.api.deployShip(this.deployType, this.deployStaged);
       } else console.error('something went wrong in confirm');
     } else if (this.clickState === ClickState.Acting) {
       if (this.selectedShip && this.attackStaged) {
-        this.manager.gameApi.attack(this.selectedShip, this.attackStaged);
+        this.manager.api.attack(this.selectedShip, this.attackStaged);
       } else if (this.selectedShip && this.moveStaged) {
-        this.manager.gameApi.moveShip(this.selectedShip, this.moveStaged);
+        this.manager.api.moveShip(this.selectedShip, this.moveStaged);
       } else console.error('something went wrong in confirm');
     }
 
@@ -118,7 +118,7 @@ export class MouseManager {
       }
     } else if (this.clickState === ClickState.Acting) {
       // first, check if there is an enemy boat
-      const ship = this.manager.gameApi.shipAt(idx);
+      const ship = this.manager.api.shipAt(idx);
       if (ship && idxsIncludes(this.moveAttackIdxs, idx)) {
         this.attackStaged = idx;
         this.moveStaged = null;
@@ -132,7 +132,7 @@ export class MouseManager {
   shipClicked(ship: Ship) {
     if (ship.type === ShipType.Mothership_00) return;
 
-    const { gameApi: api } = this.manager;
+    const { api: api } = this.manager;
     if (this.clickState === ClickState.None) {
       // initiate ship movement
       this.setClickState(ClickState.Acting);

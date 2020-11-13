@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PixiManager } from '../api/PixiManager';
 import styled from 'styled-components';
+import AbstractGameManager from '../api/AbstractGameManager';
 
 const StyledPixiApp = styled.div`
   canvas {
@@ -12,7 +13,11 @@ const StyledPixiApp = styled.div`
   }
 `;
 
-export default function PixiApp() {
+export default function PixiApp({
+  gameManager,
+}: {
+  gameManager: AbstractGameManager;
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [pixiManager, setPixiManager] = useState<PixiManager | null>(null);
 
@@ -21,13 +26,13 @@ export default function PixiApp() {
   const scale = 2;
 
   useEffect(() => {
-    if (!canvasRef.current) {
+    if (!canvasRef.current || !gameManager) {
       if (pixiManager) setPixiManager(PixiManager.destroy());
       return;
     }
 
-    setPixiManager(PixiManager.initialize({ canvas: canvasRef.current }));
-  }, [canvasRef]);
+    setPixiManager(PixiManager.initialize({ canvas: canvasRef.current, gameManager }));
+  }, [canvasRef, gameManager]);
 
   return (
     <StyledPixiApp>

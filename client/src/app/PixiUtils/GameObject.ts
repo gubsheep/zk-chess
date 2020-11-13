@@ -3,10 +3,15 @@ import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
 import { CanvasCoords } from './PixiTypes';
 
+const autoIncrement = (() => {
+  let count = 0;
+  return () => count++;
+})();
 // top-level game object abstraction. all of our game things should be wrapped in these guys
 export class GameObject {
+  id: number;
   object: PIXI.Container;
-  children: GameObject[]; // do we actually need this?
+  children: GameObject[];
 
   manager: PixiManager;
 
@@ -20,6 +25,7 @@ export class GameObject {
     object: PIXI.Container,
     zIndex: number = 0
   ) {
+    this.id = autoIncrement();
     this.manager = manager;
 
     this.object = object;

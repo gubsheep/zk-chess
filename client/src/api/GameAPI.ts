@@ -1,21 +1,39 @@
-import { BoardCoords, ShipType } from '../app/PixiUtils/PixiTypes';
+import { BoardCoords, PlayerColor, ShipType } from '../app/PixiUtils/PixiTypes';
 import { shipData } from '../app/PixiUtils/ShipData';
 import { Ship, ShipState } from '../app/PixiUtils/Ships';
 import { compareBoardCoords, taxiCab } from '../app/PixiUtils/Utils';
-import { compareLoc } from '../utils/ChessUtils';
-import { Player } from '../_types/global/GlobalTypes';
-import AbstractGameManager from './AbstractGameManager';
+import { ChessGame } from '../_types/global/GlobalTypes';
+import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
+import { GameState } from './GameState';
 import { PixiManager } from './PixiManager';
 
 export class GameAPI {
-  pixiManager: PixiManager;
-  gameManager: AbstractGameManager;
-  constructor(
-    pixiManager: PixiManager
-    // gameManager: AbstractGameManager
-  ) {
+  private pixiManager: PixiManager;
+  private gameManager: AbstractGameManager;
+
+  gameState: ChessGame;
+
+  constructor(pixiManager: PixiManager, gameManager: AbstractGameManager) {
     this.pixiManager = pixiManager;
-    // this.gameManager = gameManager;
+    this.gameManager = gameManager;
+
+    this.syncGameState();
+
+    this.gameManager.addListener(GameManagerEvent.CreatedGame, () => {});
+  }
+
+  private syncGameState(): void {
+    this.gameState = this.gameManager.getGameState();
+  }
+
+  // purges all existing ships and adds new ones
+  syncShips(): void {
+    this.syncGameState();
+    this.pixiManager.clearShips();
+    const { pieces } = this.gameState;
+    for (const piece of pieces) {
+      // this.pixiManager.addShip();
+    }
   }
 
   private canMove(type: ShipType, from: BoardCoords, to: BoardCoords): boolean {
@@ -44,6 +62,17 @@ export class GameAPI {
     return dist > 0 && dist <= data.maxRange + data.movement;
   }
 
+  // p1 is red, p2 is blue
+  getMyColor(): PlayerColor {
+    const { myAddress, player1, player2 } = this.gameState;
+    if (myAddress === player1.address) return PlayerColor.Red;
+    else if (myAddress === player2.address) return PlayerColor.Blue;
+    else {
+      console.error('error getting color');
+      return PlayerColor.Red;
+    }
+  }
+
   shipAt(coords: BoardCoords): Ship | null {
     const ships = this.pixiManager.ships;
     for (const ship of ships) {
@@ -58,7 +87,7 @@ export class GameAPI {
       this.pixiManager,
       type,
       coords,
-      this.pixiManager.myColor
+      this.pixiManager.api.getMyColor()
     );
     this.pixiManager.addShip(ship);
   }

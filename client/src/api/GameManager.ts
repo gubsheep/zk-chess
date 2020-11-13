@@ -340,8 +340,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   async refreshGameState(): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
     const oldGameState = this.gameState.getGameState();
-    console.log('CHECKING DIFF APPLICATION');
-    console.log(JSON.stringify(oldGameState, null, 2));
+    // console.log('CHECKING DIFF APPLICATION');
+    // console.log(JSON.stringify(oldGameState, null, 2));
     const diff = this.gameState.getActions()[oldGameState.sequenceNumber];
     console.log(this.gameState.getActions());
     const oldSequenceNumber = oldGameState.sequenceNumber;
@@ -350,10 +350,10 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     const newGameState = this.gameState.getGameState();
     if (diff) {
       const appliedState = this.gameState.applyAction(oldGameState, diff);
-      console.log(diff);
-      console.log(appliedState);
-      console.log(newGameState);
-      console.log(this.gameState.checkEquals(appliedState, newGameState));
+      // console.log(diff);
+      // console.log(appliedState);
+      // console.log(newGameState);
+      // console.log(this.gameState.checkEquals(appliedState, newGameState));
     }
     const newSequenceNumber = this.gameState.getGameState().sequenceNumber;
     if (newSequenceNumber > oldSequenceNumber) {
