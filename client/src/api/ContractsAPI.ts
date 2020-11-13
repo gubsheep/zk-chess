@@ -257,7 +257,7 @@ class ContractsAPI extends EventEmitter {
   }
 
   public async getGameState(): Promise<ChessGameContractData> {
-    console.log('getting game state from contract');
+    // console.log('getting game state from contract');
     const contract = this.gameContract;
     if (!contract) {
       throw new Error('no contract set');

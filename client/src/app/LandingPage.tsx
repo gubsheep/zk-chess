@@ -1,14 +1,14 @@
 import React from 'react';
-import {useState} from 'react';
+import { useState } from 'react';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
-import {ZKChessStateProvider} from '../api/UIStateManager';
-import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
-import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
-import {Game} from './Game';
+import { ContractEvent } from '../_types/darkforest/api/ContractsAPITypes';
+import { EthAddress, GameStatus } from '../_types/global/GlobalTypes';
+import Game from './Game';
+import styled from 'styled-components';
 
 enum InitState {
   NONE,
@@ -22,6 +22,12 @@ enum InitState {
   COMPLETE,
   TERMINATED,
 }
+
+const Aa = styled.a`
+  &:hover {
+    text-decoration: underline;
+  }
+`;
 
 export function LandingPage() {
   const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
@@ -118,21 +124,23 @@ export function LandingPage() {
   if (initState === InitState.NONE) {
     return (
       <div>
-        <p onClick={startGame}>start game!</p>
+        <Aa onClick={startGame}>start game!</Aa>
       </div>
     );
   } else if (initState === InitState.DISPLAY_LOGIN_OPTIONS) {
     return (
       <div>
-        <p onClick={displayAccounts}>display accounts</p>
+        <Aa onClick={displayAccounts}>display accounts</Aa>
       </div>
     );
   } else if (initState === InitState.DISPLAY_ACCOUNTS) {
     return (
       <div>
         {knownAddrs.map((addr) => (
-          <p key={addr} onClick={selectAccount(addr)}>
-            {addr}
+          <p>
+            <Aa key={addr} onClick={selectAccount(addr)}>
+              {addr}
+            </Aa>
           </p>
         ))}
       </div>
@@ -148,17 +156,19 @@ export function LandingPage() {
       <div>
         <p>Games List</p>
         {gameIds.map((id) => (
-          <p key={id} onClick={selectGame(id)}>
+          <Aa key={id} onClick={selectGame(id)}>
             {id}
-          </p>
+          </Aa>
         ))}
-        <p onClick={createGame}>New Game</p>
+        <p>
+          <Aa onClick={createGame}>New Game</Aa>
+        </p>
       </div>
     );
   } else if (initState === InitState.GAME_SELECTED) {
     return (
       <div>
-        <p onClick={joinGame}>Join Game</p>
+        <Aa onClick={joinGame}>Join Game</Aa>
       </div>
     );
   } else if (initState === InitState.WAITING_FOR_PLAYERS) {
@@ -168,11 +178,7 @@ export function LandingPage() {
       </div>
     );
   } else if (initState === InitState.COMPLETE && gameManager) {
-    return (
-      <ZKChessStateProvider gameManager={gameManager}>
-        <Game />
-      </ZKChessStateProvider>
-    );
+    return <Game gameManager={gameManager} />;
   }
   return <div></div>;
 }

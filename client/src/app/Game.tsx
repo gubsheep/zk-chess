@@ -1,25 +1,21 @@
-import _ from 'lodash';
 import React from 'react';
+import AbstractGameManager from '../api/AbstractGameManager';
 import styled from 'styled-components';
-import { GameBoard } from './GameBoard';
-import { GameControls } from './GameControls';
-
-export enum TurnState {
-  Moving, // no move made
-  Submitting, // move submitted to chain
-  Waiting, // move confirmed by chain; await other player
-}
+import PixiApp from './PixiApp';
 
 const StyledGame = styled.div`
-  margin: 4em auto;
-  width: fit-content;
+  width: 100%;
+  height: 100%;
 `;
 
-export function Game() {
+export default function Game({
+  gameManager,
+}: {
+  gameManager: AbstractGameManager;
+}) {
   return (
     <StyledGame>
-      <GameBoard />
-      <GameControls />
+      <PixiApp gameManager={gameManager} />
     </StyledGame>
   );
 }
