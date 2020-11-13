@@ -26,6 +26,9 @@ export class GameState {
   gameAddress: EthAddress;
   gameId: string;
 
+  nRows: number;
+  nCols: number;
+
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
@@ -50,6 +53,8 @@ export class GameState {
 
   public update(contractData: ChessGameContractData) {
     this.gameId = contractData.gameId;
+    this.nRows = contractData.nRows;
+    this.nCols = contractData.nCols;
     this.myAddress = contractData.myAddress;
     this.player1 = contractData.player1;
     this.player2 = contractData.player2;
@@ -133,6 +138,8 @@ export class GameState {
     return _.cloneDeep({
       gameAddress: this.gameAddress,
       gameId: this.gameId,
+      nRows: this.nRows,
+      nCols: this.nCols,
       myAddress: this.myAddress,
       player1: this.player1,
       player2: this.player2,

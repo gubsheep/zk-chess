@@ -34,7 +34,7 @@ export enum PieceType {
   Warship_05,
 }
 
-export type BoardLocation = [number, number];
+export type BoardLocation = [number, number]; // col, row
 
 export type GameObject = {
   id: number;
@@ -131,6 +131,9 @@ export type ChessGameContractData = {
   gameAddress: EthAddress;
   gameId: string;
 
+  nRows: number;
+  nCols: number;
+
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
@@ -148,6 +151,9 @@ export type ChessGameContractData = {
 export type ChessGame = {
   gameAddress: EthAddress;
   gameId: string;
+
+  nRows: number;
+  nCols: number;
 
   myAddress: EthAddress;
   player1: Player;

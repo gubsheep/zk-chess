@@ -78,14 +78,15 @@ export const taxiDist = (loc1: BoardLocation, loc2: BoardLocation): number => {
 export const findPath = (
   from: BoardLocation,
   to: BoardLocation,
-  size: number,
+  nRows: number,
+  nCols: number,
   obstacles: Locatable[],
   ignoreObstacles: boolean = false
 ): BoardLocation[] | null => {
   const distBoard: number[][] = [];
-  for (let i = 0; i < size; i++) {
+  for (let i = 0; i < nRows; i++) {
     distBoard.push([]);
-    for (let j = 0; j < size; j++) {
+    for (let j = 0; j < nCols; j++) {
       distBoard[i].push(-1);
     }
   }
@@ -102,9 +103,10 @@ export const findPath = (
   do {
     current = queue.shift() as BoardLocation; // else typescript mad lol
     const currentDist = distBoard[current[1]][current[0]];
+    let foundDest = false;
 
     for (const loc of getAdjacentTiles(current)) {
-      if (loc[0] >= size || loc[0] < 0 || loc[1] >= size || loc[1] < 0) {
+      if (loc[0] >= nCols || loc[0] < 0 || loc[1] >= nRows || loc[1] < 0) {
         continue;
       }
       if (distBoard[loc[1]][loc[0]] === -1) {
@@ -112,8 +114,10 @@ export const findPath = (
         queue.push(loc);
       }
       if (loc[0] === to[0] && loc[1] === to[1]) {
+        foundDest = true;
         break;
       }
+      if (foundDest) break;
     }
   } while (queue.length > 0);
 
@@ -130,9 +134,9 @@ export const findPath = (
     for (const loc of getAdjacentTiles(current)) {
       if (
         loc[0] >= 0 &&
-        loc[0] < size &&
+        loc[0] < nCols &&
         loc[1] >= 0 &&
-        loc[1] < size &&
+        loc[1] < nRows &&
         distBoard[loc[1]][loc[0]] === i
       ) {
         path.push(loc);

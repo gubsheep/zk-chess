@@ -96,8 +96,6 @@ class TxExecutor extends EventEmitter {
       }
       */
 
-      // TODO: test out seqNum failures by fucking up the nonce
-      // TODO: Throw error if txs time out
       if (Date.now() - this.nonceLastUpdated > 10000) {
         this.nonce = await EthereumAccountManager.getInstance().getNonce();
       }
@@ -276,6 +274,9 @@ class ContractsAPI extends EventEmitter {
       throw new Error('no contract set');
     }
     const gameId = (await contract.gameId()).toNumber();
+    const nRows = await contract.NROWS();
+    const nCols = await contract.NCOLS();
+
     const player1Addr = address(await contract.player1());
     const player2Addr = address(await contract.player2());
     const player1Mana = await contract.player1Mana();
@@ -296,6 +297,8 @@ class ContractsAPI extends EventEmitter {
     return {
       gameAddress: address(contract.address),
       gameId,
+      nRows,
+      nCols,
       myAddress: this.account,
       player1: {address: player1Addr},
       player2: {address: player2Addr},

@@ -2,7 +2,17 @@
 pragma solidity ^0.6.7;
 
 enum GameState {WAITING_FOR_PLAYERS, P1_TO_MOVE, P2_TO_MOVE, COMPLETE}
-enum PieceType {MOTHERSHIP_00, CRUISER_01, FRIGATE_02, CORVETTE_03, SUBMARINE_04, WARSHIP_05}
+
+// whenyou change this you have to change the client enum
+// and also the hardcoded # in ZKChessGame.getDefaults
+enum PieceType {
+    MOTHERSHIP_00,
+    CRUISER_01,
+    FRIGATE_02,
+    CORVETTE_03,
+    SUBMARINE_04,
+    WARSHIP_05
+}
 
 struct GameInfo {
     uint8 turnNumber;
@@ -43,21 +53,21 @@ struct SummonZKP {
     uint256[2] a;
     uint256[2][2] b;
     uint256[2] c;
-    uint256[5] input; // commitment, port row, port col, dist from port, boardsize
+    uint256[6] input; // commitment, port row, port col, dist from port, nrows, ncols
 }
 
 struct MoveZKP {
     uint256[2] a;
     uint256[2][2] b;
     uint256[2] c;
-    uint256[4] input; // commitment1, commitment2, dist, boardsize
+    uint256[5] input; // commitment1, commitment2, dist, nrows, ncols
 }
 
 struct AttackZKP {
     uint256[2] a;
     uint256[2][2] b;
     uint256[2] c;
-    uint256[5] input; // commitment, attacking x, attacking y, dist, boardsize
+    uint256[6] input; // commitment, attacking x, attacking y, dist, nrows, ncols
 }
 
 struct Summon {

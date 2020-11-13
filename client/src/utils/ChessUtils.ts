@@ -3,7 +3,6 @@ import {
   ChessBoard,
   BoardLocation,
   ChessCell,
-  PieceType,
   Color,
   EthAddress,
   Player,
@@ -12,7 +11,6 @@ import {
   isZKPiece,
   isKnown,
 } from '../_types/global/GlobalTypes';
-import {SIZE} from './constants';
 
 const transpose = (board: ChessBoard): ChessBoard => {
   return board.map((_, colIndex) => board.map((row) => row[colIndex]));
@@ -66,15 +64,14 @@ export const inBounds = (loc: BoardLocation, size: number): boolean => {
   return loc[0] >= 0 && loc[1] < size && loc[1] >= 0 && loc[0] < size;
 };
 
-
 export const boardFromGame = (game: ChessGame | null): ChessBoard => {
   if (!game) return [];
   const allPieces = game.pieces;
 
-  const tempBoard: ChessCell[][] = Array(SIZE)
+  const tempBoard: ChessCell[][] = Array(game.nRows)
     .fill(null)
     .map(() =>
-      Array(SIZE)
+      Array(game.nCols)
         .fill(null)
         .map((_) => new Object())
     );
@@ -144,13 +141,5 @@ export const getAdjacentTiles = (from: BoardLocation): BoardLocation[] => {
   const down: BoardLocation = [from[0], from[1] - 1];
   const left: BoardLocation = [from[0] - 1, from[1]];
   const right: BoardLocation = [from[0] + 1, from[1]];
-  const ret: BoardLocation[] = [];
-
-  for (const loc of [up, down, left, right]) {
-    if (loc[0] < SIZE || loc[0] >= 0 || loc[1] < SIZE || loc[0] >= 0) {
-      ret.push(loc);
-    }
-  }
-
-  return ret;
+  return [up, down, left, right];
 };

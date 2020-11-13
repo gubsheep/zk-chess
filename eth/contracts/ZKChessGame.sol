@@ -7,7 +7,8 @@ import "./ZKChessUtils.sol";
 import "./Verifier.sol";
 
 contract ZKChessGame is Initializable {
-    uint256 public constant BOARD_SIZE = 7;
+    uint8 public constant NROWS = 5;
+    uint8 public constant NCOLS = 7;
 
     uint256 public gameId;
 
@@ -35,9 +36,9 @@ contract ZKChessGame is Initializable {
         gameId = _gameId;
         gameState = GameState.WAITING_FOR_PLAYERS;
 
-        for (uint8 i = 0; i < BOARD_SIZE; i++) {
+        for (uint8 i = 0; i < NROWS; i++) {
             boardPieces.push();
-            for (uint8 j = 0; j < BOARD_SIZE; j++) {
+            for (uint8 j = 0; j < NCOLS; j++) {
                 boardPieces[i].push(0);
             }
         }
@@ -94,9 +95,9 @@ contract ZKChessGame is Initializable {
         view
         returns (PieceDefaultStats[] memory ret)
     {
-        ret = new PieceDefaultStats[](4);
+        ret = new PieceDefaultStats[](6);
         // TODO hardcode bad >:(
-        for (uint8 i = 0; i < 4; i++) {
+        for (uint8 i = 0; i < 6; i++) {
             ret[i] = defaultStats[PieceType(i)];
         }
         return ret;
@@ -136,7 +137,8 @@ contract ZKChessGame is Initializable {
                 boardPieces,
                 pieces,
                 defaultStats,
-                BOARD_SIZE
+                NROWS,
+                NCOLS
             );
     }
 
@@ -191,7 +193,7 @@ contract ZKChessGame is Initializable {
             lastAttack: 0
         });
         pieceIds.push(1);
-        boardPieces[0][3] = 1;
+        boardPieces[2][0] = 1;
         pieces[2] = Piece({
             id: 2,
             pieceType: PieceType.MOTHERSHIP_00,
@@ -207,7 +209,7 @@ contract ZKChessGame is Initializable {
             lastAttack: 0
         });
         pieceIds.push(2);
-        boardPieces[6][3] = 2;
+        boardPieces[2][6] = 2;
 
         gameState = GameState.P1_TO_MOVE;
         turnNumber = 1;
@@ -247,10 +249,7 @@ contract ZKChessGame is Initializable {
 
         // validity checks
         if (!defaultStats[summon.pieceType].isZk) {
-            require(
-                summon.row < BOARD_SIZE && summon.col < BOARD_SIZE,
-                "not in bounds"
-            );
+            require(summon.row < NROWS && summon.col < NCOLS, "not in bounds");
             // if visible piece, can't summon on existing piece
             uint8 pieceIdAtSummonTile = boardPieces[summon.row][summon.col];
             Piece storage pieceAtSummonTile = pieces[pieceIdAtSummonTile];
@@ -272,7 +271,8 @@ contract ZKChessGame is Initializable {
                 "bad ZKP"
             );
             require(summon.zkp.input[3] == 1, "bad ZKP");
-            require(summon.zkp.input[4] == BOARD_SIZE, "bad ZKP");
+            require(summon.zkp.input[4] == NROWS, "bad ZKP");
+            require(summon.zkp.input[5] == NCOLS, "bad ZKP");
             require(
                 Verifier.verifyDist1Proof(
                     summon.zkp.a,
@@ -331,7 +331,8 @@ contract ZKChessGame is Initializable {
         uint8 originCol = piece.col;
         if (defaultStats[piece.pieceType].isZk) {
             require(piece.commitment == move.zkp.input[0], "bad ZKP");
-            require(move.zkp.input[3] == BOARD_SIZE, "bad ZKP");
+            require(move.zkp.input[3] == NROWS, "bad ZKP");
+            require(move.zkp.input[4] == NCOLS, "bad ZKP");
             require(
                 move.zkp.input[2] <= defaultStats[piece.pieceType].mvRange,
                 "bad ZKP"
@@ -378,7 +379,8 @@ contract ZKChessGame is Initializable {
                 pieces,
                 defaultStats,
                 hasAttacked,
-                BOARD_SIZE
+                NROWS,
+                NCOLS
             ),
             "invalid attack"
         );
@@ -388,8 +390,7 @@ contract ZKChessGame is Initializable {
             pieces,
             boardPieces,
             defaultStats,
-            hasAttacked,
-            BOARD_SIZE
+            hasAttacked
         );
         emit DidAttack(
             attack.sequenceNumber,

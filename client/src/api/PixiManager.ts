@@ -1,19 +1,19 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
-import { GameObject } from '../app/PixiUtils/GameObject';
-import { getMothership, Ship } from '../app/PixiUtils/Ships';
-import { PlayerColor, ShipType } from '../app/PixiUtils/PixiTypes';
-import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
-import { ResourceBars } from '../app/PixiUtils/ResourceBars';
-import { Shop } from './Shop';
-import { GameBoard } from '../app/PixiUtils/GameBoard';
-import { Background } from '../app/PixiUtils/Background';
-import { Player } from '../_types/global/GlobalTypes';
-import { MouseManager } from '../app/PixiUtils/MouseManager';
-import { ConfirmCancelButtons } from '../app/PixiUtils/Buttons';
+import {FontLoader, getFontLoader} from '../app/PixiUtils/FontLoader';
+import {GameObject} from '../app/PixiUtils/GameObject';
+import {getMothership, Ship} from '../app/PixiUtils/Ships';
+import {PlayerColor, ShipType} from '../app/PixiUtils/PixiTypes';
+import {FONT, loadTextures} from '../app/PixiUtils/TextureLoader';
+import {ResourceBars} from '../app/PixiUtils/ResourceBars';
+import {Shop} from './Shop';
+import {GameBoard} from '../app/PixiUtils/GameBoard';
+import {Background} from '../app/PixiUtils/Background';
+import {Player} from '../_types/global/GlobalTypes';
+import {MouseManager} from '../app/PixiUtils/MouseManager';
+import {ConfirmCancelButtons} from '../app/PixiUtils/Buttons';
 import AbstractGameManager from './AbstractGameManager';
-import { GameAPI } from './GameAPI';
+import {GameAPI} from './GameAPI';
 import GameManager from './GameManager';
 
 type InitProps = {
@@ -51,10 +51,12 @@ export class PixiManager {
 
   ships: Ship[];
 
+  myColor: PlayerColor.Red;
+
   private constructor(props: InitProps) {
-    const { canvas, gameManager } = props;
+    const {canvas, gameManager} = props;
     this.canvas = canvas;
-    const { width, height } = canvas;
+    const {width, height} = canvas;
 
     // set up app
     let app = new PIXI.Application({
@@ -149,7 +151,7 @@ export class PixiManager {
     this.addShip(getMothership(this, PlayerColor.Blue));
 
     this.addShip(
-      new Ship(this, ShipType.Cruiser_01, { row: 2, col: 5 }, PlayerColor.Blue)
+      new Ship(this, ShipType.Cruiser_01, {row: 2, col: 5}, PlayerColor.Blue)
     );
 
     // set up resource bars

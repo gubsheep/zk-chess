@@ -24,23 +24,25 @@ class SnarkArgsHelper {
   }
 
   async getSummonProof(
-    x1: number,
-    y1: number,
+    r1: number,
+    c1: number,
     salt1: string,
-    x2: number,
-    y2: number,
+    r2: number,
+    c2: number,
     dist: number,
-    boardSize: number
+    nRows: number,
+    nCols: number
   ): Promise<GhostSummonArgs> {
     try {
       const input = {
-        x1: modPBigInt(x1).toString(),
-        y1: modPBigInt(y1).toString(),
+        r1: modPBigInt(r1).toString(),
+        c1: modPBigInt(c1).toString(),
         salt1: modPBigInt(salt1).toString(),
-        x2: modPBigInt(x2).toString(),
-        y2: modPBigInt(y2).toString(),
+        r2: modPBigInt(r2).toString(),
+        c2: modPBigInt(c2).toString(),
         dist: dist.toString(),
-        boardSize: boardSize.toString(),
+        nrows: nRows.toString(),
+        ncols: nCols.toString(),
       };
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
@@ -60,25 +62,27 @@ class SnarkArgsHelper {
   }
 
   async getMoveProve(
-    x1: number,
-    y1: number,
+    r1: number,
+    c1: number,
     salt1: string,
-    x2: number,
-    y2: number,
+    r2: number,
+    c2: number,
     salt2: string,
     dist: number,
-    boardSize: number
+    nRows: number,
+    nCols: number
   ): Promise<GhostMoveArgs> {
     try {
       const input = {
-        x1: modPBigInt(x1).toString(),
-        y1: modPBigInt(y1).toString(),
+        r1: modPBigInt(r1).toString(),
+        c1: modPBigInt(c1).toString(),
         salt1: modPBigInt(salt1).toString(),
-        x2: modPBigInt(x2).toString(),
-        y2: modPBigInt(y2).toString(),
+        r2: modPBigInt(r2).toString(),
+        c2: modPBigInt(c2).toString(),
         salt2: modPBigInt(salt2).toString(),
         dist: dist.toString(),
-        boardSize: boardSize.toString(),
+        nrows: nRows.toString(),
+        ncols: nCols.toString(),
       };
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
@@ -98,15 +102,16 @@ class SnarkArgsHelper {
   }
 
   async getAttackProof(
-    x1: number,
-    y1: number,
+    r1: number,
+    c1: number,
     salt1: string,
-    x2: number,
-    y2: number,
+    r2: number,
+    c2: number,
     dist: number,
-    boardSize: number
+    nRows: number,
+    nCols: number
   ): Promise<GhostAttackArgs> {
-    return this.getSummonProof(x1, y1, salt1, x2, y2, dist, boardSize);
+    return this.getSummonProof(r1, c1, salt1, r2, c2, dist, nRows, nCols);
   }
 
   private callArgsFromProofAndSignals(

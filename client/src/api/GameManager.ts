@@ -43,7 +43,7 @@ import {address} from '../utils/CheckedTypeUtils';
 import {findPath, getRandomTxIntentId, taxiDist} from '../utils/Utils';
 import bigInt from 'big-integer';
 import mimcHash from '../hash/mimc';
-import {LOCATION_ID_UB, SIZE} from '../utils/constants';
+import {LOCATION_ID_UB} from '../utils/constants';
 import {GameState} from './GameState';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
@@ -438,14 +438,23 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     if (gameState.defaults.get(pieceType)?.isZk) {
       unsubmittedSummon.isZk = true;
       const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
+      let homeRow = 0;
+      let homeCol = 0;
+      const mothershipId =
+        gameState.myAddress === gameState.player1.address ? 1 : 2;
+      homeRow = (gameState.pieceById.get(mothershipId) as Locatable)
+        .location[1];
+      homeCol = (gameState.pieceById.get(mothershipId) as Locatable)
+        .location[0];
       const zkp = this.snarkHelper.getSummonProof(
         at[1],
         at[0],
         newSalt,
-        gameState.myAddress === gameState.player1.address ? 0 : 6,
-        3,
+        homeRow,
+        homeCol,
         1,
-        SIZE
+        gameState.nRows,
+        gameState.nCols
       );
       localStorage.setItem(
         `COMMIT_${mimcHash(at[1], at[0], newSalt).toString()}`,
@@ -479,7 +488,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     const path = findPath(
       piece.location,
       to,
-      SIZE,
+      gameState.nRows,
+      gameState.nCols,
       obstacles,
       isZKPiece(piece)
     );
@@ -500,7 +510,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         newSalt,
         Math.abs(to[1] - piece.location[1]) +
           Math.abs(to[0] - piece.location[0]),
-        SIZE
+        gameState.nRows,
+        gameState.nCols
       );
       localStorage.setItem(
         `COMMIT_${mimcHash(to[1], to[0], newSalt).toString()}`,
@@ -546,7 +557,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         attacked.location[1],
         attacked.location[0],
         attacker.atkRange,
-        SIZE
+        gameState.nRows,
+        gameState.nCols
       );
       unsubmittedAttack.zkp = zkp;
     }

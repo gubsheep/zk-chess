@@ -65,7 +65,8 @@ export type GhostSummonArgs = [
     string, // port row
     string, // port col
     string, // dist
-    string // board size
+    string, // nrows
+    string // ncols
   ]
 ];
 
@@ -81,7 +82,8 @@ export type GhostMoveArgs = [
     string, // old commit
     string, // new commit
     string, // dist
-    string // board size
+    string, // nrows
+    string // ncols
   ]
 ];
 
@@ -98,7 +100,8 @@ export type GhostAttackArgs = [
     string, // attack row
     string, // attack col
     string, // dist
-    string // board size
+    string, // nrows
+    string // ncols
   ]
 ];
 
@@ -236,7 +239,7 @@ export const createEmptySummon = (): UnsubmittedSummon => ({
       ['0', '0'],
     ],
     ['0', '0'],
-    ['0', '0', '0', '0', '0'],
+    ['0', '0', '0', '0', '0', '0'],
   ]),
 });
 
@@ -273,7 +276,7 @@ export const createEmptyMove = (): UnsubmittedMove => ({
       ['0', '0'],
     ],
     ['0', '0'],
-    ['0', '0', '0', '0'],
+    ['0', '0', '0', '0', '0'],
   ]),
 });
 
@@ -312,7 +315,7 @@ export const createEmptyAttack = (): UnsubmittedAttack => ({
       ['0', '0'],
     ],
     ['0', '0'],
-    ['0', '0', '0', '0', '0'],
+    ['0', '0', '0', '0', '0', '0'],
   ]),
 });
 
