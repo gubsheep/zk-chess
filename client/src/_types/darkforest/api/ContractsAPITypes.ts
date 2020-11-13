@@ -24,8 +24,12 @@ export enum GhostMoveArgIdxs {
 export enum ContractEvent {
   // TODO this should be 2 enums. one for game events, one for factory events
   CreatedGame = 'CreatedGame',
+
   GameStart = 'GameStart',
-  ActionMade = 'ActionMade',
+  DidSummon = 'DidSummon', // args: (player: string, pieceId: number, sequenceNumber: number, pieceType: number, atRow: number, atCol: number)
+  DidMove = 'DidMove', // args: (sequenceNumber: number, pieceId: number, fromRow: number, fromCol: number, toRow: number, toCol: number)
+  DidAttack = 'DidAttack', // args: (sequenceNumber: number, attackerId: number, attackedId: number, attackerHp: number, attackedHp: number)
+  DidEndTurn = 'DidEndTurn', // args: (player: string, turnNumber: number, sequenceNumber: number)
   GameFinished = 'GameFinished',
 }
 
@@ -35,7 +39,10 @@ export enum ContractsAPIEvent {
   CreatedGame = 'CreatedGame', // args: (gameId: EthersBN)
 
   GameStart = 'GameStart', // args: ()
-  ActionMade = 'ActionMade', // args: ()
+  DidSummon = 'DidSummon', // args: (player: string, sequenceNumber: number, pieceType: number, atRow: number, atCol: number)
+  DidMove = 'DidMove', // args: (sequenceNumber: number, pieceId: number, fromRow: number, fromCol: number, toRow: number, toCol: number)
+  DidAttack = 'DidAttack', // args: (sequenceNumber: number, attackerId: number, attackedId: number, attackerHp: number, attackedHp: number)
+  DidEndTurn = 'DidEndTurn', // args: (player: string, turnNumber: number, sequenceNumber: number)
   GameFinished = 'GameFinished', // args: ()
 
   TxInitialized = 'TxInitialized', // args: (unminedTx: UnconfirmedTx)
@@ -151,6 +158,12 @@ export type RawPiece = {
 
   9: EthersBN;
   commitment?: EthersBN;
+
+  10: number;
+  lastMove?: number;
+
+  11: number;
+  lastAttack?: number;
 };
 
 export enum EthTxType {
@@ -191,6 +204,7 @@ export type SubmittedJoin = UnsubmittedJoin & SubmittedTx;
 export type UnsubmittedSummon = TxIntent & {
   type: EthTxType.SUMMON;
   turnNumber: number;
+  sequenceNumber: number;
   pieceId: number;
   pieceType: PieceType;
   row: number;
@@ -199,11 +213,16 @@ export type UnsubmittedSummon = TxIntent & {
   zkp: Promise<GhostSummonArgs>;
 };
 
+export function isSummon(txIntent: TxIntent): txIntent is UnsubmittedSummon {
+  return txIntent.type === EthTxType.SUMMON;
+}
+
 export type SubmittedSummon = UnsubmittedSummon & SubmittedTx;
 
 export const createEmptySummon = (): UnsubmittedSummon => ({
   txIntentId: getRandomTxIntentId(),
   turnNumber: 0,
+  sequenceNumber: 0,
   type: EthTxType.SUMMON,
   pieceId: 0,
   pieceType: PieceType.King,
@@ -224,6 +243,7 @@ export const createEmptySummon = (): UnsubmittedSummon => ({
 export type UnsubmittedMove = TxIntent & {
   type: EthTxType.MOVE;
   turnNumber: number;
+  sequenceNumber: number;
   pieceId: number;
   moveToRow: number[];
   moveToCol: number[];
@@ -231,11 +251,16 @@ export type UnsubmittedMove = TxIntent & {
   zkp: Promise<GhostMoveArgs>;
 };
 
+export function isMove(txIntent: TxIntent): txIntent is UnsubmittedMove {
+  return txIntent.type === EthTxType.MOVE;
+}
+
 export type SubmittedMove = UnsubmittedMove & SubmittedTx;
 
 export const createEmptyMove = (): UnsubmittedMove => ({
   txIntentId: getRandomTxIntentId(),
   turnNumber: 0,
+  sequenceNumber: 0,
   type: EthTxType.MOVE,
   pieceId: 0,
   moveToRow: [],
@@ -255,6 +280,7 @@ export const createEmptyMove = (): UnsubmittedMove => ({
 export type UnsubmittedAttack = TxIntent & {
   type: EthTxType.ATTACK;
   turnNumber: number;
+  sequenceNumber: number;
   pieceId: number;
   attackedId: number;
   row: number;
@@ -263,11 +289,16 @@ export type UnsubmittedAttack = TxIntent & {
   zkp: Promise<GhostAttackArgs>;
 };
 
+export function isAttack(txIntent: TxIntent): txIntent is UnsubmittedAttack {
+  return txIntent.type === EthTxType.ATTACK;
+}
+
 export type SubmittedAttack = UnsubmittedAttack & SubmittedTx;
 
 export const createEmptyAttack = (): UnsubmittedAttack => ({
   txIntentId: getRandomTxIntentId(),
   turnNumber: 0,
+  sequenceNumber: 0,
   type: EthTxType.ATTACK,
   pieceId: 0,
   attackedId: 0,
@@ -288,6 +319,11 @@ export const createEmptyAttack = (): UnsubmittedAttack => ({
 export type UnsubmittedEndTurn = TxIntent & {
   type: EthTxType.END_TURN;
   turnNumber: number;
+  sequenceNumber: number;
 };
+
+export function isEndTurn(txIntent: TxIntent): txIntent is UnsubmittedEndTurn {
+  return txIntent.type === EthTxType.END_TURN;
+}
 
 export type SubmittedEndTurn = UnsubmittedEndTurn & SubmittedTx;

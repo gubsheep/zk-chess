@@ -12,6 +12,7 @@ contract ZKChessGame is Initializable {
     uint256 public gameId;
 
     uint8 public turnNumber;
+    uint16 public sequenceNumber;
     GameState public gameState;
     uint8[][] public boardPieces; // board[row][col]
 
@@ -19,8 +20,6 @@ contract ZKChessGame is Initializable {
     mapping(uint8 => Piece) public pieces;
 
     mapping(PieceType => PieceDefaultStats) public defaultStats;
-
-    bool public DISABLE_ZK_CHECK;
 
     address public player1;
     address public player2;
@@ -32,9 +31,8 @@ contract ZKChessGame is Initializable {
     mapping(uint8 => mapping(uint8 => bool)) public hasMoved;
     mapping(uint8 => mapping(uint8 => bool)) public hasAttacked;
 
-    function initialize(uint256 _gameId, bool _disableZKCheck) public {
+    function initialize(uint256 _gameId) public {
         gameId = _gameId;
-        DISABLE_ZK_CHECK = _disableZKCheck;
         gameState = GameState.WAITING_FOR_PLAYERS;
 
         for (uint8 i = 0; i < BOARD_SIZE; i++) {
@@ -45,55 +43,38 @@ contract ZKChessGame is Initializable {
         }
 
         // initialize pieces
-        defaultStats[PieceType.KING] = PieceDefaultStats({
-            pieceType: PieceType.KING,
-            mvRange: 2,
-            atkRange: 1,
-            hp: 3,
-            atk: 2,
-            isZk: false,
-            cost: 1,
-            kamikaze: false
-        });
-        defaultStats[PieceType.KNIGHT] = PieceDefaultStats({
-            pieceType: PieceType.KNIGHT,
-            mvRange: 2,
-            atkRange: 2,
-            hp: 3,
-            atk: 2,
-            isZk: false,
-            cost: 2,
-            kamikaze: false
-        });
-        defaultStats[PieceType.GHOST] = PieceDefaultStats({
-            pieceType: PieceType.GHOST,
-            mvRange: 1,
-            atkRange: 1,
-            hp: 3,
-            atk: 1,
-            isZk: true,
-            cost: 3,
-            kamikaze: true
-        });
-        defaultStats[PieceType.PORT] = PieceDefaultStats({
-            pieceType: PieceType.PORT,
-            mvRange: 0,
-            atkRange: 2,
-            hp: 10,
-            atk: 2,
-            isZk: false,
-            cost: 100,
-            kamikaze: false
-        });
+        ZKChessUtils.initializeDefaults(defaultStats);
     }
 
     //////////////
     /// EVENTS ///
     //////////////
 
-    event ProofVerified(uint256 pfsAccepted);
     event GameStart(address p1, address p2);
-    event ActionMade(address player);
+    event DidSummon(
+        address player,
+        uint8 pieceId,
+        uint16 sequenceNumber,
+        PieceType pieceType,
+        uint8 atRow,
+        uint8 atCol
+    );
+    event DidMove(
+        uint16 sequenceNumber,
+        uint8 pieceId,
+        uint8 fromRow,
+        uint8 fromCol,
+        uint8 toRow,
+        uint8 toCol
+    );
+    event DidAttack(
+        uint16 sequenceNumber,
+        uint8 attacker,
+        uint8 attacked,
+        uint8 attackerHp,
+        uint8 attackedHp
+    );
+    event DidEndTurn(address player, uint8 turnNumber, uint16 sequenceNumber);
     event GameFinished();
 
     ///////////////
@@ -125,11 +106,17 @@ contract ZKChessGame is Initializable {
     /// Helper ///
     //////////////
 
-    function checkAction(uint8 _turnNumber) public view returns (bool) {
+    function checkAction(uint8 _turnNumber, uint16 _sequenceNumber)
+        public
+        view
+        returns (bool)
+    {
         return
             ZKChessUtils.checkAction(
                 _turnNumber,
                 turnNumber,
+                _sequenceNumber,
+                sequenceNumber,
                 player1,
                 player2,
                 gameState
@@ -199,7 +186,9 @@ contract ZKChessGame is Initializable {
             commitment: 0,
             initialized: true,
             hp: defaultStats[PieceType.PORT].hp,
-            initializedOnTurn: 0
+            initializedOnTurn: 0,
+            lastMove: 0,
+            lastAttack: 0
         });
         pieceIds.push(1);
         boardPieces[0][3] = 1;
@@ -213,7 +202,9 @@ contract ZKChessGame is Initializable {
             commitment: 0,
             initialized: true,
             hp: defaultStats[PieceType.PORT].hp,
-            initializedOnTurn: 0
+            initializedOnTurn: 0,
+            lastMove: 0,
+            lastAttack: 0
         });
         pieceIds.push(2);
         boardPieces[6][3] = 2;
@@ -225,18 +216,16 @@ contract ZKChessGame is Initializable {
     }
 
     function doSummon(Summon memory summon) public {
-        checkAction(summon.turnNumber);
+        checkAction(summon.turnNumber, summon.sequenceNumber);
         require(!pieces[summon.pieceId].initialized, "piece ID already in use");
 
         // PORT tile
         uint8 homeRow;
-        uint8 homeCol;
+        uint8 homeCol = 3;
         if (msg.sender == player1) {
             homeRow = 0;
-            homeCol = 3;
         } else {
             homeRow = 6;
-            homeCol = 3;
         }
 
         // MANA checks
@@ -275,24 +264,22 @@ contract ZKChessGame is Initializable {
                 "can't summon there"
             );
         } else {
-            if (!DISABLE_ZK_CHECK) {
-                require(
-                    summon.zkp.input[1] == homeRow &&
-                        summon.zkp.input[2] == homeCol,
-                    "bad ZKP"
-                );
-                require(summon.zkp.input[3] == 1, "bad ZKP");
-                require(summon.zkp.input[4] == BOARD_SIZE, "bad ZKP");
-                require(
-                    Verifier.verifyDist1Proof(
-                        summon.zkp.a,
-                        summon.zkp.b,
-                        summon.zkp.c,
-                        summon.zkp.input
-                    ),
-                    "bad ZKP"
-                );
-            }
+            require(
+                summon.zkp.input[1] == homeRow &&
+                    summon.zkp.input[2] == homeCol,
+                "bad ZKP"
+            );
+            require(summon.zkp.input[3] == 1, "bad ZKP");
+            require(summon.zkp.input[4] == BOARD_SIZE, "bad ZKP");
+            require(
+                Verifier.verifyDist1Proof(
+                    summon.zkp.a,
+                    summon.zkp.b,
+                    summon.zkp.c,
+                    summon.zkp.input
+                ),
+                "bad ZKP"
+            );
         }
 
         // create piece
@@ -306,7 +293,9 @@ contract ZKChessGame is Initializable {
             commitment: summon.zkp.input[0],
             initialized: true,
             hp: defaultStats[summon.pieceType].hp,
-            initializedOnTurn: turnNumber
+            initializedOnTurn: turnNumber,
+            lastMove: turnNumber,
+            lastAttack: turnNumber
         });
         pieceIds.push(summon.pieceId);
         boardPieces[summon.row][summon.col] = summon.pieceId;
@@ -314,11 +303,19 @@ contract ZKChessGame is Initializable {
         // in the future this should be tracked in its own field
         hasMoved[summon.turnNumber][summon.pieceId] = true;
         hasAttacked[summon.turnNumber][summon.pieceId] = true;
-        emit ActionMade(msg.sender);
+        emit DidSummon(
+            msg.sender,
+            summon.pieceId,
+            summon.sequenceNumber,
+            summon.pieceType,
+            summon.row,
+            summon.col
+        );
+        sequenceNumber++;
     }
 
     function doMove(Move memory move) public {
-        checkAction(move.turnNumber);
+        checkAction(move.turnNumber, move.sequenceNumber);
         Piece storage piece = pieces[move.pieceId];
         require(
             piece.owner == msg.sender && piece.owner != address(0),
@@ -328,6 +325,8 @@ contract ZKChessGame is Initializable {
         require(!hasMoved[move.turnNumber][piece.id], "already moved");
         require(!hasAttacked[move.turnNumber][piece.id], "already acted");
 
+        uint8 originRow = piece.row;
+        uint8 originCol = piece.col;
         if (defaultStats[piece.pieceType].isZk) {
             require(piece.commitment == move.zkp.input[0], "bad ZKP");
             require(move.zkp.input[3] == BOARD_SIZE, "bad ZKP");
@@ -335,17 +334,15 @@ contract ZKChessGame is Initializable {
                 move.zkp.input[2] <= defaultStats[piece.pieceType].mvRange,
                 "bad ZKP"
             );
-            if (!DISABLE_ZK_CHECK) {
-                require(
-                    Verifier.verifyDist2Proof(
-                        move.zkp.a,
-                        move.zkp.b,
-                        move.zkp.c,
-                        move.zkp.input
-                    ),
-                    "bad ZKP"
-                );
-            }
+            require(
+                Verifier.verifyDist2Proof(
+                    move.zkp.a,
+                    move.zkp.b,
+                    move.zkp.c,
+                    move.zkp.input
+                ),
+                "bad ZKP"
+            );
             piece.commitment = move.zkp.input[1];
         } else {
             uint8[] memory moveToRow = move.moveToRow;
@@ -359,13 +356,20 @@ contract ZKChessGame is Initializable {
             piece.col = toCol;
         }
         hasMoved[move.turnNumber][piece.id] = true;
-        emit ActionMade(msg.sender);
+        piece.lastMove = move.turnNumber;
+        emit DidMove(
+            move.sequenceNumber,
+            move.pieceId,
+            originRow,
+            originCol,
+            piece.row,
+            piece.col
+        );
+        sequenceNumber++;
     }
 
     function doAttack(Attack memory attack) public {
-        checkAction(attack.turnNumber);
-        Piece storage piece = pieces[attack.pieceId];
-        Piece storage attacked = pieces[attack.attackedId];
+        checkAction(attack.turnNumber, attack.sequenceNumber);
         require(
             ZKChessUtils.checkAttack(
                 attack,
@@ -385,11 +389,18 @@ contract ZKChessGame is Initializable {
             hasAttacked,
             BOARD_SIZE
         );
-        emit ActionMade(msg.sender);
+        emit DidAttack(
+            attack.sequenceNumber,
+            attack.pieceId,
+            attack.attackedId,
+            pieces[attack.pieceId].hp,
+            pieces[attack.attackedId].hp
+        );
+        sequenceNumber++;
     }
 
-    function endTurn(uint8 _turnNumber) public {
-        checkAction(_turnNumber);
+    function endTurn(uint8 _turnNumber, uint8 _sequenceNumber) public {
+        checkAction(_turnNumber, _sequenceNumber);
         if (msg.sender == player1) {
             // change to p2's turn
             player1Mana = 0;
@@ -408,7 +419,8 @@ contract ZKChessGame is Initializable {
             }
             gameState = GameState.P1_TO_MOVE;
         }
-        emit ActionMade(msg.sender);
+        emit DidEndTurn(msg.sender, _turnNumber, _sequenceNumber);
+        sequenceNumber++;
 
         if (gameShouldBeCompleted()) {
             gameState = GameState.COMPLETE;

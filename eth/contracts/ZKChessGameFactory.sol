@@ -26,7 +26,7 @@ contract ZKChessGameFactory is CloneFactory {
             "game with that ID already exists"
         );
         address proxy = createClone(implementationContract);
-        ZKChessGame(proxy).initialize(gameId, false);
+        ZKChessGame(proxy).initialize(gameId);
         gameIds.push(gameId);
         gameIdToAddr[gameId] = proxy;
         emit CreatedGame(gameId);

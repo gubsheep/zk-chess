@@ -93,7 +93,8 @@ class TxExecutor extends EventEmitter {
       }
       */
 
-      if (Date.now() - this.nonceLastUpdated > 1000) {
+      // TODO: test out seqNum failures by fucking up the nonce
+      if (Date.now() - this.nonceLastUpdated > 10000) {
         this.nonce = await EthereumAccountManager.getInstance().getNonce();
       }
       // await this.popupConfirmationWindow(txRequest);
@@ -188,8 +189,17 @@ class ContractsAPI extends EventEmitter {
       this.gameContract.on(ContractEvent.GameStart, () => {
         this.emit(ContractsAPIEvent.GameStart);
       });
-      this.gameContract.on(ContractEvent.ActionMade, () => {
-        this.emit(ContractsAPIEvent.ActionMade);
+      this.gameContract.on(ContractEvent.DidSummon, (...args) => {
+        this.emit(ContractsAPIEvent.DidSummon, ...args);
+      });
+      this.gameContract.on(ContractEvent.DidMove, (...args) => {
+        this.emit(ContractsAPIEvent.DidMove, ...args);
+      });
+      this.gameContract.on(ContractEvent.DidAttack, (...args) => {
+        this.emit(ContractsAPIEvent.DidAttack, ...args);
+      });
+      this.gameContract.on(ContractEvent.DidEndTurn, (...args) => {
+        this.emit(ContractsAPIEvent.DidEndTurn, ...args);
       });
       this.gameContract.on(ContractEvent.GameFinished, () => {
         this.emit(ContractsAPIEvent.GameFinished);
@@ -247,6 +257,7 @@ class ContractsAPI extends EventEmitter {
   }
 
   public async getGameState(): Promise<ChessGameContractData> {
+    console.log('getting game state from contract');
     const contract = this.gameContract;
     if (!contract) {
       throw new Error('no contract set');
@@ -259,6 +270,7 @@ class ContractsAPI extends EventEmitter {
     const rawPieces: RawPiece[] = await contract.getPieces();
     const rawDefaults: RawDefaults[] = await contract.getDefaults();
     const turnNumber = await contract.turnNumber();
+    const sequenceNumber = await contract.sequenceNumber();
     const gameState = await contract.gameState();
 
     const pieces: ContractPiece[] = rawPieces.map(this.rawPieceToPiece);
@@ -279,6 +291,7 @@ class ContractsAPI extends EventEmitter {
       pieces,
       defaults,
       turnNumber,
+      sequenceNumber,
       gameStatus: gameState,
     };
   }
@@ -296,6 +309,7 @@ class ContractsAPI extends EventEmitter {
     this.removeGameContractListeners();
     this.gameContract = gameContract;
     this.setupGameContractListeners();
+    this.unminedTxs = new Map<string, TxIntent>();
   }
 
   public async createGame(
@@ -366,6 +380,7 @@ class ContractsAPI extends EventEmitter {
         args: [
           [
             action.turnNumber,
+            action.sequenceNumber,
             action.pieceId,
             action.pieceType,
             action.isZk ? 0 : action.row,
@@ -401,6 +416,7 @@ class ContractsAPI extends EventEmitter {
         args: [
           [
             action.turnNumber,
+            action.sequenceNumber,
             action.pieceId,
             action.isZk ? [] : action.moveToRow,
             action.isZk ? [] : action.moveToCol,
@@ -435,6 +451,7 @@ class ContractsAPI extends EventEmitter {
         args: [
           [
             action.turnNumber,
+            action.sequenceNumber,
             action.pieceId,
             action.attackedId,
             await action.zkp,
@@ -465,7 +482,7 @@ class ContractsAPI extends EventEmitter {
         txIntentId: action.txIntentId,
         contract: this.gameContract,
         method: 'endTurn',
-        args: [action.turnNumber],
+        args: [action.turnNumber, action.sequenceNumber],
         overrides,
       }
     );
@@ -492,6 +509,8 @@ class ContractsAPI extends EventEmitter {
         commitment: rawPiece[9].toString(),
         hp: rawPiece[7],
         initializedOnTurn: rawPiece[8],
+        lastMove: rawPiece[10],
+        lastAttack: rawPiece[11],
       };
     } else {
       return {
@@ -502,6 +521,8 @@ class ContractsAPI extends EventEmitter {
         location: [rawPiece[4], rawPiece[3]],
         hp: rawPiece[7],
         initializedOnTurn: rawPiece[8],
+        lastMove: rawPiece[10],
+        lastAttack: rawPiece[11],
       };
     }
   }

@@ -65,9 +65,11 @@ type PartialPiece = GameObject & {
   alive: boolean;
   hp: number;
   initializedOnTurn: number;
+  lastMove: number;
+  lastAttack: number;
 };
 
-type AbstractPiece = PartialPiece & {
+export type AbstractPiece = PartialPiece & {
   mvRange: number;
   atkRange: number;
   atk: number;
@@ -95,6 +97,10 @@ export type KnownZKPiece = ZKPiece &
   };
 
 export type Piece = VisiblePiece | ZKPiece;
+
+export function isLocatable(piece: any): piece is Locatable {
+  return (piece as Locatable).location !== undefined;
+}
 
 export function isZKPiece(piece: Piece): piece is ZKPiece {
   return (piece as ZKPiece).commitment !== undefined;
@@ -132,6 +138,7 @@ export type ChessGameContractData = {
   defaults: Map<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
+  sequenceNumber: number;
   gameStatus: GameStatus;
 };
 
@@ -147,9 +154,11 @@ export type ChessGame = {
   player2Mana: number;
 
   pieces: Piece[];
+  pieceById: Map<number, Piece>;
   defaults: Map<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
+  sequenceNumber: number;
   gameStatus: GameStatus;
 };
 
@@ -188,3 +197,61 @@ export interface Player {
 }
 
 export type PlayerMap = Map<string, Player>;
+
+export enum GameActionType {
+  SUMMON,
+  MOVE,
+  ATTACK,
+  END_TURN,
+}
+
+export interface GameAction {
+  sequenceNumber: number;
+  actionType: GameActionType;
+  fromLocalData: boolean; // prioritize GameActions generated locally, they have more data
+}
+
+export interface SummonAction extends GameAction {
+  actionType: GameActionType.SUMMON;
+  player: EthAddress;
+  pieceId: number;
+  pieceType: PieceType;
+  at?: BoardLocation;
+}
+
+export function isSummonAction(action: GameAction): action is SummonAction {
+  return action.actionType === GameActionType.SUMMON;
+}
+
+export interface MoveAction extends GameAction {
+  actionType: GameActionType.MOVE;
+  pieceId: number;
+  from?: BoardLocation;
+  to?: BoardLocation;
+}
+
+export function isMoveAction(action: GameAction): action is MoveAction {
+  return action.actionType === GameActionType.MOVE;
+}
+
+export interface AttackAction extends GameAction {
+  actionType: GameActionType.ATTACK;
+  attackerId: number;
+  attackedId: number;
+  attackerHp: number;
+  attackedHp: number;
+}
+
+export function isAttackAction(action: GameAction): action is AttackAction {
+  return action.actionType === GameActionType.ATTACK;
+}
+
+export interface EndTurnAction extends GameAction {
+  actionType: GameActionType.END_TURN;
+  player: EthAddress;
+  turnNumber: number;
+}
+
+export function isEndTurnAction(action: GameAction): action is EndTurnAction {
+  return action.actionType === GameActionType.END_TURN;
+}

@@ -35,6 +35,8 @@ struct Piece {
     uint8 hp;
     uint8 initializedOnTurn;
     uint256 commitment; // only for ghosts
+    uint8 lastMove;
+    uint8 lastAttack;
 }
 
 struct SummonZKP {
@@ -60,6 +62,7 @@ struct AttackZKP {
 
 struct Summon {
     uint8 turnNumber;
+    uint16 sequenceNumber;
     uint8 pieceId; // should be a fresh new ID
     PieceType pieceType;
     uint8 row; // for non-zk pieces
@@ -69,6 +72,7 @@ struct Summon {
 
 struct Move {
     uint8 turnNumber;
+    uint16 sequenceNumber;
     uint8 pieceId;
     uint8[] moveToRow;
     uint8[] moveToCol;
@@ -77,6 +81,7 @@ struct Move {
 
 struct Attack {
     uint8 turnNumber;
+    uint16 sequenceNumber;
     uint8 pieceId;
     uint8 attackedId;
     AttackZKP zkp;
