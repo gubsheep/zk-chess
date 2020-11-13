@@ -105,6 +105,16 @@ export class GameAPI {
     return dist > 0 && dist <= data.maxRange + data.movement;
   }
 
+  isMyTurn(): boolean {
+    const amP1 = this.amPlayer1();
+    const modulo = this.gameState.turnNumber % 2;
+    return amP1 ? modulo === 0 : modulo === 1;
+  }
+
+  private amPlayer1(): boolean {
+    return this.getMyColor() === PlayerColor.Red;
+  }
+
   // p1 is red, p2 is blue
   getMyColor(): PlayerColor {
     return this.getColor(this.gameState.myAddress);

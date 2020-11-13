@@ -3,8 +3,8 @@ import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { Piece, PieceType, Player } from '../../_types/global/GlobalTypes';
 import { GameObject } from './GameObject';
 import { BoardCoords, CanvasCoords, PlayerColor } from './PixiTypes';
-import { playerShader } from './Shaders';
-import { getShipSprite, SHIPS, SPRITE_W } from './TextureLoader';
+import { ShipSprite } from './ShipSprite';
+import { SHIPS, SPRITE_W } from './TextureLoader';
 
 const waterline = (type: PieceType): number => {
   if (type === PieceType.Mothership_00) return 28;
@@ -43,10 +43,11 @@ export class Ship extends GameObject {
     this.id = Math.random();
     this.type = PieceType;
 
-    const sprite = getShipSprite(PieceType, color);
+    const sprite = new ShipSprite(manager, this.type, color);
     // sprite.y = 16; // doesn't work? investigate
 
-    container.addChild(sprite);
+    this.addChild(sprite);
+
     container.interactive = true;
     container.hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
     container

@@ -6,7 +6,8 @@ import { ClickState } from '../MouseManager';
 import { CanvasCoords, BoardCoords } from '../PixiTypes';
 import { makeRect, idxsIncludes, compareBoardCoords } from '../PixiUtils';
 import { playerShader } from '../Shaders';
-import { Ship } from '../Ships';
+import { Ship, ShipState } from '../Ships';
+import { ShipSprite } from '../ShipSprite';
 import { SHIPS, SPRITE_W } from '../TextureLoader';
 
 enum CellZIndex {
@@ -15,41 +16,6 @@ enum CellZIndex {
   Move,
   Attack,
   Target,
-}
-
-class StagedShip extends GameObject {
-  type: PieceType | null;
-  rect: PIXI.Graphics;
-
-  constructor(manager: PixiManager) {
-    super(manager);
-    const container = this.object;
-
-    this.type = null;
-    const rect = new PIXI.Graphics();
-
-    rect.position.set(2, 2);
-    const alphaFilter = new PIXI.filters.AlphaFilter(0.7);
-    rect.filters = [playerShader(manager.api.getMyColor()), alphaFilter];
-    container.addChild(rect);
-
-    this.rect = rect;
-  }
-
-  loop() {
-    const cache = PIXI.utils.TextureCache;
-    super.loop();
-    this.rect.clear();
-
-    if (this.type === null) return;
-    this.rect.beginTextureFill({ texture: cache[SHIPS[this.type]] });
-    this.rect.drawRect(0, 0, SPRITE_W, SPRITE_W);
-    this.rect.endFill();
-  }
-
-  setType(type: PieceType | null) {
-    this.type = type;
-  }
 }
 
 export const CELL_W = 36;
@@ -65,7 +31,7 @@ export class BoardCell extends GameObject {
   attackRect: PIXI.DisplayObject;
   targetRect: PIXI.DisplayObject;
 
-  stagedShip: StagedShip;
+  stagedShip: ShipSprite;
 
   constructor(manager: PixiManager, idx: BoardCoords, topLeft: CanvasCoords) {
     super(manager);
@@ -95,7 +61,13 @@ export class BoardCell extends GameObject {
     target.visible = false;
     this.targetRect = target;
 
-    const stagedShip = new StagedShip(manager);
+    const stagedShip = new ShipSprite(
+      manager,
+      null,
+      this.manager.api.getMyColor()
+    );
+    const alphaFilter = new PIXI.filters.AlphaFilter(0.7);
+    stagedShip.setFilters([alphaFilter]);
     this.stagedShip = stagedShip;
 
     container.addChild(rectangle, depRect, movRect, atkRect, target);

@@ -1,8 +1,9 @@
-import * as PIXI from 'pixi.js';
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
 import { CHAR_H, LINE_SPACING } from '../FontLoader';
 import { GameObject } from '../GameObject';
 
+
+// TODO make a GridObject class?
 export class ConfirmCancelButtons extends GameObject {
   constructor(manager: PixiManager) {
     super(manager, GameZIndex.UI);
