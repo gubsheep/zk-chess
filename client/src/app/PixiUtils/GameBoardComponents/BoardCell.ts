@@ -136,7 +136,9 @@ export class BoardCell extends GameObject {
       this.stagedShip.setType(show ? deployType : null);
     } else if (clickState === ClickState.Acting) {
       const show = compareBoardCoords(this.idx, moveStaged);
-      this.stagedShip.setType(selectedShip && show ? selectedShip.type : null);
+      this.stagedShip.setType(
+        selectedShip && show ? selectedShip.getType() : null
+      );
     } else {
       // none
       this.stagedShip.setType(null);

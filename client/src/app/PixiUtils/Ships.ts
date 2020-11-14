@@ -22,8 +22,6 @@ export enum ShipState {
 
 export class Ship extends GameObject {
   coords: BoardCoords;
-  id: number;
-  type: PieceType;
 
   hasMoved: boolean;
 
@@ -36,7 +34,7 @@ export class Ship extends GameObject {
 
     this.pieceData = data;
 
-    const { pieceType: PieceType, location, owner } = data;
+    const { location, owner } = data;
     const color = manager.api.getColor(owner);
     const coords = boardCoordsFromLoc(location);
 
@@ -49,10 +47,8 @@ export class Ship extends GameObject {
     this.hasMoved = false;
 
     // probably gets rolled up into general props
-    this.id = Math.random();
-    this.type = PieceType;
 
-    const sprite = new ShipSprite(manager, this.type, color);
+    const sprite = new ShipSprite(manager, this.pieceData.pieceType, color);
     // sprite.y = 16; // doesn't work? investigate
 
     shipContainer.addChild(sprite);
@@ -80,12 +76,16 @@ export class Ship extends GameObject {
     this.updateMask();
   }
 
+  getType(): PieceType {
+    return this.pieceData.pieceType;
+  }
+
   private updateMask() {
     const { x, y } = this.shipContainer.object;
     const mask = this.mask;
     mask.clear();
     mask.beginFill(0xffffff, 1.0);
-    mask.drawRect(x, y, SPRITE_W, waterline(this.type));
+    mask.drawRect(x, y, SPRITE_W, waterline(this.getType()));
     mask.endFill();
   }
 

@@ -135,7 +135,8 @@ export class MouseManager {
   }
 
   shipClicked(ship: Ship) {
-    if (ship.type === PieceType.Mothership_00) return;
+    const type = ship.getType();
+    if (type === PieceType.Mothership_00) return;
 
     const { api: api } = this.manager;
     if (this.clickState === ClickState.None) {
@@ -144,11 +145,11 @@ export class MouseManager {
       this.selectedShip = ship;
 
       if (!ship.hasMoved) {
-        this.moveIdxs = api.findMoves(ship.type, ship.coords);
-        this.moveAttackIdxs = api.findAttacksWithMove(ship.type, ship.coords);
+        this.moveIdxs = api.findMoves(type, ship.coords);
+        this.moveAttackIdxs = api.findAttacksWithMove(type, ship.coords);
       } else {
         this.moveIdxs = [];
-        this.moveAttackIdxs = api.findAttacks(ship.type, ship.coords);
+        this.moveAttackIdxs = api.findAttacks(type, ship.coords);
       }
     }
 
