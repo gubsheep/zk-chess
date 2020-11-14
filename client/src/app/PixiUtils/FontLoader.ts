@@ -16,13 +16,11 @@ export const LINE_SPACING = 4;
 // TODO make this into a GameObject - or not? many abstractions use containers now
 
 type MessageData = {
-  message: string;
   object: PIXI.Container;
-  color: number;
   width: number;
 };
 
-export type FontLoader = (msg: string, color?: number) => MessageData;
+export type FontLoader = (msg: string, color?: number | null) => MessageData;
 
 // TODO make this global somehow
 export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
@@ -44,7 +42,7 @@ export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
     }
   }
 
-  return (message: string, color: number = 0xffffff) => {
+  return (message: string, color?: number | null) => {
     const chars = message.split('');
     const container = new PIXI.Container();
     let lines = 0;
@@ -65,16 +63,17 @@ export const getFontLoader = (texture: PIXI.Texture): FontLoader => {
       } // else just add a space
       cols++;
     }
-    const shader = new ColorOverlayFilter(color);
-    container.filters = [shader];
+
+    if (color !== null) {
+      const shader = new ColorOverlayFilter(color);
+      container.filters = [shader];
+    }
 
     let width = chars.length * (1 + CHAR_W) - 1;
     if (['.', '!'].includes(chars[chars.length - 1])) width -= 3;
 
     return {
       object: container,
-      color,
-      message,
       width,
     };
   };

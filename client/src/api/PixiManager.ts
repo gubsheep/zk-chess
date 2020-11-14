@@ -46,8 +46,6 @@ export class PixiManager {
 
   ships: Ship[];
 
-  myColor: PlayerColor.Red;
-
   private constructor(props: InitProps) {
     const {canvas, gameManager} = props;
     this.canvas = canvas;
@@ -104,7 +102,7 @@ export class PixiManager {
 
   clearShips() {
     for (const ship of this.ships) this.removeLazy(ship);
-    this.flush();
+    // this.flush(); // TODO debug this, seems broken
     this.ships = [];
   }
 

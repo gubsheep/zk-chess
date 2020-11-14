@@ -1,8 +1,9 @@
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 import {
   BoardLocation,
   ChessGame,
   GameAction,
+  PieceType,
 } from '../_types/global/GlobalTypes';
 
 export enum GameManagerEvent {
@@ -34,6 +35,9 @@ export default interface AbstractGameManager extends EventEmitter {
 
   createGame(): Promise<void>;
   joinGame(): Promise<void>;
+
+  summonPiece(pieceType: PieceType, at: BoardLocation): Promise<void>;
+  attack(pieceId: number, attackedId: number): Promise<void>;
   movePiece(pieceId: number, to: BoardLocation): Promise<void>;
   endTurn(): Promise<void>;
 }

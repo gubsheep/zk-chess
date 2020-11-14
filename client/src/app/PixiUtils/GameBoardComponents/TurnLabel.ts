@@ -2,22 +2,19 @@ import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { CHAR_H } from '../FontLoader';
 import { GameObject } from '../GameObject';
+import { TextAlign, TextObject } from '../Text';
 
 export class TurnLabel extends GameObject {
-  yourTurn: PIXI.DisplayObject;
-  enemyTurn: PIXI.DisplayObject;
+  yourTurn: GameObject;
+  enemyTurn: GameObject;
 
   constructor(manager: PixiManager) {
     super(manager);
-    const loader = this.manager.fontLoader;
 
-    const { object: enemyTurn, width: enemyWidth } = loader('Enemy Turn');
-    enemyTurn.position.set(-Math.floor(0.5 * enemyWidth), 0);
+    const enemyTurn = new TextObject(manager, 'Enemy Turn', TextAlign.Center);
+    const yourTurn = new TextObject(manager, 'Your Turn', TextAlign.Center);
 
-    const { object: yourTurn, width: yourWidth } = loader('Your Turn');
-    yourTurn.position.set(-Math.floor(0.5 * yourWidth), 0);
-
-    this.object.addChild(yourTurn, enemyTurn);
+    this.addChild(yourTurn, enemyTurn);
 
     this.enemyTurn = enemyTurn;
     this.yourTurn = yourTurn;
@@ -25,11 +22,11 @@ export class TurnLabel extends GameObject {
 
   loop() {
     if (this.manager.api.isMyTurn()) {
-      this.yourTurn.visible = true;
-      this.enemyTurn.visible = false;
+      this.yourTurn.setActive(true);
+      this.enemyTurn.setActive(false);
     } else {
-      this.yourTurn.visible = false;
-      this.enemyTurn.visible = true;
+      this.yourTurn.setActive(false);
+      this.enemyTurn.setActive(true);
     }
   }
 

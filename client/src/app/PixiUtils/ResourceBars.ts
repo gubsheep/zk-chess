@@ -3,6 +3,7 @@ import { GameObject } from './GameObject';
 import * as PIXI from 'pixi.js';
 import { BASELINE_ICONS, BASELINE_TEXT, ICONS } from './TextureLoader';
 import { CanvasCoords } from './PixiTypes';
+import { TextObject } from './Text';
 
 const LABEL_WIDTH = 32; // width of 'Gold:'
 const LABEL_M_RIGHT = 2; // right margin
@@ -31,8 +32,8 @@ function makeRow(icon: string, length: number): PIXI.DisplayObject {
 }
 
 class ResourceBar extends GameObject {
-  label: PIXI.DisplayObject;
-  numbersContainer: PIXI.Container;
+  label: TextObject;
+  numbersObj: TextObject;
 
   mask: PIXI.Graphics;
   maskable: PIXI.DisplayObject;
@@ -48,17 +49,17 @@ class ResourceBar extends GameObject {
     maskable: PIXI.DisplayObject
   ) {
     super(manager, GameZIndex.UI);
-    const { fontLoader } = manager;
 
     const container = this.object;
 
-    const { object: labelObj } = fontLoader(label);
-    labelObj.position.set(0, BASELINE_TEXT);
-    container.addChild(labelObj);
+    const labelObj = new TextObject(manager, label);
 
-    const numbersContainer = new PIXI.Container();
-    numbersContainer.position.set(NUMBER_OFFSET, BASELINE_TEXT);
-    container.addChild(numbersContainer);
+    labelObj.setPosition({ x: 0, y: BASELINE_TEXT });
+
+    const numbersObj = new TextObject(manager, '0/0');
+    numbersObj.setPosition({ x: NUMBER_OFFSET, y: BASELINE_TEXT });
+
+    this.addChild(labelObj, numbersObj);
 
     iconContainer.position.set(ICON_OFFSET, BASELINE_ICONS);
 
@@ -68,7 +69,7 @@ class ResourceBar extends GameObject {
     container.addChild(iconContainer);
 
     this.label = labelObj;
-    this.numbersContainer = numbersContainer;
+    this.numbersObj = numbersObj;
     this.mask = mask;
     this.maskable = maskable;
     this.value = max;
@@ -90,13 +91,7 @@ class ResourceBar extends GameObject {
   }
 
   updateText(value: number) {
-    const nc = this.numbersContainer;
-    if (nc.children.length > 0) {
-      nc.removeChild(nc.children[0]);
-    }
-
-    const { object: numbers } = this.manager.fontLoader(this.getText(value));
-    nc.addChild(numbers);
+    this.numbersObj.setText(this.getText(value));
   }
 
   setMax(max: number) {

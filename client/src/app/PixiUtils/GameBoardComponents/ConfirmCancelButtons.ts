@@ -1,35 +1,38 @@
+import { Link } from 'react-router-dom';
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
 import { CHAR_H, LINE_SPACING } from '../FontLoader';
 import { GameObject } from '../GameObject';
+import { LinkObject, TextAlign } from '../Text';
 
 // TODO make a GridObject class?
 export class ConfirmCancelButtons extends GameObject {
   constructor(manager: PixiManager) {
     super(manager, GameZIndex.UI);
-    const container = this.object;
 
-    const fontLoader = manager.fontLoader;
+    const cancel = new LinkObject(
+      manager,
+      'Cancel',
+      this.onCancel,
+      TextAlign.Right
+    );
 
-    const cancel = fontLoader('Cancel').object;
-    const confirm = fontLoader('Confirm').object;
+    const confirm = new LinkObject(
+      manager,
+      'Confirm',
+      this.onConfirm,
+      TextAlign.Right
+    );
+    confirm.setPosition({ x: 0, y: CHAR_H + LINE_SPACING });
 
-    confirm.y = CHAR_H + LINE_SPACING;
-    cancel.x = -cancel.width;
-    confirm.x = -confirm.width;
+    const endTurn = new LinkObject(
+      manager,
+      'End Turn',
+      this.endTurn,
+      TextAlign.Right
+    );
+    endTurn.setPosition({ x: 0, y: 2 * (CHAR_H + LINE_SPACING) });
 
-    container.addChild(cancel, confirm);
-
-    cancel.interactive = true;
-    cancel.on('click', this.onCancel);
-    confirm.interactive = true;
-    confirm.on('click', this.onConfirm);
-
-    const endTurn = fontLoader('End Turn').object;
-    endTurn.position.set(-endTurn.width, 2 * (CHAR_H + LINE_SPACING));
-    endTurn.interactive = true;
-    endTurn.on('click', this.endTurn);
-
-    container.addChild(endTurn);
+    this.addChild(cancel, confirm, endTurn);
   }
 
   private onCancel() {

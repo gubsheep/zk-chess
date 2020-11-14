@@ -8,12 +8,22 @@ const autoIncrement = (() => {
   return () => count++;
 })();
 
+export enum PixiEvents {
+  mouseover = 'mouseover',
+  mouseout = 'mouseout',
+  mousemove = 'mousemove',
+  mousedown = 'mousedown',
+  mouseup = 'mouseup',
+  mouseupoutside = 'mouseupoutside',
+  click = 'click',
+}
+
+type HandlerProps = Partial<Record<PixiEvents, Function>>;
+
+// TODO do this smartly using typescript
 export type GameObjectInteractiveProps = {
   hitArea?: PIXI.Rectangle;
-  mouseover?: Function;
-  mouseout?: Function;
-  click?: Function;
-};
+} & HandlerProps;
 // top-level game object abstraction. all of our game things should be wrapped in these guys
 export class GameObject {
   id: number;
@@ -77,12 +87,12 @@ export class GameObject {
       return;
     } else {
       this.object.interactive = true;
-      const { hitArea, mouseover, click, mouseout } = props;
+      const { hitArea } = props;
       if (hitArea) this.object.hitArea = hitArea;
-      if (mouseover) this.object.on('mouseover', mouseover);
-      if (mouseout) this.object.on('mouseout', mouseout);
-      if (click) this.object.on('click', click);
+      const handlerKeys = Object.keys(PixiEvents) as PixiEvents[];
+      for (const key of handlerKeys) {
+        if (props[key]) this.object.on(key, props[key] as Function);
+      }
     }
   }
-
 }

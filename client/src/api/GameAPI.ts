@@ -9,6 +9,7 @@ import {
 import {
   ChessGame,
   EthAddress,
+  GameStatus,
   isVisiblePiece,
   PieceType,
 } from '../_types/global/GlobalTypes';
@@ -20,14 +21,14 @@ import autoBind from 'auto-bind';
 
 export class GameAPI {
   private pixiManager: PixiManager;
-  private gameManager: GameManager;
+  private gameManager: AbstractGameManager;
   private myMothership: Ship;
 
   gameState: ChessGame;
 
   constructor(pixiManager: PixiManager, gameManager: AbstractGameManager) {
     this.pixiManager = pixiManager;
-    this.gameManager = gameManager as GameManager;
+    this.gameManager = gameManager;
 
     this.syncGameState();
 
@@ -41,6 +42,7 @@ export class GameAPI {
 
   // event listeners
   private stateAdvanced() {
+    console.log('state advanced');
     this.syncGameState();
 
     this.syncShips();
@@ -136,9 +138,10 @@ export class GameAPI {
   }
 
   isMyTurn(): boolean {
+    const status = this.gameState.gameStatus;
     const amP1 = this.amPlayer1();
-    const modulo = this.gameState.turnNumber % 2;
-    return amP1 ? modulo === 1 : modulo === 0;
+    if (amP1) return status === GameStatus.P1_TO_MOVE;
+    else return status === GameStatus.P2_TO_MOVE;
   }
 
   // p1 is red, p2 is blue

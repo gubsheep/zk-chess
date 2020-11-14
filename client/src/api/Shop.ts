@@ -51,7 +51,7 @@ class ShopCard extends GameObject {
     const data = shipData[type];
 
     const textContainer = new PIXI.Container();
-    const text = manager.fontLoader(`${data.cost}`).object;
+    const text = manager.fontLoader(`${data.cost}`, 0xffffff).object;
     const goldIcon = getCoinSprite();
     goldIcon.position.set(CHAR_W + 2, BASELINE_ICONS);
     textContainer.addChild(text, goldIcon);
@@ -85,7 +85,8 @@ class ShopCard extends GameObject {
     }`;
 
     const shopText = manager.fontLoader(
-      `${data.name}\n${atkStr}\n${hpStr}\n${mvtStr}\n${rngStr}`
+      `${data.name}\n${atkStr}\n${hpStr}\n${mvtStr}\n${rngStr}`,
+      0xffffff
     ).object;
 
     shopText.position.set(2, 2);
