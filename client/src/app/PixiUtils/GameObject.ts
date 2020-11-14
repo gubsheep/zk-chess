@@ -18,12 +18,12 @@ export enum PixiEvents {
   click = 'click',
 }
 
-type HandlerProps = Partial<Record<PixiEvents, Function>>;
+type HandlerProps = Record<PixiEvents, Function>;
 
 // TODO do this smartly using typescript
 export type GameObjectInteractiveProps = {
   hitArea?: PIXI.Rectangle;
-} & HandlerProps;
+} & Partial<HandlerProps>;
 // top-level game object abstraction. all of our game things should be wrapped in these guys
 export class GameObject {
   id: number;
@@ -35,7 +35,7 @@ export class GameObject {
   lifetime: number;
 
   // skip inactive ones; we don't have enough objects to care about killing
-  active: boolean = true;
+  active: boolean;
 
   // TODO refactor this so that it doesn't need to be given a container
   constructor(manager: PixiManager, zIndex: number = 0) {
@@ -46,6 +46,7 @@ export class GameObject {
     this.lifetime = 0;
     this.children = [];
     this.object.zIndex = zIndex;
+    this.active = true;
 
     autoBind(this);
   }

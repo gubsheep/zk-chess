@@ -1,16 +1,11 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import {
-  Piece,
-  PieceType,
-  Player,
-  VisiblePiece,
-} from '../../_types/global/GlobalTypes';
+import { PieceType, VisiblePiece } from '../../_types/global/GlobalTypes';
 import { GameObject } from './GameObject';
-import { BoardCoords, CanvasCoords, PlayerColor } from './PixiTypes';
-import { boardCoordsFromLoc } from './PixiUtils';
+import { BoardCoords, CanvasCoords } from './PixiTypes';
+import { boardCoordsFromLoc, Wrapper } from './PixiUtils';
 import { ShipSprite } from './ShipSprite';
-import { SHIPS, SPRITE_W } from './TextureLoader';
+import { SPRITE_W } from './TextureLoader';
 
 const waterline = (type: PieceType): number => {
   if (type === PieceType.Mothership_00) return 28;
@@ -34,6 +29,7 @@ export class Ship extends GameObject {
 
   mask: PIXI.Graphics;
   pieceData: VisiblePiece;
+  shipContainer: GameObject;
 
   constructor(manager: PixiManager, data: VisiblePiece) {
     super(manager, GameZIndex.Ships);
@@ -44,7 +40,11 @@ export class Ship extends GameObject {
     const color = manager.api.getColor(owner);
     const coords = boardCoordsFromLoc(location);
 
-    const container = this.object;
+    const container = new PIXI.Container();
+    const shipContainer = new Wrapper(manager, container);
+    this.shipContainer = shipContainer;
+
+    this.addChild(shipContainer);
 
     this.hasMoved = false;
 
@@ -55,14 +55,15 @@ export class Ship extends GameObject {
     const sprite = new ShipSprite(manager, this.type, color);
     // sprite.y = 16; // doesn't work? investigate
 
-    this.addChild(sprite);
+    shipContainer.addChild(sprite);
 
-    container.interactive = true;
-    container.hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
-    container
-      .on('mouseover', this.onMouseOver)
-      .on('mouseout', this.onMouseOut)
-      .on('click', this.onClick);
+    const hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
+    shipContainer.setInteractive({
+      hitArea,
+      mouseover: this.onMouseOver,
+      mouseout: this.onMouseOut,
+      click: this.onClick,
+    });
 
     let mask = new PIXI.Graphics();
     container.mask = mask;
@@ -80,11 +81,11 @@ export class Ship extends GameObject {
   }
 
   private updateMask() {
-    const container = this.object;
+    const { x, y } = this.shipContainer.object;
     const mask = this.mask;
     mask.clear();
     mask.beginFill(0xffffff, 1.0);
-    mask.drawRect(container.x, container.y, SPRITE_W, waterline(this.type));
+    mask.drawRect(x, y, SPRITE_W, waterline(this.type));
     mask.endFill();
   }
 
@@ -111,8 +112,7 @@ export class Ship extends GameObject {
     const { frameCount } = this.manager;
 
     const frames = 30;
-    const container = this.object;
-    const boat = container.children[0];
+    const boat = this.shipContainer.children[0].object;
     if (frameCount % (2 * frames) < frames) {
       boat.y = 2;
     } else {

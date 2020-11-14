@@ -16,7 +16,6 @@ import {
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 import { PixiManager } from './PixiManager';
 import { GAME_HEIGHT, GAME_WIDTH } from '../app/PixiUtils/GameBoard';
-import GameManager from './GameManager';
 import autoBind from 'auto-bind';
 
 export class GameAPI {
@@ -80,14 +79,13 @@ export class GameAPI {
   }
 
   moveShip(ship: Ship, to: BoardCoords): void {
-    ship.setCoords(to);
-    ship.hasMoved = true;
+    this.gameManager.movePiece(ship.pieceData.id, boardLocFromCoords(to));
   }
 
   attack(from: Ship, to: BoardCoords): void {
     const toShip = this.shipAt(to);
     if (toShip) {
-      toShip.setActive(false);
+      this.gameManager.attack(from.pieceData.id, toShip.pieceData.id);
     }
   }
 
