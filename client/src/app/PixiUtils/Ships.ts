@@ -5,6 +5,7 @@ import { GameObject } from './GameObject';
 import { BoardCoords, CanvasCoords } from './PixiTypes';
 import { boardCoordsFromLoc, Wrapper } from './PixiUtils';
 import { ShipSprite } from './ShipSprite';
+import { TextObject } from './Text';
 import { SPRITE_W } from './TextureLoader';
 
 const waterline = (type: PieceType): number => {
@@ -29,6 +30,8 @@ export class Ship extends GameObject {
   pieceData: VisiblePiece;
   shipContainer: GameObject;
 
+  stats: TextObject;
+
   constructor(manager: PixiManager, data: VisiblePiece) {
     super(manager, GameZIndex.Ships);
 
@@ -42,7 +45,10 @@ export class Ship extends GameObject {
     const shipContainer = new Wrapper(manager, container);
     this.shipContainer = shipContainer;
 
-    this.addChild(shipContainer);
+    const stats = new TextObject(manager, '1/1');
+    this.stats = stats;
+
+    this.addChild(shipContainer, stats);
 
     this.hasMoved = false;
 
@@ -110,6 +116,9 @@ export class Ship extends GameObject {
   loop() {
     super.loop();
     const { frameCount } = this.manager;
+
+    const { hp, atk } = this.pieceData;
+    this.stats.setText(`${atk}/${hp}`);
 
     const frames = 30;
     const boat = this.shipContainer.children[0].object;

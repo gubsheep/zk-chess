@@ -139,12 +139,14 @@ export class MouseManager {
     if (type === PieceType.Mothership_00) return;
 
     const { api: api } = this.manager;
+    if (api.hasAttacked(ship)) return;
+
     if (this.clickState === ClickState.None) {
       // initiate ship movement
       this.setClickState(ClickState.Acting);
       this.selectedShip = ship;
 
-      if (!ship.hasMoved) {
+      if (!api.hasMoved(ship)) {
         this.moveIdxs = api.findMoves(type, ship.coords);
         this.moveAttackIdxs = api.findAttacksWithMove(type, ship.coords);
       } else {

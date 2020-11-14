@@ -213,6 +213,17 @@ export class GameAPI {
     return true;
   }
 
+  hasMoved(ship: Ship): boolean {
+    return (
+      ship.pieceData.lastMove === this.gameState.turnNumber &&
+      !this.hasAttacked(ship)
+    );
+  }
+
+  hasAttacked(ship: Ship): boolean {
+    return ship.pieceData.lastAttack === this.gameState.turnNumber;
+  }
+
   /* private utils */
   private syncGameState(): void {
     this.gameState = this.gameManager.getGameState();
