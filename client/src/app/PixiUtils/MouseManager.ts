@@ -67,13 +67,13 @@ export class MouseManager {
   confirm() {
     if (this.clickState === ClickState.Deploying) {
       if (this.deployStaged && this.deployType) {
-        this.manager.api.deployShip(this.deployType, this.deployStaged);
+        this.manager.api.deploy(this.deployType, this.deployStaged);
       } else console.error('something went wrong in confirm');
     } else if (this.clickState === ClickState.Acting) {
       if (this.selectedShip && this.attackStaged) {
         this.manager.api.attack(this.selectedShip, this.attackStaged);
       } else if (this.selectedShip && this.moveStaged) {
-        this.manager.api.moveShip(this.selectedShip, this.moveStaged);
+        this.manager.api.move(this.selectedShip, this.moveStaged);
       } else console.error('something went wrong in confirm');
     }
 

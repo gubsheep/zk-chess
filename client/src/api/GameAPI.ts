@@ -17,6 +17,7 @@ import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 import { PixiManager } from './PixiManager';
 import { GAME_HEIGHT, GAME_WIDTH } from '../app/PixiUtils/GameBoard';
 import autoBind from 'auto-bind';
+import { findPath, getObstacles } from '../utils/Utils';
 
 export class GameAPI {
   private pixiManager: PixiManager;
@@ -74,11 +75,11 @@ export class GameAPI {
     this.gameManager.endTurn();
   }
 
-  deployShip(type: PieceType, coords: BoardCoords): void {
+  deploy(type: PieceType, coords: BoardCoords): void {
     this.gameManager.summonPiece(type, boardLocFromCoords(coords));
   }
 
-  moveShip(ship: Ship, to: BoardCoords): void {
+  move(ship: Ship, to: BoardCoords): void {
     this.gameManager.movePiece(ship.pieceData.id, boardLocFromCoords(to));
   }
 
@@ -87,6 +88,11 @@ export class GameAPI {
     if (toShip) {
       this.gameManager.attack(from.pieceData.id, toShip.pieceData.id);
     }
+  }
+
+  attackMove(from: Ship, moveTo: BoardCoords, attackTo: BoardCoords) {
+    this.move(from, moveTo);
+    this.attack(from, attackTo);
   }
 
   // finding tiles
@@ -117,12 +123,23 @@ export class GameAPI {
   }
 
   findAttacksWithMove(type: PieceType, coords: BoardCoords): BoardCoords[] {
+    const { nRows, nCols } = this.gameState;
+    const canMoves: boolean[][] = [...Array(nRows)].map((_el) =>
+      Array(nCols).fill(false)
+    );
+
     const allAttacks: BoardCoords[] = [];
-    // TODO minor optimization using range
-    for (let row = 0; row < GAME_HEIGHT; row++) {
-      for (let col = 0; col < GAME_WIDTH; col++) {
-        if (this.canAttackWithMove(type, coords, { row, col }))
-          allAttacks.push({ row, col });
+
+    const allMoves = this.findMoves(type, coords).concat([coords]);
+
+    for (const move of allMoves) {
+      const locAtks = this.findAttacks(type, move);
+      for (const atk of locAtks) canMoves[atk.row][atk.col] = true;
+    }
+
+    for (let i = 0; i < canMoves.length; i++) {
+      for (let j = 0; j < canMoves[i].length; j++) {
+        if (canMoves[i][j]) allAttacks.push({ row: i, col: j });
       }
     }
 
@@ -166,6 +183,10 @@ export class GameAPI {
     return null;
   }
 
+  ownedByMe(ship: Ship): boolean {
+    return ship.pieceData.owner === this.gameState.myAddress;
+  }
+
   getGold(): number {
     const amP1 = this.amPlayer1();
     if (amP1) return this.gameState.player1Mana;
@@ -180,6 +201,18 @@ export class GameAPI {
     return this.myMothership.pieceData.hp;
   }
 
+  inBounds(coords: BoardCoords): boolean {
+    const { nRows, nCols } = this.gameState;
+    if (
+      coords.col >= nCols ||
+      coords.row >= nRows ||
+      coords.col < 0 ||
+      coords.row < 0
+    )
+      return false;
+    return true;
+  }
+
   /* private utils */
   private syncGameState(): void {
     this.gameState = this.gameManager.getGameState();
@@ -190,9 +223,23 @@ export class GameAPI {
     from: BoardCoords,
     to: BoardCoords
   ): boolean {
+    if (!this.inBounds(to)) return false;
+
+    const { nRows, nCols } = this.gameState;
     const data = shipData[type];
     const dist = taxiCab(from, to);
-    return dist > 0 && dist <= data.movement;
+
+    if (dist > 0 && dist <= data.movement) {
+      const obstacles = getObstacles(this.gameState);
+      const fromLoc = boardLocFromCoords(from);
+      const toLoc = boardLocFromCoords(to);
+      const path = findPath(fromLoc, toLoc, nRows, nCols, obstacles, false);
+      if (path && path.length <= data.movement) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private canAttack(
@@ -200,19 +247,17 @@ export class GameAPI {
     from: BoardCoords,
     to: BoardCoords
   ): boolean {
-    const data = shipData[type];
-    const dist = taxiCab(from, to);
-    return data.minRange <= dist && dist <= data.maxRange;
-  }
+    if (!this.inBounds(to)) return false;
 
-  private canAttackWithMove(
-    type: PieceType,
-    from: BoardCoords,
-    to: BoardCoords
-  ): boolean {
     const data = shipData[type];
     const dist = taxiCab(from, to);
-    return dist > 0 && dist <= data.maxRange + data.movement;
+    if (data.minRange <= dist && dist <= data.maxRange) {
+      const ship = this.shipAt(to);
+      if (ship && this.ownedByMe(ship)) return false;
+      return true;
+    }
+
+    return false;
   }
 
   private amPlayer1(): boolean {
