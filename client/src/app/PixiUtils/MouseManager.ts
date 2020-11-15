@@ -1,7 +1,8 @@
 import { PixiManager } from '../../api/PixiManager';
-import { BoardCoords, ShipType } from './PixiTypes';
+import { PieceType } from '../../_types/global/GlobalTypes';
+import { BoardCoords } from './PixiTypes';
 import { Ship, ShipState } from './Ships';
-import { compareBoardCoords, idxsIncludes } from './Utils';
+import { compareBoardCoords, idxsIncludes } from './PixiUtils';
 
 export enum ClickState {
   None,
@@ -16,7 +17,7 @@ export class MouseManager {
   hoveringCell: BoardCoords | null = null;
   hoveringShip: number | null = null;
 
-  deployType: ShipType | null = null;
+  deployType: PieceType | null = null;
   deployIdxs: BoardCoords[] = [];
   deployStaged: BoardCoords | null = null;
 
@@ -66,13 +67,13 @@ export class MouseManager {
   confirm() {
     if (this.clickState === ClickState.Deploying) {
       if (this.deployStaged && this.deployType) {
-        this.manager.api.deployShip(this.deployType, this.deployStaged);
+        this.manager.api.deploy(this.deployType, this.deployStaged);
       } else console.error('something went wrong in confirm');
     } else if (this.clickState === ClickState.Acting) {
       if (this.selectedShip && this.attackStaged) {
         this.manager.api.attack(this.selectedShip, this.attackStaged);
       } else if (this.selectedShip && this.moveStaged) {
-        this.manager.api.moveShip(this.selectedShip, this.moveStaged);
+        this.manager.api.move(this.selectedShip, this.moveStaged);
       } else console.error('something went wrong in confirm');
     }
 
@@ -83,8 +84,12 @@ export class MouseManager {
     this.setClickState(ClickState.None);
   }
 
-  buyShip(type: ShipType) {
-    if (type === ShipType.Mothership_00) {
+  endTurn() {
+    this.manager.api.endTurn();
+  }
+
+  buyShip(type: PieceType) {
+    if (type === PieceType.Mothership_00) {
       console.error('cant buy a mothership');
       return;
     }
@@ -93,7 +98,7 @@ export class MouseManager {
 
     this.deployType = type;
 
-    const { myMothership: mothership } = this.manager;
+    const mothership = this.manager.api.getMyMothership();
     const { row: my, col: mx } = mothership.coords;
     const deployIdxs = [
       { row: my + 1, col: mx },
@@ -130,20 +135,23 @@ export class MouseManager {
   }
 
   shipClicked(ship: Ship) {
-    if (ship.type === ShipType.Mothership_00) return;
+    const type = ship.getType();
+    if (type === PieceType.Mothership_00) return;
 
     const { api: api } = this.manager;
+    if (api.hasAttacked(ship)) return;
+
     if (this.clickState === ClickState.None) {
       // initiate ship movement
       this.setClickState(ClickState.Acting);
       this.selectedShip = ship;
 
-      if (!ship.hasMoved) {
-        this.moveIdxs = api.findMoves(ship.type, ship.coords);
-        this.moveAttackIdxs = api.findAttacksWithMove(ship.type, ship.coords);
+      if (!api.hasMoved(ship)) {
+        this.moveIdxs = api.findMoves(type, ship.coords);
+        this.moveAttackIdxs = api.findAttacksWithMove(type, ship.coords);
       } else {
         this.moveIdxs = [];
-        this.moveAttackIdxs = api.findAttacks(ship.type, ship.coords);
+        this.moveAttackIdxs = api.findAttacks(type, ship.coords);
       }
     }
 

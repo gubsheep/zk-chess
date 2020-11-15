@@ -1,6 +1,11 @@
 import _ from 'lodash';
-import {BoardLocation, Locatable} from '../_types/global/GlobalTypes';
-import {getAdjacentTiles} from './ChessUtils';
+import {
+  BoardLocation,
+  ChessGame,
+  isZKPiece,
+  Locatable,
+} from '../_types/global/GlobalTypes';
+import { getAdjacentTiles } from './ChessUtils';
 
 export const getRandomTxIntentId = () => {
   const hex = '0123456789abcdef';
@@ -73,6 +78,13 @@ export const isBrave = async () =>
 
 export const taxiDist = (loc1: BoardLocation, loc2: BoardLocation): number => {
   return Math.abs(loc1[0] - loc2[0]) + Math.abs(loc1[1] - loc2[1]);
+};
+
+export const getObstacles = (gameState: ChessGame): Locatable[] => {
+  const obstacles: Locatable[] = gameState.pieces.filter(
+    (p) => !isZKPiece(p) && p.alive
+  ) as Locatable[]; // typescript isn't smart enough to infer that these are all visible pieces
+  return obstacles;
 };
 
 export const findPath = (

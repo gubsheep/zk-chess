@@ -2,9 +2,8 @@ import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { GameObject } from './GameObject';
 import * as PIXI from 'pixi.js';
 import { BASELINE_ICONS, BASELINE_TEXT, ICONS } from './TextureLoader';
-import { ThemeProvider } from 'styled-components';
 import { CanvasCoords } from './PixiTypes';
-import { getFontLoader } from './FontLoader';
+import { TextObject } from './Text';
 
 const LABEL_WIDTH = 32; // width of 'Gold:'
 const LABEL_M_RIGHT = 2; // right margin
@@ -33,8 +32,8 @@ function makeRow(icon: string, length: number): PIXI.DisplayObject {
 }
 
 class ResourceBar extends GameObject {
-  label: PIXI.DisplayObject;
-  numbersContainer: PIXI.Container;
+  label: TextObject;
+  numbersObj: TextObject;
 
   mask: PIXI.Graphics;
   maskable: PIXI.DisplayObject;
@@ -49,17 +48,18 @@ class ResourceBar extends GameObject {
     iconContainer: PIXI.Container,
     maskable: PIXI.DisplayObject
   ) {
-    const { fontLoader } = manager;
+    super(manager, GameZIndex.UI);
 
-    const container = new PIXI.Container();
+    const container = this.object;
 
-    const { object: labelObj } = fontLoader(label);
-    labelObj.position.set(0, BASELINE_TEXT);
-    container.addChild(labelObj);
+    const labelObj = new TextObject(manager, label);
 
-    const numbersContainer = new PIXI.Container();
-    numbersContainer.position.set(NUMBER_OFFSET, BASELINE_TEXT);
-    container.addChild(numbersContainer);
+    labelObj.setPosition({ x: 0, y: BASELINE_TEXT });
+
+    const numbersObj = new TextObject(manager, '0/0');
+    numbersObj.setPosition({ x: NUMBER_OFFSET, y: BASELINE_TEXT });
+
+    this.addChild(labelObj, numbersObj);
 
     iconContainer.position.set(ICON_OFFSET, BASELINE_ICONS);
 
@@ -68,10 +68,8 @@ class ResourceBar extends GameObject {
 
     container.addChild(iconContainer);
 
-    super(manager, container, GameZIndex.UI);
-
     this.label = labelObj;
-    this.numbersContainer = numbersContainer;
+    this.numbersObj = numbersObj;
     this.mask = mask;
     this.maskable = maskable;
     this.value = max;
@@ -93,13 +91,7 @@ class ResourceBar extends GameObject {
   }
 
   updateText(value: number) {
-    const nc = this.numbersContainer;
-    if (nc.children.length > 0) {
-      nc.removeChild(nc.children[0]);
-    }
-
-    const { object: numbers } = this.manager.fontLoader(this.getText(value));
-    nc.addChild(numbers);
+    this.numbersObj.setText(this.getText(value));
   }
 
   setMax(max: number) {
@@ -160,7 +152,7 @@ export class GoldBar extends ResourceBar {
   // overrides
   getText(value: number): string {
     const valueStr = value < 10 ? '0' + value : value;
-    const maxStr = this.value < 10 ? '0' + this.value : this.value;
+    const maxStr = this.max < 10 ? '0' + this.max : this.max;
     return `${valueStr}/${maxStr}`;
   }
   setMax(max: number): void {
@@ -174,6 +166,8 @@ export class GoldBar extends ResourceBar {
   }
 }
 
+const MAX_HEALTH = 20;
+
 export class HPBar extends ResourceBar {
   constructor(manager: PixiManager) {
     const iconContainer = new PIXI.Container();
@@ -181,7 +175,7 @@ export class HPBar extends ResourceBar {
 
     iconContainer.addChild(hpRow);
 
-    super(manager, 'HP:', 20, iconContainer, hpRow);
+    super(manager, 'HP:', MAX_HEALTH, iconContainer, hpRow);
   }
 
   // overrides
@@ -198,12 +192,10 @@ export class ResourceBars extends GameObject {
   hpBar: HPBar;
   goldBar: GoldBar;
   constructor(manager: PixiManager) {
-    const container = new PIXI.Container();
+    super(manager, GameZIndex.UI);
 
     const goldBar = new GoldBar(manager);
     const hpBar = new HPBar(manager);
-
-    super(manager, container, GameZIndex.UI);
 
     goldBar.setPosition({ x: 0, y: 12 });
 
@@ -224,5 +216,12 @@ export class ResourceBars extends GameObject {
 
   positionSelf() {
     this.setPosition({ x: 10, y: 10 });
+  }
+
+  loop() {
+    const api = this.manager.api;
+    this.goldBar.setValue(api.getGold());
+    this.goldBar.setMax(api.getMaxGold());
+    this.hpBar.setValue(api.getHealth());
   }
 }

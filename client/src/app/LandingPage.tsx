@@ -137,10 +137,8 @@ export function LandingPage() {
     return (
       <div>
         {knownAddrs.map((addr) => (
-          <p>
-            <Aa key={addr} onClick={selectAccount(addr)}>
-              {addr}
-            </Aa>
+          <p key={addr}>
+            <Aa onClick={selectAccount(addr)}>{addr}</Aa>
           </p>
         ))}
       </div>
@@ -156,9 +154,9 @@ export function LandingPage() {
       <div>
         <p>Games List</p>
         {gameIds.map((id) => (
-          <Aa key={id} onClick={selectGame(id)}>
-            {id}
-          </Aa>
+          <p key={id}>
+            <Aa onClick={selectGame(id)}>{id}</Aa>
+          </p>
         ))}
         <p>
           <Aa onClick={createGame}>New Game</Aa>

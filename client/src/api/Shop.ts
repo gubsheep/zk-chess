@@ -1,19 +1,17 @@
 import { GameObject } from '../app/PixiUtils/GameObject';
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from './PixiManager';
-import { LineAlignment, ShipType } from '../app/PixiUtils/PixiTypes';
+import { LineAlignment } from '../app/PixiUtils/PixiTypes';
 import {
   BASELINE_ICONS,
   getCoinSprite,
-  getShipSprite,
-  ICONS,
-  SHIPS,
   SPRITE_W,
 } from '../app/PixiUtils/TextureLoader';
 import { CHAR_W } from '../app/PixiUtils/FontLoader';
-import { playerShader } from '../app/PixiUtils/Shaders';
 import { ClickState } from '../app/PixiUtils/MouseManager';
 import { shipData } from '../app/PixiUtils/ShipData';
+import { PieceType } from '../_types/global/GlobalTypes';
+import { ShipSprite } from '../app/PixiUtils/ShipSprite';
 
 const CARD_W = 46;
 const CARD_H = 46;
@@ -28,9 +26,10 @@ class ShopCard extends GameObject {
   modal: PIXI.Container;
   hovering: boolean;
   bgOverlay: PIXI.DisplayObject;
-  type: ShipType;
-  constructor(manager: PixiManager, type: ShipType) {
-    const cardWrapper = new PIXI.Container();
+  type: PieceType;
+  constructor(manager: PixiManager, type: PieceType) {
+    super(manager);
+    const cardWrapper = this.object;
 
     // make card
     const card = new PIXI.Container();
@@ -47,20 +46,24 @@ class ShopCard extends GameObject {
     bgOverlay.endFill();
     bgOverlay.visible = false;
 
-    const sprite = getShipSprite(type, manager.myColor);
+    const sprite = new ShipSprite(manager, type, manager.api.getMyColor());
 
     const data = shipData[type];
 
     const textContainer = new PIXI.Container();
-    const text = manager.fontLoader(`${data.cost}`).object;
+    const text = manager.fontLoader(`${data.cost}`, 0xffffff).object;
     const goldIcon = getCoinSprite();
     goldIcon.position.set(CHAR_W + 2, BASELINE_ICONS);
     textContainer.addChild(text, goldIcon);
 
-    sprite.position.set(0.5 * (CARD_W - SPRITE_W), CARD_H - SPRITE_W - 3);
+    sprite.setPosition({
+      x: 0.5 * (CARD_W - SPRITE_W),
+      y: CARD_H - SPRITE_W - 3,
+    });
     textContainer.position.set(CARD_W - textContainer.width - 3, 3);
 
-    card.addChild(bg, bgOverlay, sprite, textContainer);
+    // TODO refactor card into a gameobject
+    card.addChild(bg, bgOverlay, textContainer);
 
     // make modal
     const modal = new PIXI.Container();
@@ -82,7 +85,8 @@ class ShopCard extends GameObject {
     }`;
 
     const shopText = manager.fontLoader(
-      `${data.name}\n${atkStr}\n${hpStr}\n${mvtStr}\n${rngStr}`
+      `${data.name}\n${atkStr}\n${hpStr}\n${mvtStr}\n${rngStr}`,
+      0xffffff
     ).object;
 
     shopText.position.set(2, 2);
@@ -95,7 +99,7 @@ class ShopCard extends GameObject {
     // finally, add things
     cardWrapper.addChild(modal, card);
 
-    super(manager, cardWrapper);
+    this.addChild(sprite);
 
     this.type = type;
 
@@ -138,12 +142,14 @@ class ShopCard extends GameObject {
 
 export class Shop extends GameObject {
   constructor(manager: PixiManager) {
-    const container = new PIXI.Container();
-
-    super(manager, container, GameZIndex.Shop);
+    super(manager, GameZIndex.Shop);
 
     let idx = 0;
-    for (let type = ShipType.Cruiser_01; type <= ShipType.Warship_05; type++) {
+    for (
+      let type = PieceType.Cruiser_01;
+      type <= PieceType.Warship_05;
+      type++
+    ) {
       const shopEntry = new ShopCard(manager, type);
       shopEntry.setPosition({ x: idx * (CARD_W + CARD_MARGIN), y: 0 });
       this.addChild(shopEntry);

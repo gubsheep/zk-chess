@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
-import { ShipType, PlayerColor } from './PixiTypes';
+import { PieceType } from '../../_types/global/GlobalTypes';
+import { PlayerColor } from './PixiTypes';
 import { playerShader } from './Shaders';
 
 const PATH = 'public/assets/';
@@ -38,16 +39,6 @@ export const loadTextures = (callbackFn: () => void): void => {
 };
 
 const cache = PIXI.utils.TextureCache;
-export const getShipSprite = (
-  type: ShipType,
-  color?: PlayerColor
-): PIXI.Sprite => {
-  const sprite = new PIXI.Sprite(cache[SHIPS[type]]);
-  if (color) {
-    sprite.filters = [playerShader(color)];
-  }
-  return sprite;
-};
 
 export const getCoinSprite = () => new PIXI.Sprite(cache[ICONS.COIN]);
 export const getCoinUsedSprite = () => new PIXI.Sprite(cache[ICONS.COIN_USED]);

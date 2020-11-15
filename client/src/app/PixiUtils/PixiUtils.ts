@@ -1,4 +1,7 @@
 import * as PIXI from 'pixi.js';
+import { PixiManager } from '../../api/PixiManager';
+import { BoardLocation } from '../../_types/global/GlobalTypes';
+import { GameObject } from './GameObject';
 import { BoardCoords, CanvasCoords, LineAlignment } from './PixiTypes';
 
 // general-purpose, smaller utils
@@ -21,6 +24,23 @@ export function makeRect(
 
   return rect;
 }
+
+export class Wrapper extends GameObject {
+  constructor(manager: PixiManager, object: PIXI.Container) {
+    super(manager);
+    this.object.addChild(object);
+  }
+}
+
+export const boardCoordsFromLoc = (loc: BoardLocation): BoardCoords => ({
+  col: loc[0],
+  row: loc[1],
+});
+
+export const boardLocFromCoords = (coords: BoardCoords): BoardLocation => [
+  coords.col,
+  coords.row,
+];
 
 export const compareBoardCoords = (
   a: BoardCoords | null,

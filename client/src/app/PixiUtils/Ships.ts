@@ -1,14 +1,16 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { Player } from '../../_types/global/GlobalTypes';
+import { PieceType, VisiblePiece } from '../../_types/global/GlobalTypes';
 import { GameObject } from './GameObject';
-import { BoardCoords, CanvasCoords, PlayerColor, ShipType } from './PixiTypes';
-import { playerShader } from './Shaders';
-import { getShipSprite, SHIPS, SPRITE_W } from './TextureLoader';
+import { BoardCoords, CanvasCoords } from './PixiTypes';
+import { boardCoordsFromLoc, Wrapper } from './PixiUtils';
+import { ShipSprite } from './ShipSprite';
+import { TextObject } from './Text';
+import { SPRITE_W } from './TextureLoader';
 
-const waterline = (type: ShipType): number => {
-  if (type === ShipType.Mothership_00) return 28;
-  else if (type === ShipType.Submarine_04) return 32;
+const waterline = (type: PieceType): number => {
+  if (type === PieceType.Mothership_00) return 28;
+  else if (type === PieceType.Submarine_04) return 32;
   else return 25;
 };
 
@@ -21,49 +23,54 @@ export enum ShipState {
 
 export class Ship extends GameObject {
   coords: BoardCoords;
-  id: number;
-  type: ShipType;
 
   hasMoved: boolean;
 
   mask: PIXI.Graphics;
+  pieceData: VisiblePiece;
+  shipContainer: GameObject;
 
-  constructor(
-    manager: PixiManager,
-    shipType: ShipType,
-    coords: BoardCoords,
-    color: PlayerColor
-  ) {
-    let container = new PIXI.Container();
-    super(manager, container, GameZIndex.Ships);
+  stats: TextObject;
+
+  constructor(manager: PixiManager, data: VisiblePiece) {
+    super(manager, GameZIndex.Ships);
+
+    this.pieceData = data;
+
+    const { location, owner } = data;
+    const color = manager.api.getColor(owner);
+    const coords = boardCoordsFromLoc(location);
+
+    const container = new PIXI.Container();
+    const shipContainer = new Wrapper(manager, container);
+    this.shipContainer = shipContainer;
+
+    const stats = new TextObject(manager, '1/1');
+    this.stats = stats;
+
+    this.addChild(shipContainer, stats);
 
     this.hasMoved = false;
 
     // probably gets rolled up into general props
-    this.id = Math.random();
-    this.type = shipType;
 
-    const sprite = getShipSprite(shipType, color);
-
-    sprite.anchor.set(0.5, 0.0);
-    sprite.scale.x = color === PlayerColor.Red ? 1 : -1;
-    sprite.x = 16;
+    const sprite = new ShipSprite(manager, this.pieceData.pieceType, color);
     // sprite.y = 16; // doesn't work? investigate
 
-    container.addChild(sprite);
-    container.interactive = true;
-    container.hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
-    container
-      .on('mouseover', this.onMouseOver)
-      .on('mouseout', this.onMouseOut)
-      .on('click', this.onClick);
+    shipContainer.addChild(sprite);
+
+    const hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
+    shipContainer.setInteractive({
+      hitArea,
+      mouseover: this.onMouseOver,
+      mouseout: this.onMouseOut,
+      click: this.onClick,
+    });
 
     let mask = new PIXI.Graphics();
-    mask.beginFill(0xffffff, 1.0);
-    mask.drawRect(container.x, container.y, SPRITE_W, waterline(shipType));
-    mask.endFill();
     container.mask = mask;
     this.mask = mask;
+    this.updateMask();
 
     this.setCoords(coords);
 
@@ -72,11 +79,19 @@ export class Ship extends GameObject {
 
   setPosition({ x, y }: CanvasCoords) {
     super.setPosition({ x, y });
+    this.updateMask();
+  }
+
+  getType(): PieceType {
+    return this.pieceData.pieceType;
+  }
+
+  private updateMask() {
+    const { x, y } = this.shipContainer.object;
     const mask = this.mask;
-    const container = this.object;
     mask.clear();
     mask.beginFill(0xffffff, 1.0);
-    mask.drawRect(container.x, container.y, SPRITE_W, waterline(this.type));
+    mask.drawRect(x, y, SPRITE_W, waterline(this.getType()));
     mask.endFill();
   }
 
@@ -84,7 +99,6 @@ export class Ship extends GameObject {
     this.coords = coords;
     const { x, y } = this.manager.gameBoard.getTopLeft(coords);
     this.setPosition({ x: x + 2, y: y + 2 });
-    console.log(x, y);
   }
 
   onMouseOver() {
@@ -103,9 +117,11 @@ export class Ship extends GameObject {
     super.loop();
     const { frameCount } = this.manager;
 
+    const { hp, atk } = this.pieceData;
+    this.stats.setText(`${atk}/${hp}`);
+
     const frames = 30;
-    const container = this.object;
-    const boat = container.children[0];
+    const boat = this.shipContainer.children[0].object;
     if (frameCount % (2 * frames) < frames) {
       boat.y = 2;
     } else {
@@ -116,13 +132,3 @@ export class Ship extends GameObject {
 
 export const RED_MOTHERSHIP_COORDS: BoardCoords = { row: 2, col: 0 };
 export const BLUE_MOTHERSHIP_COORDS: BoardCoords = { row: 2, col: 6 };
-
-export const getMothership = (
-  manager: PixiManager,
-  color: PlayerColor
-): Ship => {
-  const coords =
-    color === PlayerColor.Red ? RED_MOTHERSHIP_COORDS : BLUE_MOTHERSHIP_COORDS;
-
-  return new Ship(manager, ShipType.Mothership_00, coords, color);
-};

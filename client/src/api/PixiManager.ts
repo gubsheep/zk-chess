@@ -1,20 +1,16 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import {FontLoader, getFontLoader} from '../app/PixiUtils/FontLoader';
-import {GameObject} from '../app/PixiUtils/GameObject';
-import {getMothership, Ship} from '../app/PixiUtils/Ships';
-import {PlayerColor, ShipType} from '../app/PixiUtils/PixiTypes';
-import {FONT, loadTextures} from '../app/PixiUtils/TextureLoader';
-import {ResourceBars} from '../app/PixiUtils/ResourceBars';
-import {Shop} from './Shop';
-import {GameBoard} from '../app/PixiUtils/GameBoard';
-import {Background} from '../app/PixiUtils/Background';
-import {Player} from '../_types/global/GlobalTypes';
-import {MouseManager} from '../app/PixiUtils/MouseManager';
-import {ConfirmCancelButtons} from '../app/PixiUtils/Buttons';
+import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
+import { GameObject } from '../app/PixiUtils/GameObject';
+import { Ship } from '../app/PixiUtils/Ships';
+import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
+import { ResourceBars } from '../app/PixiUtils/ResourceBars';
+import { Shop } from './Shop';
+import { GameBoard } from '../app/PixiUtils/GameBoard';
+import { Background } from '../app/PixiUtils/Background';
+import { MouseManager } from '../app/PixiUtils/MouseManager';
 import AbstractGameManager from './AbstractGameManager';
-import {GameAPI} from './GameAPI';
-import GameManager from './GameManager';
+import { GameAPI } from './GameAPI';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -47,11 +43,8 @@ export class PixiManager {
   gameObjects: GameObject[];
 
   gameBoard: GameBoard;
-  myMothership: Ship;
 
   ships: Ship[];
-
-  myColor: PlayerColor.Red;
 
   private constructor(props: InitProps) {
     const {canvas, gameManager} = props;
@@ -65,8 +58,8 @@ export class PixiManager {
       view: canvas,
       resolution: 1,
     });
-    this.app.stage.sortableChildren = true;
     this.app = app;
+    this.app.stage.sortableChildren = true;
 
     // initialize defaults
     this.ships = [];
@@ -109,7 +102,7 @@ export class PixiManager {
 
   clearShips() {
     for (const ship of this.ships) this.removeLazy(ship);
-    this.flush();
+    // this.flush(); // TODO debug this, seems broken
     this.ships = [];
   }
 
@@ -141,18 +134,17 @@ export class PixiManager {
     this.gameBoard = gameBoard;
     this.addObject(gameBoard);
 
-    // add buttons
-    this.addObject(new ConfirmCancelButtons(this));
-
     // set up ships
-    const myMothership = getMothership(this, PlayerColor.Red);
-    this.myMothership = myMothership;
-    this.addShip(myMothership);
-    this.addShip(getMothership(this, PlayerColor.Blue));
+    // const myMothership = getMothership(this, PlayerColor.Red);
+    // this.myMothership = myMothership;
+    // this.addShip(myMothership);
+    // this.addShip(getMothership(this, PlayerColor.Blue));
 
-    this.addShip(
-      new Ship(this, ShipType.Cruiser_01, {row: 2, col: 5}, PlayerColor.Blue)
-    );
+    // this.addShip(
+    //   new Ship(this, PieceType.Cruiser_01, { row: 2, col: 5 }, PlayerColor.Blue)
+    // );
+
+    this.api.syncShips();
 
     // set up resource bars
     this.addObject(new ResourceBars(this));
