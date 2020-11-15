@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
-import { Dispatch } from 'react';
-import { SetStateAction } from 'react';
+import {EventEmitter} from 'events';
+import {Dispatch} from 'react';
+import {SetStateAction} from 'react';
 
 interface WindowEthereumObject extends EventEmitter {
   enable: () => void;
@@ -50,6 +50,8 @@ export enum Color {
   BLACK = 'BLACK',
   WHITE = 'WHITE',
 }
+
+export type Objective = Locatable;
 
 export type PieceStatDefaults = {
   pieceType: PieceType;
@@ -145,6 +147,7 @@ export type ChessGameContractData = {
   player2Mana: number;
 
   pieces: ContractPiece[];
+  objectives: Objective[];
   defaults: Map<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
@@ -167,6 +170,7 @@ export type ChessGame = {
   player2Mana: number;
 
   pieces: Piece[];
+  objectives: Objective[];
   pieceById: Map<number, Piece>;
   defaults: Map<PieceType, PieceStatDefaults>;
 

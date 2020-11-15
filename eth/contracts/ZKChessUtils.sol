@@ -112,6 +112,12 @@ library ZKChessUtils {
         });
     }
 
+    function initializeObjectives(Objective[] storage objectives) public {
+        objectives.push(Objective({row: 0, col: 3}));
+        objectives.push(Objective({row: 2, col: 4}));
+        objectives.push(Objective({row: 4, col: 3}));
+    }
+
     function checkAction(
         uint8 claimedTurnNumber,
         uint8 turnNumber,
@@ -207,6 +213,61 @@ library ZKChessUtils {
             }
         }
         return !(player1HasPiecesLeft && player2HasPiecesLeft);
+    }
+
+    function checkMove(
+        Move memory move,
+        mapping(uint8 => Piece) storage pieces,
+        mapping(PieceType => PieceDefaultStats) storage defaultStats,
+        mapping(uint8 => mapping(uint8 => bool)) storage hasMoved,
+        mapping(uint8 => mapping(uint8 => bool)) storage hasAttacked,
+        uint8[][] storage boardPieces,
+        uint8 NROWS,
+        uint8 NCOLS
+    ) public view returns (bool) {
+        Piece storage piece = pieces[move.pieceId];
+        require(
+            piece.owner == msg.sender && piece.owner != address(0),
+            "can't move that"
+        );
+        require(piece.alive, "piece dead");
+        require(!hasMoved[move.turnNumber][piece.id], "already moved");
+        require(!hasAttacked[move.turnNumber][piece.id], "already acted");
+        if (defaultStats[piece.pieceType].isZk) {
+            require(piece.commitment == move.zkp.input[0], "bad ZKP");
+            require(move.zkp.input[3] == NROWS, "bad ZKP");
+            require(move.zkp.input[4] == NCOLS, "bad ZKP");
+            require(
+                move.zkp.input[2] <= defaultStats[piece.pieceType].mvRange,
+                "bad ZKP"
+            );
+            require(
+                Verifier.verifyDist2Proof(
+                    move.zkp.a,
+                    move.zkp.b,
+                    move.zkp.c,
+                    move.zkp.input
+                ),
+                "bad ZKP"
+            );
+        } else {
+            uint8[] memory moveToRow = move.moveToRow;
+            uint8[] memory moveToCol = move.moveToCol;
+            require(
+                isValidMove(
+                    piece,
+                    moveToRow,
+                    moveToCol,
+                    boardPieces,
+                    pieces,
+                    defaultStats,
+                    NROWS,
+                    NCOLS
+                ),
+                "Invalid move"
+            );
+        }
+        return true;
     }
 
     function checkAttack(

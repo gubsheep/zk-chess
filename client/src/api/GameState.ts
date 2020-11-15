@@ -13,6 +13,7 @@ import {
   isSummonAction,
   isZKPiece,
   KnownZKPiece,
+  Objective,
   Piece,
   PieceStatDefaults,
   PieceType,
@@ -37,6 +38,7 @@ export class GameState {
   player2Mana: number;
 
   pieces: Piece[];
+  objectives: Objective[];
   pieceById: Map<number, Piece>;
   defaults: Map<PieceType, PieceStatDefaults>;
   gameActions: GameAction[];
@@ -60,6 +62,7 @@ export class GameState {
     this.player2 = contractData.player2;
     this.player1Mana = contractData.player1Mana;
     this.player2Mana = contractData.player2Mana;
+    this.objectives = contractData.objectives;
     this.defaults = contractData.defaults;
     this.turnNumber = contractData.turnNumber;
     this.sequenceNumber = contractData.sequenceNumber;
@@ -146,6 +149,7 @@ export class GameState {
       player1Mana: this.player1Mana,
       player2Mana: this.player2Mana,
       pieces: this.pieces,
+      objectives: this.objectives,
       pieceById: this.pieceById,
       defaults: this.defaults,
       turnNumber: this.turnNumber,
@@ -215,11 +219,37 @@ export class GameState {
         gameState.gameStatus = GameStatus.P2_TO_MOVE;
         gameState.player1Mana = 0;
         gameState.player2Mana = Math.min(gameState.turnNumber, 8);
+        for (const objective of this.objectives) {
+          for (const piece of this.pieces) {
+            if (
+              isLocatable(piece) &&
+              objective.location[1] === piece.location[1] &&
+              objective.location[0] === piece.location[0] &&
+              piece.owner === this.player2.address
+            ) {
+              gameState.player2Mana += 1;
+              break;
+            }
+          }
+        }
       } else if (gameState.myAddress === gameState.player2.address) {
         gameState.gameStatus = GameStatus.P1_TO_MOVE;
         gameState.turnNumber += 1;
         gameState.player1Mana = Math.min(gameState.turnNumber, 8);
         gameState.player2Mana = 0;
+        for (const objective of this.objectives) {
+          for (const piece of this.pieces) {
+            if (
+              isLocatable(piece) &&
+              objective.location[1] === piece.location[1] &&
+              objective.location[0] === piece.location[0] &&
+              piece.owner === this.player1.address
+            ) {
+              gameState.player1Mana += 1;
+              break;
+            }
+          }
+        }
       }
     }
     gameState.sequenceNumber = action.sequenceNumber + 1;

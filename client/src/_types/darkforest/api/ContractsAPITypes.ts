@@ -169,6 +169,14 @@ export type RawPiece = {
   lastAttack?: number;
 };
 
+export type RawObjective = {
+  0: number;
+  row?: number;
+
+  1: number;
+  col?: number;
+};
+
 export enum EthTxType {
   CREATE_GAME = 'CREATE_GAME',
   JOIN_GAME = 'JOIN_GAME',

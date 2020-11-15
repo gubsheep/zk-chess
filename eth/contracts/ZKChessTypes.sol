@@ -49,6 +49,11 @@ struct Piece {
     uint8 lastAttack;
 }
 
+struct Objective {
+    uint8 row;
+    uint8 col;
+}
+
 struct SummonZKP {
     uint256[2] a;
     uint256[2][2] b;

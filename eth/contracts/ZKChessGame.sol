@@ -18,6 +18,7 @@ contract ZKChessGame is Initializable {
     uint8[][] public boardPieces; // board[row][col]
 
     uint8[] public pieceIds;
+    Objective[] public objectives;
     mapping(uint8 => Piece) public pieces;
 
     mapping(PieceType => PieceDefaultStats) public defaultStats;
@@ -45,6 +46,7 @@ contract ZKChessGame is Initializable {
 
         // initialize pieces
         ZKChessUtils.initializeDefaults(defaultStats);
+        ZKChessUtils.initializeObjectives(objectives);
     }
 
     //////////////
@@ -103,6 +105,14 @@ contract ZKChessGame is Initializable {
         return ret;
     }
 
+    function getObjectives() public view returns (Objective[] memory ret) {
+        ret = new Objective[](objectives.length);
+        for (uint8 i = 0; i < objectives.length; i++) {
+            ret[i] = objectives[i];
+        }
+        return ret;
+    }
+
     //////////////
     /// Helper ///
     //////////////
@@ -121,24 +131,6 @@ contract ZKChessGame is Initializable {
                 player1,
                 player2,
                 gameState
-            );
-    }
-
-    function isValidMove(
-        Piece memory piece,
-        uint8[] memory toRow,
-        uint8[] memory toCol
-    ) private view returns (bool) {
-        return
-            ZKChessUtils.isValidMove(
-                piece,
-                toRow,
-                toCol,
-                boardPieces,
-                pieces,
-                defaultStats,
-                NROWS,
-                NCOLS
             );
     }
 
@@ -319,38 +311,28 @@ contract ZKChessGame is Initializable {
     function doMove(Move memory move) public {
         checkAction(move.turnNumber, move.sequenceNumber);
         Piece storage piece = pieces[move.pieceId];
-        require(
-            piece.owner == msg.sender && piece.owner != address(0),
-            "can't move that"
-        );
-        require(piece.alive, "piece dead");
-        require(!hasMoved[move.turnNumber][piece.id], "already moved");
-        require(!hasAttacked[move.turnNumber][piece.id], "already acted");
-
         uint8 originRow = piece.row;
         uint8 originCol = piece.col;
+
+        require(
+            ZKChessUtils.checkMove(
+                move,
+                pieces,
+                defaultStats,
+                hasMoved,
+                hasAttacked,
+                boardPieces,
+                NROWS,
+                NCOLS
+            ),
+            "move failed"
+        );
+
         if (defaultStats[piece.pieceType].isZk) {
-            require(piece.commitment == move.zkp.input[0], "bad ZKP");
-            require(move.zkp.input[3] == NROWS, "bad ZKP");
-            require(move.zkp.input[4] == NCOLS, "bad ZKP");
-            require(
-                move.zkp.input[2] <= defaultStats[piece.pieceType].mvRange,
-                "bad ZKP"
-            );
-            require(
-                Verifier.verifyDist2Proof(
-                    move.zkp.a,
-                    move.zkp.b,
-                    move.zkp.c,
-                    move.zkp.input
-                ),
-                "bad ZKP"
-            );
             piece.commitment = move.zkp.input[1];
         } else {
             uint8[] memory moveToRow = move.moveToRow;
             uint8[] memory moveToCol = move.moveToCol;
-            require(isValidMove(piece, moveToRow, moveToCol), "Invalid move");
             uint8 toRow = moveToRow[moveToRow.length - 1];
             uint8 toCol = moveToCol[moveToCol.length - 1];
             boardPieces[piece.row][piece.col] = 0;
@@ -411,6 +393,14 @@ contract ZKChessGame is Initializable {
             if (player2Mana > 8) {
                 player2Mana = 8;
             }
+            for (uint8 i = 0; i < objectives.length; i++) {
+                uint8 row = objectives[i].row;
+                uint8 col = objectives[i].col;
+                Piece storage occupyingPiece = pieces[boardPieces[row][col]];
+                if (occupyingPiece.alive && occupyingPiece.owner == player2) {
+                    player2Mana++;
+                }
+            }
             gameState = GameState.P2_TO_MOVE;
         } else {
             // change to p1's turn
@@ -419,6 +409,14 @@ contract ZKChessGame is Initializable {
             player1Mana = turnNumber;
             if (player1Mana > 8) {
                 player1Mana = 8;
+            }
+            for (uint8 i = 0; i < objectives.length; i++) {
+                uint8 row = objectives[i].row;
+                uint8 col = objectives[i].col;
+                Piece storage occupyingPiece = pieces[boardPieces[row][col]];
+                if (occupyingPiece.alive && occupyingPiece.owner == player1) {
+                    player1Mana++;
+                }
             }
             gameState = GameState.P1_TO_MOVE;
         }

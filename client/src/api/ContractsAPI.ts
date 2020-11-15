@@ -7,6 +7,7 @@ import {
   Piece,
   ContractPiece,
   PieceStatDefaults,
+  Objective,
 } from '../_types/global/GlobalTypes';
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
 // in particular, the below is bad!
@@ -28,6 +29,7 @@ import {
   UnsubmittedSummon,
   RawDefaults,
   UnsubmittedAttack,
+  RawObjective,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -281,6 +283,7 @@ class ContractsAPI extends EventEmitter {
     const player2Addr = address(await contract.player2());
     const player1Mana = await contract.player1Mana();
     const player2Mana = await contract.player2Mana();
+    const rawObjectives: RawObjective[] = await contract.getObjectives();
     const rawPieces: RawPiece[] = await contract.getPieces();
     const rawDefaults: RawDefaults[] = await contract.getDefaults();
     const turnNumber = await contract.turnNumber();
@@ -288,6 +291,9 @@ class ContractsAPI extends EventEmitter {
     const gameState = await contract.gameState();
 
     const pieces: ContractPiece[] = rawPieces.map(this.rawPieceToPiece);
+    const objectives: Objective[] = rawObjectives.map(
+      this.rawObjectiveToObjective
+    );
     const defaults = new Map<PieceType, PieceStatDefaults>();
     for (const rawDefault of rawDefaults) {
       const defStats = this.rawDefaultToDefault(rawDefault);
@@ -305,6 +311,7 @@ class ContractsAPI extends EventEmitter {
       player1Mana,
       player2Mana,
       pieces,
+      objectives,
       defaults,
       turnNumber,
       sequenceNumber,
@@ -570,6 +577,10 @@ class ContractsAPI extends EventEmitter {
         lastAttack: rawPiece[11],
       };
     }
+  }
+
+  private rawObjectiveToObjective(rawObjective: RawObjective): Objective {
+    return {location: [rawObjective[1], rawObjective[0]]};
   }
 
   private rawDefaultToDefault(rawDefault: RawDefaults): PieceStatDefaults {
