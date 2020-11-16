@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
+import Game from '../../Game';
 import { GameObject } from '../GameObject';
 import { ClickState } from '../MouseManager';
 import { CanvasCoords, BoardCoords, LineAlignment } from '../PixiTypes';
@@ -9,11 +10,16 @@ import { ShipSprite } from '../ShipSprite';
 
 export const CELL_W = 36;
 
+enum BoardCellZIndex {
+  Rect,
+  Staged,
+}
+
 class BoardRect extends GameObject {
   rect: PIXI.Graphics;
   idx: BoardCoords;
   constructor(manager: PixiManager, idx: BoardCoords) {
-    super(manager);
+    super(manager, BoardCellZIndex.Rect);
     this.idx = idx;
 
     const rect = new PIXI.Graphics();
@@ -89,30 +95,62 @@ class BoardRect extends GameObject {
   }
 }
 
+class StagedShip extends GameObject {
+  sprite: ShipSprite;
+  idx: BoardCoords;
+
+  constructor(manager: PixiManager, idx: BoardCoords) {
+    super(manager, BoardCellZIndex.Staged);
+
+    this.idx = idx;
+
+    const sprite = new ShipSprite(manager, null, this.manager.api.getMyColor());
+    this.sprite = sprite;
+
+    const alphaFilter = new PIXI.filters.AlphaFilter(0.7);
+    sprite.setFilters([alphaFilter]);
+    sprite.setPosition({ x: 2, y: 2 });
+
+    this.addChild(sprite);
+  }
+
+  loop() {
+    super.loop();
+    const {
+      mouseManager: {
+        clickState,
+        deployStaged,
+        deployType,
+        moveStaged,
+        selectedShip,
+      },
+    } = this.manager;
+
+    if (clickState === ClickState.Deploying) {
+      const show = compareBoardCoords(this.idx, deployStaged);
+      this.sprite.setType(show ? deployType : null);
+    } else if (clickState === ClickState.Acting) {
+      const show = compareBoardCoords(this.idx, moveStaged);
+      this.sprite.setType(selectedShip && show ? selectedShip.getType() : null);
+    } else {
+      // none
+      this.sprite.setType(null);
+    }
+  }
+}
+
 export class BoardCell extends GameObject {
   topLeft: CanvasCoords;
   ship: Ship | null;
   submarines: Ship[];
   idx: BoardCoords;
 
-  stagedShip: ShipSprite;
-
   constructor(manager: PixiManager, idx: BoardCoords, topLeft: CanvasCoords) {
     super(manager);
 
     // TODO refactor these into a single rect
     const rect = new BoardRect(manager, idx);
-
-    const stagedShip = new ShipSprite(
-      manager,
-      null,
-      this.manager.api.getMyColor()
-    );
-    const alphaFilter = new PIXI.filters.AlphaFilter(0.7);
-    stagedShip.setFilters([alphaFilter]);
-    stagedShip.setPosition({ x: 2, y: 2 });
-    this.stagedShip = stagedShip;
-
+    const stagedShip = new StagedShip(manager, idx);
     this.addChild(rect, stagedShip);
 
     this.setPosition(topLeft);
@@ -140,31 +178,5 @@ export class BoardCell extends GameObject {
 
   private onMouseOut() {
     this.manager.mouseManager.setHoveringCell(null);
-  }
-
-  loop() {
-    super.loop();
-    const {
-      mouseManager: {
-        clickState,
-        deployStaged,
-        deployType,
-        moveStaged,
-        selectedShip,
-      },
-    } = this.manager;
-
-    if (clickState === ClickState.Deploying) {
-      const show = compareBoardCoords(this.idx, deployStaged);
-      this.stagedShip.setType(show ? deployType : null);
-    } else if (clickState === ClickState.Acting) {
-      const show = compareBoardCoords(this.idx, moveStaged);
-      this.stagedShip.setType(
-        selectedShip && show ? selectedShip.getType() : null
-      );
-    } else {
-      // none
-      this.stagedShip.setType(null);
-    }
   }
 }

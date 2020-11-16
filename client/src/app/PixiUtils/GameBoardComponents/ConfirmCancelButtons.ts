@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
 import { CHAR_H, LINE_SPACING } from '../FontLoader';
 import { GameObject } from '../GameObject';

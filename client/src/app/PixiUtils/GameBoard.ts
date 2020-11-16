@@ -5,6 +5,7 @@ import { GameObject } from './GameObject';
 import { BoardCell, CELL_W } from './GameBoardComponents/BoardCell';
 import { ConfirmCancelButtons } from './GameBoardComponents/ConfirmCancelButtons';
 import { TurnLabel } from './GameBoardComponents/TurnLabel';
+import { ToggleButton } from './ToggleButton';
 
 export const GAME_WIDTH = 7;
 export const GAME_HEIGHT = 5;
@@ -70,7 +71,10 @@ export class GameBoard extends GameObject {
     const turnLabel = new TurnLabel(manager);
     turnLabel.positionGrid(gridW, gridH);
 
-    this.addChild(grid, confirmCancel, turnLabel);
+    const toggle = new ToggleButton(manager);
+    toggle.positionGrid(gridW, gridH);
+
+    this.addChild(grid, confirmCancel, turnLabel, toggle);
 
     this.positionSelf();
   }

@@ -11,6 +11,8 @@ export enum ClickState {
 }
 
 export class MouseManager {
+  showZk: boolean = false;
+
   clickState: ClickState = ClickState.None;
   manager: PixiManager;
 
