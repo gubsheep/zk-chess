@@ -19,3 +19,8 @@ export type BoxBounds = {
   bottom: number;
   right: number;
 }
+
+export type MoveAttack = {
+  attack: BoardCoords,
+  move: BoardCoords
+}

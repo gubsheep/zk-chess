@@ -60,9 +60,12 @@ export const compareCanvasCoords = (
 export const taxiCab = (a: BoardCoords, b: BoardCoords): number =>
   Math.abs(a.col - b.col) + Math.abs(a.row - b.row);
 
-export const idxsIncludes = (idxs: BoardCoords[], idx: BoardCoords | null) => {
+export const idxsIncludes = (
+  idxs: BoardCoords[],
+  idx: BoardCoords | null
+): BoardCoords | null => {
   for (const myIdx of idxs) {
-    if (compareBoardCoords(myIdx, idx)) return true;
+    if (compareBoardCoords(myIdx, idx)) return myIdx;
   }
-  return false;
+  return null;
 };

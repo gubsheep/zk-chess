@@ -85,6 +85,10 @@ export class Ship extends GameObject {
   getType(): PieceType {
     return this.pieceData.pieceType;
   }
+  
+  isAlive(): boolean {
+    return this.pieceData.alive;
+  }
 
   private updateMask() {
     const { x, y } = this.shipContainer.object;
@@ -116,6 +120,7 @@ export class Ship extends GameObject {
   loop() {
     super.loop();
     const { frameCount } = this.manager;
+    this.setActive(this.pieceData.alive);
 
     const { hp, atk } = this.pieceData;
     this.stats.setText(`${atk}/${hp}`);

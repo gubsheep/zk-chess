@@ -1,4 +1,8 @@
-import { BoardCoords, PlayerColor } from '../app/PixiUtils/PixiTypes';
+import {
+  BoardCoords,
+  MoveAttack,
+  PlayerColor,
+} from '../app/PixiUtils/PixiTypes';
 import { shipData } from '../app/PixiUtils/ShipData';
 import { Ship } from '../app/PixiUtils/Ships';
 import {
@@ -122,24 +126,25 @@ export class GameAPI {
     return paths;
   }
 
-  findAttacksWithMove(type: PieceType, coords: BoardCoords): BoardCoords[] {
+  findMoveAttacks(type: PieceType, coords: BoardCoords): MoveAttack[] {
     const { nRows, nCols } = this.gameState;
-    const canMoves: boolean[][] = [...Array(nRows)].map((_el) =>
-      Array(nCols).fill(false)
+    const canMoves: (BoardCoords | null)[][] = [...Array(nRows)].map((_el) =>
+      Array(nCols).fill(null)
     );
-
-    const allAttacks: BoardCoords[] = [];
 
     const allMoves = this.findMoves(type, coords).concat([coords]);
 
     for (const move of allMoves) {
       const locAtks = this.findAttacks(type, move);
-      for (const atk of locAtks) canMoves[atk.row][atk.col] = true;
+      for (const atk of locAtks) canMoves[atk.row][atk.col] = move;
     }
 
+    const allAttacks: MoveAttack[] = [];
     for (let i = 0; i < canMoves.length; i++) {
       for (let j = 0; j < canMoves[i].length; j++) {
-        if (canMoves[i][j]) allAttacks.push({ row: i, col: j });
+        const atkLoc = { row: i, col: j };
+        const moveLoc = canMoves[i][j];
+        if (moveLoc) allAttacks.push({ move: moveLoc, attack: atkLoc });
       }
     }
 
@@ -177,7 +182,8 @@ export class GameAPI {
   shipAt(coords: BoardCoords): Ship | null {
     const ships = this.pixiManager.ships;
     for (const ship of ships) {
-      if (compareBoardCoords(ship.coords, coords)) return ship;
+      if (ship.isAlive() && compareBoardCoords(ship.coords, coords))
+        return ship;
     }
 
     return null;
@@ -253,7 +259,7 @@ export class GameAPI {
     return false;
   }
 
-  private canAttack(
+  canAttack(
     type: PieceType,
     from: BoardCoords,
     to: BoardCoords

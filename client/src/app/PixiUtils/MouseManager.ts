@@ -1,6 +1,6 @@
 import { PixiManager } from '../../api/PixiManager';
 import { PieceType } from '../../_types/global/GlobalTypes';
-import { BoardCoords } from './PixiTypes';
+import { BoardCoords, MoveAttack } from './PixiTypes';
 import { Ship, ShipState } from './Ships';
 import { compareBoardCoords, idxsIncludes } from './PixiUtils';
 
@@ -17,13 +17,16 @@ export class MouseManager {
   hoveringCell: BoardCoords | null = null;
   hoveringShip: number | null = null;
 
+  selectedShip: Ship | null = null;
+
   deployType: PieceType | null = null;
   deployIdxs: BoardCoords[] = [];
   deployStaged: BoardCoords | null = null;
 
-  selectedShip: Ship | null = null;
   moveIdxs: BoardCoords[] = [];
-  moveAttackIdxs: BoardCoords[] = [];
+  moveAttackIdxs: MoveAttack[] = [];
+  attackIdxs: BoardCoords[] = [];
+
   moveStaged: BoardCoords | null = null;
   attackStaged: BoardCoords | null = null;
 
@@ -31,22 +34,24 @@ export class MouseManager {
     this.manager = manager;
   }
 
-  private clearDeploy() {
+  private clearStaged() {
     this.deployType = null;
     this.deployIdxs = [];
     this.deployStaged = null;
+    this.attackStaged = null;
+    this.moveStaged = null;
   }
 
-  private clearMove() {
-    this.moveStaged = null;
-    this.attackStaged = null;
+  private clearSelected() {
     this.moveIdxs = [];
     this.moveAttackIdxs = [];
+    this.attackIdxs = [];
+    this.selectedShip = null;
   }
 
   private clearAll() {
-    this.clearDeploy();
-    this.clearMove();
+    this.clearStaged();
+    this.clearSelected();
   }
 
   private setClickState(state: ClickState) {
@@ -70,11 +75,19 @@ export class MouseManager {
         this.manager.api.deploy(this.deployType, this.deployStaged);
       } else console.error('something went wrong in confirm');
     } else if (this.clickState === ClickState.Acting) {
-      if (this.selectedShip && this.attackStaged) {
-        this.manager.api.attack(this.selectedShip, this.attackStaged);
-      } else if (this.selectedShip && this.moveStaged) {
+      if (this.selectedShip && this.moveStaged) {
         this.manager.api.move(this.selectedShip, this.moveStaged);
-      } else console.error('something went wrong in confirm');
+      }
+
+      console.log(this.selectedShip, this.attackStaged);
+      if (this.selectedShip && this.attackStaged) {
+        const selectedShip = this.selectedShip;
+        const attackStaged = this.attackStaged;
+        setTimeout(() => {
+          console.log(selectedShip, attackStaged);
+          this.manager.api.attack(selectedShip, attackStaged);
+        }, 1000);
+      }
     }
 
     this.setClickState(ClickState.None);
@@ -116,42 +129,86 @@ export class MouseManager {
     this.deployIdxs = deployIdxs;
   }
 
+  private canAttackFromStaged(target: BoardCoords) {
+    const {
+      selectedShip: selected,
+      moveStaged,
+      manager: { api },
+    } = this;
+
+    return (
+      moveStaged &&
+      selected &&
+      api.canAttack(selected.getType(), moveStaged, target)
+    );
+  }
+
   cellClicked(idx: BoardCoords) {
+    // this.clearStaged();
+    const { api } = this.manager;
     if (this.clickState === ClickState.Deploying) {
       if (idxsIncludes(this.deployIdxs, idx)) {
         this.deployStaged = idx;
       }
     } else if (this.clickState === ClickState.Acting) {
       // first, check if there is an enemy boat
-      const ship = this.manager.api.shipAt(idx);
-      if (ship && idxsIncludes(this.moveAttackIdxs, idx)) {
-        this.attackStaged = idx;
-        this.moveStaged = null;
+      const ship = api.shipAt(idx);
+      console.log(ship, this.moveAttackIdxs, idx);
+      if (ship) {
+        // there's an enemy boat, and I can reach it
+        if (idxsIncludes(this.attackIdxs, idx)) {
+          this.attackStaged = idx;
+          if (!this.canAttackFromStaged(idx)) this.moveStaged = null;
+          return;
+        }
+        for (const movAtk of this.moveAttackIdxs) {
+          if (compareBoardCoords(movAtk.attack, idx)) {
+            // there's an enemy boat, but i can't reach it
+            this.attackStaged = movAtk.attack;
+            // if i can reach it from the current staged loc, don't change move
+            if (!this.canAttackFromStaged(movAtk.attack)) {
+              this.moveStaged = movAtk.move;
+            }
+            return;
+          }
+        }
       } else if (idxsIncludes(this.moveIdxs, idx)) {
+        // there is no enemy boat, but you clicked a move cell
         this.attackStaged = null;
         this.moveStaged = idx;
       }
     }
   }
 
-  shipClicked(ship: Ship) {
+  private setSelected(ship: Ship) {
+    this.setClickState(ClickState.Acting);
     const type = ship.getType();
-    if (type === PieceType.Mothership_00) return;
+    const { api } = this.manager;
+    this.selectedShip = ship;
 
-    const { api: api } = this.manager;
-    if (api.hasAttacked(ship)) return;
+    this.attackIdxs = api.findAttacks(type, ship.coords);
+    if (!api.hasMoved(ship)) {
+      console.log('setting moves');
+      this.moveIdxs = api.findMoves(type, ship.coords);
+      this.moveAttackIdxs = api.findMoveAttacks(type, ship.coords);
+    } else {
+      this.moveIdxs = [];
+      this.moveAttackIdxs = [];
+    }
+  }
 
-    if (this.clickState === ClickState.None) {
-      // initiate ship movement
-      this.setClickState(ClickState.Acting);
-      this.selectedShip = ship;
-
-      if (!api.hasMoved(ship)) {
-        this.moveIdxs = api.findMoves(type, ship.coords);
-        this.moveAttackIdxs = api.findAttacksWithMove(type, ship.coords);
-      } else {
-        this.moveIdxs = [];
-        this.moveAttackIdxs = api.findAttacks(type, ship.coords);
+  shipClicked(ship: Ship) {
+    const { api } = this.manager;
+    const type = ship.getType();
+    if (api.ownedByMe(ship)) {
+      if (type === PieceType.Mothership_00) return;
+      if (api.hasAttacked(ship)) return;
+      if (
+        this.clickState === ClickState.None ||
+        this.clickState === ClickState.Acting
+      ) {
+        // initiate ship actions
+        this.setSelected(ship);
       }
     }
 

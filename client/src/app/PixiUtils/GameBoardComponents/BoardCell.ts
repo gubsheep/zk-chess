@@ -1,22 +1,11 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
-import { PieceType } from '../../../_types/global/GlobalTypes';
 import { GameObject } from '../GameObject';
 import { ClickState } from '../MouseManager';
 import { CanvasCoords, BoardCoords, LineAlignment } from '../PixiTypes';
-import { makeRect, idxsIncludes, compareBoardCoords } from '../PixiUtils';
-import { playerShader } from '../Shaders';
-import { Ship, ShipState } from '../Ships';
+import { idxsIncludes, compareBoardCoords } from '../PixiUtils';
+import { Ship } from '../Ships';
 import { ShipSprite } from '../ShipSprite';
-import { SHIPS, SPRITE_W } from '../TextureLoader';
-
-enum CellZIndex {
-  Base,
-  Deploy,
-  Move,
-  Attack,
-  Target,
-}
 
 export const CELL_W = 36;
 
@@ -39,14 +28,12 @@ class BoardRect extends GameObject {
     const {
       mouseManager: {
         clickState,
-        deployStaged,
         deployIdxs,
-        deployType,
         moveIdxs,
         moveAttackIdxs,
-        moveStaged,
-        selectedShip,
+        attackIdxs,
         attackStaged,
+        selectedShip,
       },
     } = this.manager;
 
@@ -61,19 +48,34 @@ class BoardRect extends GameObject {
     const atk =
       !move &&
       clickState === ClickState.Acting &&
-      idxsIncludes(moveAttackIdxs, this.idx);
+      idxsIncludes(attackIdxs, this.idx);
+    const movAtk =
+      !move &&
+      !atk &&
+      clickState === ClickState.Acting &&
+      idxsIncludes(
+        moveAttackIdxs.map((el) => el.attack),
+        this.idx
+      );
     const target =
       clickState === ClickState.Acting &&
       compareBoardCoords(attackStaged, this.idx);
 
-    if (deploy) {
+    const selected =
+      selectedShip && compareBoardCoords(selectedShip.coords, this.idx);
+
+    if (selected) {
+      fill = [0x4444aa, 0.8];
+    } else if (deploy) {
       fill = [0xaa7777, 0.8];
     } else if (target) {
       fill = [0x995555, 0.8];
     } else if (atk) {
-      fill = [0xaa7777, 0.8];
+      fill = [0x992255, 0.8];
     } else if (move) {
       fill = [0x7777bb, 0.8];
+    } else if (movAtk) {
+      fill = [0xaa7777, 0.8];
     } else {
       fill = [0x222266, 0.4];
       stroke = [0, 0];
