@@ -32,6 +32,8 @@ export class Ship extends GameObject {
 
   stats: TextObject;
 
+  sprite: ShipSprite;
+
   constructor(manager: PixiManager, data: VisiblePiece) {
     super(manager, GameZIndex.Ships);
 
@@ -55,7 +57,7 @@ export class Ship extends GameObject {
     // probably gets rolled up into general props
 
     const sprite = new ShipSprite(manager, this.pieceData.pieceType, color);
-    // sprite.y = 16; // doesn't work? investigate
+    this.sprite = sprite;
 
     shipContainer.addChild(sprite);
 
@@ -85,7 +87,7 @@ export class Ship extends GameObject {
   getType(): PieceType {
     return this.pieceData.pieceType;
   }
-  
+
   isAlive(): boolean {
     return this.pieceData.alive;
   }
@@ -119,15 +121,23 @@ export class Ship extends GameObject {
 
   loop() {
     super.loop();
-    const { frameCount } = this.manager;
     this.setActive(this.pieceData.alive);
 
     const { hp, atk } = this.pieceData;
     this.stats.setText(`${atk}/${hp}`);
 
+    const { showZk } = this.manager.mouseManager;
+
+    this.sprite.setAlpha(showZk ? 0.3 : 1);
+
+    // bob
+    this.bob();
+  }
+
+  private bob() {
     const frames = 30;
     const boat = this.shipContainer.children[0].object;
-    if (frameCount % (2 * frames) < frames) {
+    if (this.manager.frameCount % (2 * frames) < frames) {
       boat.y = 2;
     } else {
       boat.y = 0;

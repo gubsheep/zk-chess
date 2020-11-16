@@ -107,8 +107,7 @@ class StagedShip extends GameObject {
     const sprite = new ShipSprite(manager, null, this.manager.api.getMyColor());
     this.sprite = sprite;
 
-    const alphaFilter = new PIXI.filters.AlphaFilter(0.7);
-    sprite.setFilters([alphaFilter]);
+    sprite.setAlpha(0.7);
     sprite.setPosition({ x: 2, y: 2 });
 
     this.addChild(sprite);

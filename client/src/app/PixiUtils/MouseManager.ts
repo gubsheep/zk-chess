@@ -61,6 +61,11 @@ export class MouseManager {
     this.clickState = state;
   }
 
+  // setters
+  setShowZk(showZk: boolean) {
+    this.showZk = showZk;
+  }
+
   // to help with managing events
   setHoveringCell(cell: BoardCoords | null) {
     this.hoveringCell = cell;

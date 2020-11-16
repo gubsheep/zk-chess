@@ -18,13 +18,14 @@ export class ToggleButton extends GameObject {
     this.syncText();
   }
 
-  toggleZk(showZk: boolean): void {
+  toggleZk(): void {
     this.showZk = !this.showZk;
     this.syncText();
   }
 
   private syncText(): void {
-    this.text.setText(this.showZk ? 'Show Submarines' : 'Show Ships');
+    this.text.setText(this.showZk ? 'Show Ships' : 'Show Submarines');
+    this.manager.mouseManager.setShowZk(this.showZk);
   }
 
   positionGrid(_gridW: number, gridH: number) {

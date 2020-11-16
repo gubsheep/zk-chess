@@ -37,6 +37,9 @@ export class GameObject {
   // skip inactive ones; we don't have enough objects to care about killing
   active: boolean;
 
+  filters: PIXI.Filter[];
+  alphaFilter: PIXI.filters.AlphaFilter;
+
   // TODO refactor this so that it doesn't need to be given a container
   constructor(manager: PixiManager, zIndex: number = 0) {
     this.id = autoIncrement();
@@ -47,6 +50,10 @@ export class GameObject {
     this.children = [];
     this.object.zIndex = zIndex;
     this.active = true;
+
+    this.filters = [];
+    this.alphaFilter = new PIXI.filters.AlphaFilter(1);
+    this.updateFilters();
 
     autoBind(this);
   }
@@ -95,5 +102,19 @@ export class GameObject {
         if (props[key]) this.object.on(key, props[key] as Function);
       }
     }
+  }
+
+  setFilters(filters: PIXI.Filter[]) {
+    this.filters = filters;
+    this.updateFilters();
+  }
+
+  setAlpha(alpha: number) {
+    this.alphaFilter.alpha = alpha;
+  }
+
+  private updateFilters() {
+    let colorFilter: PIXI.Filter[] = [];
+    this.object.filters = [...colorFilter, ...this.filters, this.alphaFilter];
   }
 }
