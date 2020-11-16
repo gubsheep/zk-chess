@@ -3,7 +3,7 @@ import { PixiManager } from '../../../api/PixiManager';
 import { PieceType } from '../../../_types/global/GlobalTypes';
 import { GameObject } from '../GameObject';
 import { ClickState } from '../MouseManager';
-import { CanvasCoords, BoardCoords } from '../PixiTypes';
+import { CanvasCoords, BoardCoords, LineAlignment } from '../PixiTypes';
 import { makeRect, idxsIncludes, compareBoardCoords } from '../PixiUtils';
 import { playerShader } from '../Shaders';
 import { Ship, ShipState } from '../Ships';
@@ -20,46 +20,86 @@ enum CellZIndex {
 
 export const CELL_W = 36;
 
+class BoardRect extends GameObject {
+  rect: PIXI.Graphics;
+  idx: BoardCoords;
+  constructor(manager: PixiManager, idx: BoardCoords) {
+    super(manager);
+    this.idx = idx;
+
+    const rect = new PIXI.Graphics();
+    this.object.addChild(rect);
+
+    this.rect = rect;
+  }
+
+  loop() {
+    super.loop();
+
+    const {
+      mouseManager: {
+        clickState,
+        deployStaged,
+        deployIdxs,
+        deployType,
+        moveIdxs,
+        moveAttackIdxs,
+        moveStaged,
+        selectedShip,
+        attackStaged,
+      },
+    } = this.manager;
+
+    this.rect.clear();
+    let fill = [0, 0];
+    let stroke = [0x000000, 0.2];
+
+    const deploy =
+      clickState === ClickState.Deploying && idxsIncludes(deployIdxs, this.idx);
+    const move =
+      clickState === ClickState.Acting && idxsIncludes(moveIdxs, this.idx);
+    const atk =
+      !move &&
+      clickState === ClickState.Acting &&
+      idxsIncludes(moveAttackIdxs, this.idx);
+    const target =
+      clickState === ClickState.Acting &&
+      compareBoardCoords(attackStaged, this.idx);
+
+    if (deploy) {
+      fill = [0xaa7777, 0.8];
+    } else if (target) {
+      fill = [0x995555, 0.8];
+    } else if (atk) {
+      fill = [0xaa7777, 0.8];
+    } else if (move) {
+      fill = [0x7777bb, 0.8];
+    } else {
+      fill = [0x222266, 0.4];
+      stroke = [0, 0];
+    }
+
+    this.rect.beginFill(...fill);
+    this.rect.lineStyle(2, stroke[0], stroke[1], LineAlignment.Inner);
+
+    this.rect.drawRect(0, 0, CELL_W, CELL_W);
+    this.rect.endFill();
+  }
+}
+
 export class BoardCell extends GameObject {
   topLeft: CanvasCoords;
   ship: Ship | null;
   submarines: Ship[];
   idx: BoardCoords;
 
-  deployRect: PIXI.DisplayObject;
-  moveRect: PIXI.DisplayObject;
-  attackRect: PIXI.DisplayObject;
-  targetRect: PIXI.DisplayObject;
-
   stagedShip: ShipSprite;
 
   constructor(manager: PixiManager, idx: BoardCoords, topLeft: CanvasCoords) {
     super(manager);
-    const container = this.object;
 
     // TODO refactor these into a single rect
-    const rectangle = makeRect(CELL_W, CELL_W, 0x222266, 0.4);
-    rectangle.zIndex = CellZIndex.Base;
-
-    const depRect = makeRect(CELL_W, CELL_W, 0xaa7777, 0.8, 0x995555, 2, 0.8);
-    depRect.zIndex = CellZIndex.Deploy;
-    depRect.visible = false;
-    this.deployRect = depRect;
-
-    const movRect = makeRect(CELL_W, CELL_W, 0x7777bb, 0.8, 0x555599, 2, 0.8);
-    movRect.zIndex = CellZIndex.Move;
-    movRect.visible = false;
-    this.moveRect = movRect;
-
-    const atkRect = makeRect(CELL_W, CELL_W, 0xaa7777, 0.8, 0x995555, 2, 0.8);
-    atkRect.zIndex = CellZIndex.Attack;
-    atkRect.visible = false;
-    this.attackRect = atkRect;
-
-    const target = makeRect(CELL_W, CELL_W, 0x995555, 0.8, 0x663333, 2, 0.8);
-    target.zIndex = CellZIndex.Target;
-    target.visible = false;
-    this.targetRect = target;
+    const rect = new BoardRect(manager, idx);
 
     const stagedShip = new ShipSprite(
       manager,
@@ -71,8 +111,7 @@ export class BoardCell extends GameObject {
     stagedShip.setPosition({ x: 2, y: 2 });
     this.stagedShip = stagedShip;
 
-    container.addChild(rectangle, depRect, movRect, atkRect, target);
-    this.addChild(stagedShip);
+    this.addChild(rect, stagedShip);
 
     this.setPosition(topLeft);
 
@@ -107,29 +146,11 @@ export class BoardCell extends GameObject {
       mouseManager: {
         clickState,
         deployStaged,
-        deployIdxs,
         deployType,
-        moveIdxs,
-        moveAttackIdxs,
         moveStaged,
         selectedShip,
-        attackStaged,
       },
     } = this.manager;
-
-    this.deployRect.visible =
-      clickState === ClickState.Deploying && idxsIncludes(deployIdxs, this.idx);
-    this.moveRect.visible =
-      clickState === ClickState.Acting && idxsIncludes(moveIdxs, this.idx);
-
-    this.attackRect.visible =
-      !this.moveRect.visible &&
-      clickState === ClickState.Acting &&
-      idxsIncludes(moveAttackIdxs, this.idx);
-
-    this.targetRect.visible =
-      clickState === ClickState.Acting &&
-      compareBoardCoords(attackStaged, this.idx);
 
     if (clickState === ClickState.Deploying) {
       const show = compareBoardCoords(this.idx, deployStaged);
