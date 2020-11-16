@@ -19,7 +19,8 @@ class BoardRect extends GameObject {
   rect: PIXI.Graphics;
   idx: BoardCoords;
   constructor(manager: PixiManager, idx: BoardCoords) {
-    super(manager, BoardCellZIndex.Rect);
+    super(manager);
+    this.setZIndex(BoardCellZIndex.Rect);
     this.idx = idx;
 
     const rect = new PIXI.Graphics();
@@ -100,7 +101,8 @@ class StagedShip extends GameObject {
   idx: BoardCoords;
 
   constructor(manager: PixiManager, idx: BoardCoords) {
-    super(manager, BoardCellZIndex.Staged);
+    super(manager);
+    this.setZIndex(BoardCellZIndex.Staged);
 
     this.idx = idx;
 

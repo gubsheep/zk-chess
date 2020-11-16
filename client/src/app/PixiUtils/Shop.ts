@@ -1,17 +1,17 @@
-import { GameObject } from '../app/PixiUtils/GameObject';
+import { GameObject } from './GameObject';
 import * as PIXI from 'pixi.js';
-import { GameZIndex, PixiManager } from './PixiManager';
-import { LineAlignment } from '../app/PixiUtils/PixiTypes';
+import { GameZIndex, PixiManager } from '../../api/PixiManager';
+import { LineAlignment } from './PixiTypes';
 import {
   BASELINE_ICONS,
   getCoinSprite,
   SPRITE_W,
-} from '../app/PixiUtils/TextureLoader';
-import { CHAR_W } from '../app/PixiUtils/FontLoader';
-import { ClickState } from '../app/PixiUtils/MouseManager';
-import { shipData } from '../app/PixiUtils/ShipData';
-import { PieceType } from '../_types/global/GlobalTypes';
-import { ShipSprite } from '../app/PixiUtils/ShipSprite';
+} from './TextureLoader';
+import { CHAR_W } from './FontLoader';
+import { ClickState } from './MouseManager';
+import { shipData } from './ShipData';
+import { PieceType } from '../../_types/global/GlobalTypes';
+import { ShipSprite } from './ShipSprite';
 
 const CARD_W = 46;
 const CARD_H = 46;

@@ -4,7 +4,7 @@ import {
   PlayerColor,
 } from '../app/PixiUtils/PixiTypes';
 import { shipData } from '../app/PixiUtils/ShipData';
-import { Ship } from '../app/PixiUtils/Ships';
+import { PieceObject, Ship, Submarine } from '../app/PixiUtils/Ships';
 import {
   boardLocFromCoords,
   compareBoardCoords,
@@ -55,8 +55,9 @@ export class GameAPI {
   // purges all existing ships and adds new ones
   syncShips(): void {
     this.syncGameState();
+    const { shipManager } = this.pixiManager;
 
-    this.pixiManager.clearShips();
+    shipManager.clear();
     const { pieces, myAddress } = this.gameState;
     for (const piece of pieces) {
       if (isVisiblePiece(piece)) {
@@ -68,7 +69,10 @@ export class GameAPI {
           this.myMothership = ship;
         }
 
-        this.pixiManager.addShip(ship);
+        shipManager.addShip(ship);
+      } else {
+        const sub = new Submarine(this.pixiManager, piece);
+        shipManager.addSubmarine(sub);
       }
     }
   }
@@ -189,8 +193,12 @@ export class GameAPI {
     return null;
   }
 
-  ownedByMe(ship: Ship): boolean {
+  ownedByMe(ship: PieceObject): boolean {
     return ship.pieceData.owner === this.gameState.myAddress;
+  }
+
+  getOwner(ship: PieceObject): PlayerColor {
+    return this.getColor(ship.pieceData.owner);
   }
 
   getGold(): number {
@@ -233,6 +241,7 @@ export class GameAPI {
   /* private utils */
   private syncGameState(): void {
     this.gameState = this.gameManager.getGameState();
+    console.log(this.gameState);
   }
 
   private canMove(
@@ -259,11 +268,7 @@ export class GameAPI {
     return false;
   }
 
-  canAttack(
-    type: PieceType,
-    from: BoardCoords,
-    to: BoardCoords
-  ): boolean {
+  canAttack(type: PieceType, from: BoardCoords, to: BoardCoords): boolean {
     if (!this.inBounds(to)) return false;
 
     const data = shipData[type];

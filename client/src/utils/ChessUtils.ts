@@ -1,8 +1,6 @@
 import {
   ChessGame,
-  ChessBoard,
   BoardLocation,
-  ChessCell,
   Color,
   EthAddress,
   Player,
@@ -11,35 +9,6 @@ import {
   isZKPiece,
   isKnown,
 } from '../_types/global/GlobalTypes';
-
-const transpose = (board: ChessBoard): ChessBoard => {
-  return board.map((_, colIndex) => board.map((row) => row[colIndex]));
-};
-
-const rot180 = (board: ChessBoard): ChessBoard => {
-  return board.map((row) => row.reverse()).reverse();
-};
-
-const blackTransform = (board: ChessBoard): ChessBoard => transpose(board);
-
-const whiteTransform = (board: ChessBoard): ChessBoard =>
-  rot180(transpose(board));
-
-export const boardMap = (
-  player: PlayerInfo | null
-): ((b: ChessBoard) => ChessBoard) =>
-  player?.color === Color.WHITE ? whiteTransform : blackTransform;
-
-const blackBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [j, i];
-const whiteBoardLocMap = ([i, j]: BoardLocation): BoardLocation => [
-  6 - j,
-  6 - i,
-];
-
-export const boardLocMap = (
-  player: PlayerInfo | null
-): ((loc: BoardLocation) => BoardLocation) =>
-  player?.color === Color.WHITE ? whiteBoardLocMap : blackBoardLocMap;
 
 export const isGhost = (piece: Piece): boolean => {
   return isZKPiece(piece);
@@ -64,31 +33,6 @@ export const inBounds = (loc: BoardLocation, size: number): boolean => {
   return loc[0] >= 0 && loc[1] < size && loc[1] >= 0 && loc[0] < size;
 };
 
-export const boardFromGame = (game: ChessGame | null): ChessBoard => {
-  if (!game) return [];
-  const allPieces = game.pieces;
-
-  const tempBoard: ChessCell[][] = Array(game.nRows)
-    .fill(null)
-    .map(() =>
-      Array(game.nCols)
-        .fill(null)
-        .map((_) => new Object())
-    );
-
-  for (const piece of allPieces) {
-    if (!isZKPiece(piece)) {
-      const loc = piece.location;
-      tempBoard[loc[0]][loc[1]].piece = piece;
-    } else if (isKnown(piece)) {
-      const loc = piece.location;
-      tempBoard[loc[0]][loc[1]].ghost = piece;
-    }
-  }
-
-  return tempBoard as ChessBoard;
-};
-
 export type ScoreEntry = {
   player: Player;
   score: number;
@@ -99,8 +43,8 @@ export const getScores = (game: ChessGame): [ScoreEntry, ScoreEntry] => {
   let p2score = 0;
 
   return [
-    {player: game.player1, score: p1score},
-    {player: game.player2, score: p2score},
+    { player: game.player1, score: p1score },
+    { player: game.player2, score: p2score },
   ];
 };
 

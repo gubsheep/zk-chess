@@ -1,6 +1,8 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import { PixiManager } from '../../api/PixiManager';
+import { GameZIndex, PixiManager } from '../../api/PixiManager';
+import { ZKPiece } from '../../_types/global/GlobalTypes';
+import Game from '../Game';
 import { CanvasCoords } from './PixiTypes';
 
 const autoIncrement = (() => {
@@ -40,20 +42,24 @@ export class GameObject {
   filters: PIXI.Filter[];
   alphaFilter: PIXI.filters.AlphaFilter;
 
+  layer: number;
+
   // TODO refactor this so that it doesn't need to be given a container
-  constructor(manager: PixiManager, zIndex: number = 0) {
+  constructor(manager: PixiManager, layer: GameZIndex = GameZIndex.Default) {
     this.id = autoIncrement();
+    this.layer = layer;
     this.manager = manager;
 
     this.object = new PIXI.Container();
     this.lifetime = 0;
     this.children = [];
-    this.object.zIndex = zIndex;
     this.active = true;
 
     this.filters = [];
     this.alphaFilter = new PIXI.filters.AlphaFilter(1);
     this.updateFilters();
+
+    this.object.sortableChildren = true;
 
     autoBind(this);
   }
@@ -68,6 +74,10 @@ export class GameObject {
   setActive(active: boolean): void {
     this.active = active;
     this.object.visible = active;
+  }
+
+  setZIndex(zIndex: number): void {
+    this.object.zIndex = zIndex;
   }
 
   loop(): void {
