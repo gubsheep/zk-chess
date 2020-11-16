@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
-import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { GameObject } from './GameObject';
-import { LinkObject, TextAlign } from './Text';
+import { GameZIndex, PixiManager } from '../../../api/PixiManager';
+import { GameObject } from '../GameObject';
+import { LinkObject, TextAlign } from '../Text';
 
 export class ToggleButton extends GameObject {
   text: LinkObject;

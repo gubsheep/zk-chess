@@ -11,14 +11,26 @@
     "body": ["import * as PIXI from 'pixi.js';"],
     "description": "import pixi.js"
   },
-  "empty gameobject": {
-    "prefix": "gameobject",
+  "empty gameobject with imports": {
+    "prefix": "gameobjectimp",
     "body": [
       "import { PixiManager } from '../../api/PixiManager';",
       "import { GameObject } from './GameObject';",
-      "export class ShipManager extends GameObject {",
+      "export class $1 extends GameObject {",
       "  constructor(manager: PixiManager) {",
       "    super(manager);",
+      "    $2",
+      "  }",
+      "}"
+    ]
+  },
+  "empty gameobject without imports": {
+    "prefix": "gameobject",
+    "body": [
+      "export class $1 extends GameObject {",
+      "  constructor(manager: PixiManager) {",
+      "    super(manager);",
+      "    $2",
       "  }",
       "}"
     ]

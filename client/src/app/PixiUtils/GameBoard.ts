@@ -5,7 +5,7 @@ import { GameObject } from './GameObject';
 import { BoardCell, CELL_W } from './GameBoardComponents/BoardCell';
 import { ConfirmCancelButtons } from './GameBoardComponents/ConfirmCancelButtons';
 import { TurnLabel } from './GameBoardComponents/TurnLabel';
-import { ToggleButton } from './ToggleButton';
+import { ToggleButton } from './GameBoardComponents/ToggleButton';
 
 export const GAME_WIDTH = 7;
 export const GAME_HEIGHT = 5;

@@ -1,7 +1,4 @@
 import * as PIXI from 'pixi.js';
-import { PieceType } from '../../_types/global/GlobalTypes';
-import { PlayerColor } from './PixiTypes';
-import { playerShader } from './Shaders';
 
 const PATH = 'public/assets/';
 const imgUri = (file: string) => PATH + file;
@@ -26,6 +23,7 @@ export const ICONS = {
   HEART: imgUri('icons/heart.png'),
   COIN: imgUri('icons/coin.png'),
   COIN_USED: imgUri('icons/coin_used.png'),
+  BOMB: imgUri('icons/bomb.png'),
 };
 
 const textures = [FONT, BG_IMAGE, ...SHIPS, ...Object.values(ICONS)];
@@ -39,7 +37,7 @@ export const loadTextures = (callbackFn: () => void): void => {
 };
 
 const cache = PIXI.utils.TextureCache;
-
 export const getCoinSprite = () => new PIXI.Sprite(cache[ICONS.COIN]);
 export const getCoinUsedSprite = () => new PIXI.Sprite(cache[ICONS.COIN_USED]);
 export const getHeartSprite = () => new PIXI.Sprite(cache[ICONS.HEART]);
+export const getBombSprite = () => new PIXI.Sprite(cache[ICONS.BOMB]);

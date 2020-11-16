@@ -14,6 +14,7 @@ import { BoardCoords, CanvasCoords, PlayerColor } from './PixiTypes';
 import { boardCoordsFromLoc, Wrapper } from './PixiUtils';
 import { ShipManager } from './ShipManager';
 import { ShipSprite } from './ShipSprite';
+import { StatIcon, STATICON_W, StatType } from './StatIcon';
 import { TextObject } from './Text';
 import { SPRITE_W } from './TextureLoader';
 
@@ -32,9 +33,10 @@ export enum ShipState {
 
 export class PieceObject extends GameObject {
   pieceData: Piece;
-  sprite: ShipSprite;
 
-  shipContainer: GameObject;
+  sprite: ShipSprite;
+  shipContainer: Wrapper; // just holds the sprite (so we can anchor icons to it)
+  container: Wrapper; // holds info about masking, interactability, etc.
 
   shipManager: ShipManager;
 
@@ -50,10 +52,13 @@ export class PieceObject extends GameObject {
     const sprite = new ShipSprite(manager, this.pieceData.pieceType, color);
     this.sprite = sprite;
 
-    const container = new PIXI.Container();
-    const shipContainer = new Wrapper(manager, container);
-    this.shipContainer = shipContainer;
+    const shipContainer = new Wrapper(manager, new PIXI.Container());
     shipContainer.addChild(sprite);
+    this.shipContainer = shipContainer;
+
+    const container = new Wrapper(manager, new PIXI.Container());
+    container.addChild(shipContainer);
+    this.container = container;
 
     this.addChild(shipContainer);
   }
@@ -83,17 +88,25 @@ export class Ship extends PieceObject {
   pieceData: VisiblePiece;
   shipContainer: GameObject;
 
-  stats: TextObject;
+  atkObj: StatIcon;
+  hpObj: StatIcon;
 
   sprite: ShipSprite;
 
   constructor(manager: PixiManager, data: VisiblePiece) {
     super(manager, data);
 
-    const stats = new TextObject(manager, '1/1');
-    this.stats = stats;
+    const atkObj = new StatIcon(manager, StatType.Atk);
+    const hpObj = new StatIcon(manager, StatType.Hp);
+    this.atkObj = atkObj;
+    this.hpObj = hpObj;
 
-    this.addChild(stats);
+    this.addChild(atkObj, hpObj);
+
+    const iconY = 1;
+    atkObj.setPosition({ x: SPRITE_W - 2 * STATICON_W - 3, y: iconY });
+    hpObj.setPosition({ x: SPRITE_W - STATICON_W, y: iconY });
+    this.shipContainer.addChild(atkObj, hpObj);
 
     const hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
     this.shipContainer.setInteractive({
@@ -148,7 +161,8 @@ export class Ship extends PieceObject {
     this.setActive(this.pieceData.alive);
 
     const { hp, atk } = this.pieceData;
-    this.stats.setText(`${atk}/${hp}`);
+    this.atkObj.setValue(atk);
+    this.hpObj.setValue(hp);
 
     // bob
     this.bob();
@@ -156,11 +170,11 @@ export class Ship extends PieceObject {
 
   private bob() {
     const frames = 30;
-    const boat = this.shipContainer.children[0].object;
+    const boat = this.shipContainer;
     if (this.manager.frameCount % (2 * frames) < frames) {
-      boat.y = 2;
+      boat.setPosition({ y: 2 });
     } else {
-      boat.y = 0;
+      boat.setPosition({ y: 0 });
     }
   }
 }
@@ -196,6 +210,6 @@ export class Submarine extends PieceObject {
     const coords = this.getCoords();
     coords && this.setLocation(coords);
 
-    this.setZIndex(this.shipManager.getSubIdx(this));
+    this.setZIndex(-this.shipManager.getSubIdx(this));
   }
 }

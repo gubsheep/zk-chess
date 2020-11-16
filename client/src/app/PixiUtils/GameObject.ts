@@ -94,8 +94,9 @@ export class GameObject {
     // this.object = null;
   }
 
-  setPosition({ x, y }: CanvasCoords): void {
-    this.object.position.set(x, y);
+  setPosition({ x, y }: Partial<CanvasCoords>): void {
+    if (x !== undefined) this.object.x = x;
+    if (y !== undefined) this.object.y = y;
   }
 
   setInteractive(props: GameObjectInteractiveProps | null): void {
