@@ -160,7 +160,7 @@ export class Shop extends GameObject {
   }
 
   positionSelf() {
-    const { width, height } = this.manager.app.renderer;
+    const { width, height } = this.manager.renderer;
     const shopX = 0.5 * (width - this.getWidth());
     this.setPosition({ x: shopX, y: height - 70 });
   }

@@ -128,7 +128,7 @@ export class Ship extends GameObject {
 
     const { showZk } = this.manager.mouseManager;
 
-    this.sprite.setAlpha(showZk ? 0.3 : 1);
+    this.setAlpha(showZk ? 0.3 : 1);
 
     // bob
     this.bob();

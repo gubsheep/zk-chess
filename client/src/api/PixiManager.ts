@@ -11,6 +11,7 @@ import { Background } from '../app/PixiUtils/Background';
 import { MouseManager } from '../app/PixiUtils/MouseManager';
 import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
+import { render } from 'react-dom';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -31,7 +32,9 @@ export enum GameZIndex {
 export class PixiManager {
   static instance: PixiManager | null;
   canvas: HTMLCanvasElement;
-  app: PIXI.Application;
+
+  stage: PIXI.Container;
+  renderer: PIXI.Renderer;
 
   frameRequestId: number;
   frameCount: number;
@@ -47,19 +50,22 @@ export class PixiManager {
   ships: Ship[];
 
   private constructor(props: InitProps) {
-    const {canvas, gameManager} = props;
+    const { canvas, gameManager } = props;
     this.canvas = canvas;
-    const {width, height} = canvas;
+    const { width, height } = canvas;
 
     // set up app
-    let app = new PIXI.Application({
+    let renderer = new PIXI.Renderer({
       width,
       height,
       view: canvas,
       resolution: 1,
     });
-    this.app = app;
-    this.app.stage.sortableChildren = true;
+    this.renderer = renderer;
+
+    const container = new PIXI.Container();
+    this.stage = container;
+    this.stage.sortableChildren = true;
 
     // initialize defaults
     this.ships = [];
@@ -80,7 +86,7 @@ export class PixiManager {
     for (let i = 0; i < this.gameObjects.length; i++) {
       if (this.gameObjects[i].id === obj.id) {
         this.gameObjects.splice(i, 1);
-        this.app.stage.removeChild(obj.object);
+        this.stage.removeChild(obj.object);
         return;
       }
     }
@@ -94,22 +100,22 @@ export class PixiManager {
     const objs = this.gameObjects;
     for (let i = 0; i < objs.length; i++) {
       if (!objs[i].active) {
+        this.stage.removeChild(objs[i].object);
         objs.splice(i--, 1);
-        this.app.stage.removeChild(objs[i].object);
       }
     }
   }
 
   clearShips() {
     for (const ship of this.ships) this.removeLazy(ship);
-    // this.flush(); // TODO debug this, seems broken
+    this.flush(); // TODO debug this, seems broken
     this.ships = [];
   }
 
   addObject(obj: GameObject) {
     // TODO manage systems, components, etc.
     this.gameObjects.push(obj);
-    this.app.stage.addChild(obj.object);
+    this.stage.addChild(obj.object);
   }
 
   addShip(obj: Ship) {
@@ -121,9 +127,7 @@ export class PixiManager {
     const cache = PIXI.utils.TextureCache;
     this.fontLoader = getFontLoader(cache[FONT]);
 
-    const app = this.app;
-
-    app.renderer.backgroundColor = 0x061639; // TODO set fallback color
+    this.renderer.backgroundColor = 0x061639; // TODO set fallback color
 
     // set up background
     this.addObject(new Background(this));
@@ -133,16 +137,6 @@ export class PixiManager {
     const gameBoard = new GameBoard(this);
     this.gameBoard = gameBoard;
     this.addObject(gameBoard);
-
-    // set up ships
-    // const myMothership = getMothership(this, PlayerColor.Red);
-    // this.myMothership = myMothership;
-    // this.addShip(myMothership);
-    // this.addShip(getMothership(this, PlayerColor.Blue));
-
-    // this.addShip(
-    //   new Ship(this, PieceType.Cruiser_01, { row: 2, col: 5 }, PlayerColor.Blue)
-    // );
 
     this.api.syncShips();
 
@@ -160,6 +154,8 @@ export class PixiManager {
     for (const obj of this.gameObjects) {
       if (obj.active) obj.loop();
     }
+
+    this.renderer.render(this.stage);
 
     this.frameCount++;
     this.frameRequestId = window.requestAnimationFrame(this.loop);

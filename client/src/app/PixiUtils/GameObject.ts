@@ -79,7 +79,7 @@ export class GameObject {
 
   destroy(): void {
     this.active = false;
-    this.manager.app.stage.removeChild(this.object);
+    this.manager.stage.removeChild(this.object);
     // technically we should deallocate the object but whatever
     // this.object = null;
   }

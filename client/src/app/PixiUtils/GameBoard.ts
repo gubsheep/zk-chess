@@ -94,7 +94,7 @@ export class GameBoard extends GameObject {
   }
 
   private positionSelf() {
-    const { width: gameW, height: gameH } = this.manager.app.renderer;
+    const { width: gameW, height: gameH } = this.manager.renderer;
     const gridW = this.grid.getWidth();
     const gridH = this.grid.getHeight();
 

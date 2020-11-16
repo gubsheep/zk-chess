@@ -8,7 +8,7 @@ export class Background extends GameObject {
     super(manager, GameZIndex.Background);
     const cache = PIXI.utils.TextureCache;
     let texture = cache[BG_IMAGE];
-    const { width, height } = manager.app.renderer;
+    const { width, height } = manager.renderer;
     let bgsprite = new PIXI.TilingSprite(texture, width, height);
     this.object.addChild(bgsprite);
   }
