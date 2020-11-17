@@ -17,6 +17,7 @@ const exec = async (command) => {
 };
 
 module.exports = async function (deployer, network, accounts) {
+  const isProd = network === "xdai";
   const factory = await ZKChessGameFactory.deployed();
 
   const gameAddr = await factory.gameIdToAddr(69);
@@ -24,7 +25,7 @@ module.exports = async function (deployer, network, accounts) {
 
   await exec("mkdir -p ../client/src/utils");
   fs.writeFileSync(
-    "../client/src/utils/local_contract_addr.ts",
+    `../client/src/utils/${isProd ? "prod" : "local"}_contract_addr.ts`,
     `export const contractAddress = '${factory.address}'\n`
   );
   await exec("mkdir -p ../client/public/contracts");

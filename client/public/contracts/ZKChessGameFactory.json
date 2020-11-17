@@ -2448,6 +2448,26 @@
     "version": "0.6.7+commit.b8d736ae.Emscripten.clang"
   },
   "networks": {
+    "100": {
+      "events": {
+        "0x99146aff770fef32e56c26f3d6a16a798454c52bcf1c392f0223a2aaa350e6df": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "gameId",
+              "type": "uint256"
+            }
+          ],
+          "name": "CreatedGame",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x47a652Af70Dfa4a083D0392Fe651CF64792552b0",
+      "transactionHash": "0x1ecdaa5309746d37b028514173e72e2621a18ddebd85b6a6ccf8aa9bb1afac63"
+    },
     "31337": {
       "events": {
         "0x99146aff770fef32e56c26f3d6a16a798454c52bcf1c392f0223a2aaa350e6df": {
@@ -2487,10 +2507,50 @@
       "links": {},
       "address": "0x5cCb1be191b1602c176eDe23D5f0A67Fc68151f6",
       "transactionHash": "0xd8940f7b1fd69b64157871098c0342b396f839b1189cd503aeb3ad394de41a64"
+    },
+    "1605555450348": {
+      "events": {
+        "0x99146aff770fef32e56c26f3d6a16a798454c52bcf1c392f0223a2aaa350e6df": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "gameId",
+              "type": "uint256"
+            }
+          ],
+          "name": "CreatedGame",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x5cCb1be191b1602c176eDe23D5f0A67Fc68151f6",
+      "transactionHash": "0x00f5587fa547c575304fa38ef9b3f53dae153f49c2c4a0bae0dda2af41f13071"
+    },
+    "1605558644548": {
+      "events": {
+        "0x99146aff770fef32e56c26f3d6a16a798454c52bcf1c392f0223a2aaa350e6df": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "gameId",
+              "type": "uint256"
+            }
+          ],
+          "name": "CreatedGame",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x5cCb1be191b1602c176eDe23D5f0A67Fc68151f6",
+      "transactionHash": "0x00f5587fa547c575304fa38ef9b3f53dae153f49c2c4a0bae0dda2af41f13071"
     }
   },
   "schemaVersion": "3.3.1",
-  "updatedAt": "2020-11-15T02:33:50.923Z",
+  "updatedAt": "2020-11-17T02:41:10.110Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

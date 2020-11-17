@@ -1,7 +1,7 @@
 const path = require('path');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const keysTransformer = require('ts-transformer-keys/transformer').default;
 
@@ -16,7 +16,7 @@ module.exports = {
   entry: './src/index.tsx',
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: 'bundle.min.js',
+    filename: 'battleship/bundle.min.js',
     publicPath: '/',
   },
 
@@ -75,7 +75,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './index.html',
     }),
-    new CopyPlugin([{ from: 'public', to: 'public' }]),
+    new CopyPlugin([{from: 'public', to: 'public'}]),
   ],
 
   // When importing a module whose path matches one of the following, just
