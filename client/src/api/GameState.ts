@@ -22,6 +22,7 @@ import {
   ZKPiece,
 } from '../_types/global/GlobalTypes';
 import _ from 'lodash';
+import {LocalStorageManager} from './LocalStorageManager';
 
 export class GameState {
   gameAddress: EthAddress;
@@ -54,6 +55,7 @@ export class GameState {
   }
 
   public update(contractData: ChessGameContractData) {
+    this.gameAddress = contractData.gameAddress;
     this.gameId = contractData.gameId;
     this.nRows = contractData.nRows;
     this.nCols = contractData.nCols;
@@ -84,22 +86,20 @@ export class GameState {
       };
       if (isZKPiece(piece)) {
         const commitment = piece.commitment;
-        const commitmentDataStr = localStorage.getItem(`COMMIT_${commitment}`);
-        if (commitmentDataStr) {
-          const commitData = JSON.parse(commitmentDataStr) as [
-            number,
-            number,
-            string
-          ];
-          const location: BoardLocation = [commitData[1], commitData[0]];
-          const salt = commitData[2];
+        try {
+          const [location, salt] = LocalStorageManager.getCommitment(
+            commitment,
+            this.myAddress,
+            this.gameAddress
+          );
           const knownPiece = {
             ...piece,
             location,
             salt,
           };
-          // zk piece with known location
           piece = knownPiece;
+        } catch {
+          // that location is unknown to us
         }
       }
       this.pieces.push(piece);

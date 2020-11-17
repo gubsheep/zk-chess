@@ -1,5 +1,5 @@
 //import * as EventEmitter from 'events';
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
   ChessGameContractData,
   EthAddress,
@@ -12,10 +12,10 @@ import {
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
 // in particular, the below is bad!
 // import {TransactionReceipt, Provider, TransactionResponse, Web3Provider} from "ethers/providers";
-import { Contract, providers, BigNumber as EthersBN } from 'ethers';
-import _, { reject } from 'lodash';
+import {Contract, providers, BigNumber as EthersBN} from 'ethers';
+import _, {reject} from 'lodash';
 
-import { address, emptyAddress } from '../utils/CheckedTypeUtils';
+import {address, emptyAddress} from '../utils/CheckedTypeUtils';
 import {
   TxIntent,
   ContractsAPIEvent,
@@ -309,8 +309,8 @@ class ContractsAPI extends EventEmitter {
       nRows,
       nCols,
       myAddress: this.account,
-      player1: { address: player1Addr },
-      player2: { address: player2Addr },
+      player1: {address: player1Addr},
+      player2: {address: player2Addr},
       player1Mana,
       player2Mana,
       pieces,
@@ -583,7 +583,7 @@ class ContractsAPI extends EventEmitter {
   }
 
   private rawObjectiveToObjective(rawObjective: RawObjective): Objective {
-    return { location: [rawObjective[1], rawObjective[0]] };
+    return {location: [rawObjective[1], rawObjective[0]]};
   }
 
   private rawDefaultToDefault(rawDefault: RawDefaults): PieceStatDefaults {
