@@ -34500,6 +34500,189 @@
     "version": "0.6.7+commit.b8d736ae.Emscripten.clang"
   },
   "networks": {
+    "100": {
+      "events": {
+        "0x26b1bbbf4d915af107239a76abff01456db75ac5dd5aafafd4b3d12860607346": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attacker",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attacked",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attackerHp",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attackedHp",
+              "type": "uint8"
+            }
+          ],
+          "name": "DidAttack",
+          "type": "event"
+        },
+        "0x27e77cb9303b56e18ceb82b3e0df64b35731cea5df6f30547f9fec78b1081bbf": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "turnNumber",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            }
+          ],
+          "name": "DidEndTurn",
+          "type": "event"
+        },
+        "0x7e2f4aae474473f9e261f72d50b4f8aaabb3f5380276750de70e0121b377fac6": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "pieceId",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "fromRow",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "fromCol",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "toRow",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "toCol",
+              "type": "uint8"
+            }
+          ],
+          "name": "DidMove",
+          "type": "event"
+        },
+        "0x0c028d8e3094b70fecb63c902612f5b21d26edfeea4f8ec3f69b411d1d50f20d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "pieceId",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            },
+            {
+              "indexed": false,
+              "internalType": "enum PieceType",
+              "name": "pieceType",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "atRow",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "atCol",
+              "type": "uint8"
+            }
+          ],
+          "name": "DidSummon",
+          "type": "event"
+        },
+        "0xb537cbcadc098cfedf5a04ef7e68a8554b55f7e45bfdaca1cbc51a686ef65f48": {
+          "anonymous": false,
+          "inputs": [],
+          "name": "GameFinished",
+          "type": "event"
+        },
+        "0x8fd707874eb940598510258c64cad23fd35fe8c85c5c38e8782fac2cc887fb6e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "p1",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "p2",
+              "type": "address"
+            }
+          ],
+          "name": "GameStart",
+          "type": "event"
+        }
+      },
+      "links": {
+        "Verifier": "0x0F6fcfabAcA003B301fac1d21c37B7569267B12a",
+        "ZKChessUtils": "0xF2EEb0E2841F20430Af792cd9C410f1FeF72F7CD"
+      },
+      "address": "0x611Ce3e0D0a0AFe36b9F5B4471c9c05C602d7Aa3",
+      "transactionHash": "0x048112a93035bc5a907c3f90373c8c1134e3087d4648689ff6e2194052748863"
+    },
     "31337": {
       "events": {
         "0xb537cbcadc098cfedf5a04ef7e68a8554b55f7e45bfdaca1cbc51a686ef65f48": {
@@ -35098,10 +35281,376 @@
       },
       "address": "0x85919f1Af99Feb881eF9f147beC4E64c673b97Eb",
       "transactionHash": "0x2336be957d6abfaceefbaffed7abf546af7f39a8cebe7b5e9a49bb3ef77a3652"
+    },
+    "1605555450348": {
+      "events": {
+        "0x26b1bbbf4d915af107239a76abff01456db75ac5dd5aafafd4b3d12860607346": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attacker",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attacked",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attackerHp",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attackedHp",
+              "type": "uint8"
+            }
+          ],
+          "name": "DidAttack",
+          "type": "event"
+        },
+        "0x27e77cb9303b56e18ceb82b3e0df64b35731cea5df6f30547f9fec78b1081bbf": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "turnNumber",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            }
+          ],
+          "name": "DidEndTurn",
+          "type": "event"
+        },
+        "0x7e2f4aae474473f9e261f72d50b4f8aaabb3f5380276750de70e0121b377fac6": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "pieceId",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "fromRow",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "fromCol",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "toRow",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "toCol",
+              "type": "uint8"
+            }
+          ],
+          "name": "DidMove",
+          "type": "event"
+        },
+        "0x0c028d8e3094b70fecb63c902612f5b21d26edfeea4f8ec3f69b411d1d50f20d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "pieceId",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            },
+            {
+              "indexed": false,
+              "internalType": "enum PieceType",
+              "name": "pieceType",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "atRow",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "atCol",
+              "type": "uint8"
+            }
+          ],
+          "name": "DidSummon",
+          "type": "event"
+        },
+        "0xb537cbcadc098cfedf5a04ef7e68a8554b55f7e45bfdaca1cbc51a686ef65f48": {
+          "anonymous": false,
+          "inputs": [],
+          "name": "GameFinished",
+          "type": "event"
+        },
+        "0x8fd707874eb940598510258c64cad23fd35fe8c85c5c38e8782fac2cc887fb6e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "p1",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "p2",
+              "type": "address"
+            }
+          ],
+          "name": "GameStart",
+          "type": "event"
+        }
+      },
+      "links": {
+        "Verifier": "0x3163Ed21C876e17206a441017515fBa53963D8A9",
+        "ZKChessUtils": "0xa01f5F1cF64F89a7ed27C51Fd459C974c33d1650"
+      },
+      "address": "0x85919f1Af99Feb881eF9f147beC4E64c673b97Eb",
+      "transactionHash": "0xdc9db37e667da20507f7b17874a77b79f2e13cee74276604bd90cd8fc408cd4d"
+    },
+    "1605558644548": {
+      "events": {
+        "0x26b1bbbf4d915af107239a76abff01456db75ac5dd5aafafd4b3d12860607346": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attacker",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attacked",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attackerHp",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "attackedHp",
+              "type": "uint8"
+            }
+          ],
+          "name": "DidAttack",
+          "type": "event"
+        },
+        "0x27e77cb9303b56e18ceb82b3e0df64b35731cea5df6f30547f9fec78b1081bbf": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "turnNumber",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            }
+          ],
+          "name": "DidEndTurn",
+          "type": "event"
+        },
+        "0x7e2f4aae474473f9e261f72d50b4f8aaabb3f5380276750de70e0121b377fac6": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "pieceId",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "fromRow",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "fromCol",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "toRow",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "toCol",
+              "type": "uint8"
+            }
+          ],
+          "name": "DidMove",
+          "type": "event"
+        },
+        "0x0c028d8e3094b70fecb63c902612f5b21d26edfeea4f8ec3f69b411d1d50f20d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "pieceId",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint16",
+              "name": "sequenceNumber",
+              "type": "uint16"
+            },
+            {
+              "indexed": false,
+              "internalType": "enum PieceType",
+              "name": "pieceType",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "atRow",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "atCol",
+              "type": "uint8"
+            }
+          ],
+          "name": "DidSummon",
+          "type": "event"
+        },
+        "0xb537cbcadc098cfedf5a04ef7e68a8554b55f7e45bfdaca1cbc51a686ef65f48": {
+          "anonymous": false,
+          "inputs": [],
+          "name": "GameFinished",
+          "type": "event"
+        },
+        "0x8fd707874eb940598510258c64cad23fd35fe8c85c5c38e8782fac2cc887fb6e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "p1",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "p2",
+              "type": "address"
+            }
+          ],
+          "name": "GameStart",
+          "type": "event"
+        }
+      },
+      "links": {
+        "Verifier": "0x3163Ed21C876e17206a441017515fBa53963D8A9",
+        "ZKChessUtils": "0xa01f5F1cF64F89a7ed27C51Fd459C974c33d1650"
+      },
+      "address": "0x85919f1Af99Feb881eF9f147beC4E64c673b97Eb",
+      "transactionHash": "0xdc9db37e667da20507f7b17874a77b79f2e13cee74276604bd90cd8fc408cd4d"
     }
   },
   "schemaVersion": "3.3.1",
-  "updatedAt": "2020-11-15T02:33:50.910Z",
+  "updatedAt": "2020-11-17T06:03:03.204Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

@@ -6,10 +6,10 @@ import {address} from '../utils/CheckedTypeUtils';
 import {EventEmitter} from 'events';
 import {XDAI_CHAIN_ID} from '../utils/constants';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 class EthereumAccountManager extends EventEmitter {
   static instance: EthereumAccountManager | null = null;
-
-  private readonly TIMEOUT_MS = 15000;
 
   private provider: JsonRpcProvider;
   private signer: Wallet | null;
@@ -20,11 +20,10 @@ class EthereumAccountManager extends EventEmitter {
     super();
 
     let url: string;
-    const isProd = process.env.NODE_ENV === 'production';
     if (isProd) {
       url =
         localStorage.getItem('XDAI_RPC_ENDPOINT') ||
-        'https://rpc.xdaichain.com/';
+        'https://xdai.poanetwork.dev';
     } else {
       url = 'http://localhost:8545';
     }
@@ -54,13 +53,13 @@ class EthereumAccountManager extends EventEmitter {
     try {
       this.rpcURL = url;
       const newProvider = new providers.JsonRpcProvider(this.rpcURL);
-      if (process.env.NODE_ENV === 'production') {
+      this.provider = newProvider;
+      this.provider.pollingInterval = 4000;
+      if (isProd) {
         if ((await newProvider.getNetwork()).chainId !== XDAI_CHAIN_ID) {
           throw new Error('not a valid xDAI RPC URL');
         }
       }
-      this.provider = newProvider;
-      this.provider.pollingInterval = 8000;
       if (this.signer) {
         this.signer = new Wallet(this.signer.privateKey, this.provider);
       } else {
@@ -70,7 +69,7 @@ class EthereumAccountManager extends EventEmitter {
       this.emit('ChangedRPCEndpoint');
     } catch (e) {
       console.error(`error setting rpc endpoint: ${e}`);
-      this.setRpcEndpoint('https://rpc.xdaichain.com/');
+      this.setRpcEndpoint('https://xdai.poanetwork.dev');
       return;
     }
   }
@@ -88,19 +87,20 @@ class EthereumAccountManager extends EventEmitter {
 
   public async loadGameContract(contractAddress: string): Promise<Contract> {
     const contractABI = (
-      await fetch('/public/contracts/ZKChessGame.json').then((x) => x.json())
+      await fetch('/battleship/public/contracts/ZKChessGame.json').then((x) =>
+        x.json()
+      )
     ).abi;
     return this.loadContract(contractAddress, contractABI);
   }
 
   public async loadFactoryContract(): Promise<Contract> {
     const contractABI = (
-      await fetch('/public/contracts/ZKChessGameFactory.json').then((x) =>
-        x.json()
-      )
+      await fetch(
+        '/battleship/public/contracts/ZKChessGameFactory.json'
+      ).then((x) => x.json())
     ).abi;
 
-    const isProd = process.env.NODE_ENV === 'production';
     const contractAddress = isProd
       ? require('../utils/prod_contract_addr').contractAddress
       : require('../utils/local_contract_addr').contractAddress;

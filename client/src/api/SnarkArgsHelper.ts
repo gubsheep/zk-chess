@@ -47,8 +47,8 @@ class SnarkArgsHelper {
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
-        '/public/circuits/dist1/circuit.wasm',
-        '/public/dist1.zkey'
+        '/battleship/public/circuits/dist1/circuit.wasm',
+        '/battleship/public/dist1.zkey'
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
@@ -87,8 +87,8 @@ class SnarkArgsHelper {
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
-        '/public/circuits/dist2/circuit.wasm',
-        '/public/dist2.zkey'
+        '/battleship/public/circuits/dist2/circuit.wasm',
+        '/battleship/public/dist2.zkey'
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
