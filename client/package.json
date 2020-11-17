@@ -44,7 +44,7 @@
   },
   "scripts": {
     "start:dev": "webpack-dev-server --mode development --open --hot",
-    "start:prod": "webpack-dev-server --mode production --open --hot",
+    "start:prod": "webpack-dev-server --mode production --open --hot --port 8082",
     "build": "webpack --mode production"
   },
   "browserslist": {

@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 
+// TODO make this battleship/public
 const PATH = 'public/assets/';
 const imgUri = (file: string) => PATH + file;
 
