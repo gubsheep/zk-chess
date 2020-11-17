@@ -1,4 +1,4 @@
-import { PieceType } from "../../_types/global/GlobalTypes";
+import { PieceType } from '../../_types/global/GlobalTypes';
 
 export type ShipData = {
   type: PieceType;

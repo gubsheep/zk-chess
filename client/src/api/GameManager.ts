@@ -360,7 +360,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   async refreshGameState(): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
     const oldGameState = this.gameState.getGameState();
-    console.log(this.gameState.getActions());
+    // console.log(this.gameState.getActions());
     const oldSequenceNumber = oldGameState.sequenceNumber;
     const contractGameState = await this.contractsAPI.getGameState();
     this.gameState.update(contractGameState);

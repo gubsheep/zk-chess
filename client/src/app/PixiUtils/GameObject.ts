@@ -4,6 +4,7 @@ import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { ZKPiece } from '../../_types/global/GlobalTypes';
 import Game from '../Game';
 import { CanvasCoords } from './PixiTypes';
+import { objFromHitArea } from './PixiUtils';
 
 const autoIncrement = (() => {
   let count = 0;
@@ -25,10 +26,11 @@ type HandlerProps = Record<PixiEvents, Function>;
 // TODO do this smartly using typescript
 export type GameObjectInteractiveProps = {
   hitArea?: PIXI.Rectangle;
+  debug?: boolean;
 } & Partial<HandlerProps>;
 // top-level game object abstraction. all of our game things should be wrapped in these guys
 export class GameObject {
-  id: number;
+  objectId: number;
   object: PIXI.Container;
   children: GameObject[];
 
@@ -46,7 +48,7 @@ export class GameObject {
 
   // TODO refactor this so that it doesn't need to be given a container
   constructor(manager: PixiManager, layer: GameZIndex = GameZIndex.Default) {
-    this.id = autoIncrement();
+    this.objectId = autoIncrement();
     this.layer = layer;
     this.manager = manager;
 
@@ -113,6 +115,12 @@ export class GameObject {
         if (props[key]) this.object.on(key, props[key] as Function);
       }
     }
+
+    if (props.debug && props.hitArea) {
+      const debugRect = objFromHitArea(props.hitArea);
+      debugRect.zIndex = -999;
+      this.object.addChild(debugRect);
+    }
   }
 
   setFilters(filters: PIXI.Filter[]) {
@@ -127,5 +135,12 @@ export class GameObject {
   private updateFilters() {
     let colorFilter: PIXI.Filter[] = [];
     this.object.filters = [...colorFilter, ...this.filters, this.alphaFilter];
+  }
+}
+
+export class Wrapper extends GameObject {
+  constructor(manager: PixiManager, object: PIXI.Container) {
+    super(manager);
+    this.object.addChild(object);
   }
 }

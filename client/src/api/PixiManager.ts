@@ -55,9 +55,6 @@ export class PixiManager {
   gameBoard: GameBoard;
   shipManager: ShipManager;
 
-  ships: Ship[];
-  submarines: Submarine[];
-
   private constructor(props: InitProps) {
     const { canvas, gameManager } = props;
     this.canvas = canvas;
@@ -77,8 +74,6 @@ export class PixiManager {
     this.stage.sortableChildren = true;
 
     // initialize defaults
-    this.ships = [];
-    this.submarines = [];
     this.frameCount = 0;
 
     this.gameObjects = [];
@@ -107,7 +102,7 @@ export class PixiManager {
 
   removeObject(obj: GameObject) {
     for (let i = 0; i < this.gameObjects.length; i++) {
-      if (this.gameObjects[i].id === obj.id) {
+      if (this.gameObjects[i].objectId === obj.objectId) {
         this.gameObjects.splice(i, 1);
         this.layers[obj.layer].removeChild(obj.object);
         return;

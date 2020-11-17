@@ -3,13 +3,15 @@ import { PixiManager } from '../../../api/PixiManager';
 import { CHAR_H } from '../FontLoader';
 import { GameObject } from '../GameObject';
 import { TextAlign, TextObject } from '../Text';
+import { GameGrid } from './GameGrid';
+import { GameBoardObject } from './GridObject';
 
-export class TurnLabel extends GameObject {
+export class TurnLabel extends GameBoardObject {
   yourTurn: GameObject;
   enemyTurn: GameObject;
 
-  constructor(manager: PixiManager) {
-    super(manager);
+  constructor(manager: PixiManager, grid: GameGrid) {
+    super(manager, grid);
 
     const enemyTurn = new TextObject(manager, 'Enemy Turn', TextAlign.Center);
     const yourTurn = new TextObject(manager, 'Your Turn', TextAlign.Center);

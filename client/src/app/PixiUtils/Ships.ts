@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { GameZIndex, PixiManager } from '../../api/PixiManager';
+import { PixiManager } from '../../api/PixiManager';
 import {
   isKnown,
   isLocatable,
@@ -9,13 +9,12 @@ import {
   VisiblePiece,
   ZKPiece,
 } from '../../_types/global/GlobalTypes';
-import { GameObject } from './GameObject';
+import { GameObject, Wrapper } from './GameObject';
 import { BoardCoords, CanvasCoords, PlayerColor } from './PixiTypes';
-import { boardCoordsFromLoc, Wrapper } from './PixiUtils';
+import { boardCoordsFromLoc } from './PixiUtils';
 import { ShipManager } from './ShipManager';
 import { ShipSprite } from './ShipSprite';
 import { StatIcon, STATICON_W, StatType } from './StatIcon';
-import { TextObject } from './Text';
 import { SPRITE_W } from './TextureLoader';
 
 const waterline = (type: PieceType): number => {
@@ -43,7 +42,6 @@ export class PieceObject extends GameObject {
   constructor(manager: PixiManager, data: Piece) {
     super(manager);
     this.shipManager = manager.shipManager;
-
     this.pieceData = data;
 
     const { owner } = data;
@@ -63,6 +61,10 @@ export class PieceObject extends GameObject {
     this.addChild(shipContainer);
   }
 
+  isZk() {
+    return isZKPiece(this.pieceData);
+  }
+
   getType(): PieceType {
     return this.pieceData.pieceType;
   }
@@ -78,6 +80,14 @@ export class PieceObject extends GameObject {
 
   calcLoc({ x, y }: CanvasCoords): CanvasCoords {
     return { x: x + 2, y: y + 2 };
+  }
+
+  getCoords(): BoardCoords {
+    if (isLocatable(this.pieceData)) {
+      return boardCoordsFromLoc(this.pieceData.location);
+    } else {
+      return { row: -1, col: -1 }; // TODO remove this when you have a good way to deal with invisible commitments
+    }
   }
 }
 
@@ -109,7 +119,7 @@ export class Ship extends PieceObject {
     this.shipContainer.addChild(atkObj, hpObj);
 
     const hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
-    this.shipContainer.setInteractive({
+    this.setInteractive({
       hitArea,
       mouseover: this.onMouseOver,
       mouseout: this.onMouseOut,
@@ -131,10 +141,6 @@ export class Ship extends PieceObject {
     this.updateMask();
   }
 
-  getCoords(): BoardCoords {
-    return boardCoordsFromLoc(this.pieceData.location);
-  }
-
   private updateMask() {
     const { x, y } = this.shipContainer.object;
     const mask = this.mask;
@@ -145,7 +151,7 @@ export class Ship extends PieceObject {
   }
 
   onMouseOver() {
-    this.manager.mouseManager.setHoveringShip(this.id);
+    this.manager.mouseManager.setHoveringShip(this);
   }
 
   onMouseOut() {
@@ -179,6 +185,11 @@ export class Ship extends PieceObject {
   }
 }
 
+export const SUB_X = 6;
+export const SUB_Y = 11;
+export const SUB_W = 22;
+export const SUB_H = 12;
+
 export class Submarine extends PieceObject {
   constructor(manager: PixiManager, data: ZKPiece) {
     super(manager, data);
@@ -188,13 +199,29 @@ export class Submarine extends PieceObject {
     } else {
       this.setLocation({ row: 0, col: 0 });
     }
+    const hitArea = new PIXI.Rectangle(
+      SUB_X - 1,
+      SUB_Y - 1,
+      SUB_W + 2,
+      SUB_H + 2
+    );
+    this.setInteractive({
+      hitArea,
+      mouseover: this.onMouseOver,
+      mouseout: this.onMouseOut,
+      click: this.onClick,
+    });
   }
-  getCoords(): BoardCoords | null {
-    if (isLocatable(this.pieceData)) {
-      return boardCoordsFromLoc(this.pieceData.location);
-    } else {
-      return null;
-    }
+  onMouseOver() {
+    this.manager.mouseManager.setHoveringSubmarine(this);
+  }
+
+  onMouseOut() {
+    this.manager.mouseManager.setHoveringSubmarine(null);
+  }
+
+  onClick() {
+    this.manager.mouseManager.subClicked(this);
   }
 
   calcLoc({ x, y }: CanvasCoords): CanvasCoords {

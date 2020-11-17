@@ -1,19 +1,20 @@
+import { Link } from 'react-router-dom';
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
+import { PieceType } from '../../../_types/global/GlobalTypes';
 import { CHAR_H, LINE_SPACING } from '../FontLoader';
 import { GameObject } from '../GameObject';
 import { LinkObject, TextAlign } from '../Text';
+import { GameGrid } from './GameGrid';
+import { GameBoardObject } from './GridObject';
 
 // TODO make a GridObject class?
-export class ConfirmCancelButtons extends GameObject {
-  constructor(manager: PixiManager) {
-    super(manager, GameZIndex.UI);
+export class ConfirmCancelButtons extends GameBoardObject {
+  confirm: LinkObject;
+  moveSub: LinkObject;
+  atkSub: LinkObject;
 
-    const cancel = new LinkObject(
-      manager,
-      'Cancel',
-      this.onCancel,
-      TextAlign.Right
-    );
+  constructor(manager: PixiManager, grid: GameGrid) {
+    super(manager, grid);
 
     const confirm = new LinkObject(
       manager,
@@ -21,17 +22,33 @@ export class ConfirmCancelButtons extends GameObject {
       this.onConfirm,
       TextAlign.Right
     );
-    confirm.setPosition({ x: 0, y: CHAR_H + LINE_SPACING });
+    this.confirm = confirm;
 
-    const endTurn = new LinkObject(
+    const moveSub = new LinkObject(
       manager,
-      'End Turn',
-      this.endTurn,
+      'Move Sub',
+      this.onMove,
       TextAlign.Right
     );
-    endTurn.setPosition({ x: 0, y: 2 * (CHAR_H + LINE_SPACING) });
+    this.moveSub = moveSub;
 
-    this.addChild(cancel, confirm, endTurn);
+    const atkSub = new LinkObject(
+      manager,
+      'Strike!',
+      this.onStrike,
+      TextAlign.Right
+    );
+    this.atkSub = atkSub;
+
+    const cancel = new LinkObject(
+      manager,
+      'Cancel',
+      this.onCancel,
+      TextAlign.Right
+    );
+    cancel.setPosition({ x: 0, y: CHAR_H + LINE_SPACING });
+
+    this.addChild(cancel, confirm, atkSub, moveSub);
   }
 
   private onCancel() {
@@ -42,8 +59,24 @@ export class ConfirmCancelButtons extends GameObject {
     this.manager.mouseManager.confirm();
   }
 
-  private endTurn() {
-    this.manager.mouseManager.endTurn();
+  private onMove() {
+    this.manager.mouseManager.moveSub();
+  }
+
+  private onStrike() {
+    this.manager.mouseManager.attackSub();
+  }
+
+  loop() {
+    super.loop();
+
+    const { selectedShip, moveStaged } = this.manager.mouseManager;
+
+    const isZk = selectedShip && selectedShip.isZk();
+
+    this.confirm.setActive(!isZk);
+    this.moveSub.setActive(!!(isZk && moveStaged));
+    this.atkSub.setActive(!!(isZk && !moveStaged));
   }
 
   positionGrid(gridW: number, gridH: number) {

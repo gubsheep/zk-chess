@@ -42,20 +42,29 @@ class BoardRect extends GameObject {
         attackStaged,
         selectedShip,
       },
+      api,
     } = this.manager;
 
     this.rect.clear();
     let fill = [0, 0];
     let stroke = [0x000000, 0.2];
 
+    const shipAt = api.shipAt(this.idx);
+    const enemyShipAt = shipAt && !api.ownedByMe(shipAt);
+
+    const isZk =
+      selectedShip?.isZk() &&
+      compareBoardCoords(selectedShip.getCoords(), this.idx);
+
     const deploy =
       clickState === ClickState.Deploying && idxsIncludes(deployIdxs, this.idx);
     const move =
       clickState === ClickState.Acting && idxsIncludes(moveIdxs, this.idx);
-    const atk =
-      !move &&
-      clickState === ClickState.Acting &&
-      idxsIncludes(attackIdxs, this.idx);
+
+    const isAtk =
+      clickState === ClickState.Acting && idxsIncludes(attackIdxs, this.idx);
+    const atk = (isZk && enemyShipAt) || (!isZk && !move && isAtk);
+
     const movAtk =
       !move &&
       !atk &&
@@ -64,12 +73,14 @@ class BoardRect extends GameObject {
         moveAttackIdxs.map((el) => el.attack),
         this.idx
       );
+
     const target =
+      enemyShipAt &&
       clickState === ClickState.Acting &&
       compareBoardCoords(attackStaged, this.idx);
 
     const selected =
-      selectedShip && compareBoardCoords(selectedShip.coords, this.idx);
+      selectedShip && compareBoardCoords(selectedShip.getCoords(), this.idx);
 
     if (selected) {
       fill = [0x4444aa, 0.8];
@@ -79,10 +90,10 @@ class BoardRect extends GameObject {
       fill = [0x995555, 0.8];
     } else if (atk) {
       fill = [0x992255, 0.8];
+    } else if (!isZk && movAtk) {
+      fill = [0xaa7777, 0.8];
     } else if (move) {
       fill = [0x7777bb, 0.8];
-    } else if (movAtk) {
-      fill = [0xaa7777, 0.8];
     } else {
       fill = [0x222266, 0.4];
       stroke = [0, 0];

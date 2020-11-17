@@ -1,15 +1,18 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../../api/PixiManager';
 import { GameObject } from '../GameObject';
+import { ClickState } from '../MouseManager';
 import { LinkObject, TextAlign } from '../Text';
+import { GameGrid } from './GameGrid';
+import { GameBoardObject } from './GridObject';
 
-export class ToggleButton extends GameObject {
+export class ToggleButton extends GameBoardObject {
   text: LinkObject;
 
   showZk: boolean = false;
 
-  constructor(manager: PixiManager) {
-    super(manager, GameZIndex.UI);
+  constructor(manager: PixiManager, grid: GameGrid) {
+    super(manager, grid);
 
     const text = new LinkObject(manager, '', this.toggleZk, TextAlign.Left);
     this.text = text;
@@ -21,6 +24,7 @@ export class ToggleButton extends GameObject {
   toggleZk(): void {
     this.showZk = !this.showZk;
     this.syncText();
+    this.manager.mouseManager.setClickState(ClickState.None);
   }
 
   private syncText(): void {

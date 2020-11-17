@@ -134,7 +134,6 @@ export const findPath = (
   } while (queue.length > 0);
 
   if (distBoard[to[1]][to[0]] < 0) {
-    console.log('no path between these two locations');
     return null;
   }
 
