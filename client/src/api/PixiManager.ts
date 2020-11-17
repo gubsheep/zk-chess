@@ -1,8 +1,8 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
 import { PixiObject } from '../app/Pixi/PixiObject';
-import { ResourceBars } from '../app/Pixi/ResourceBars';
-import { Shop } from '../app/Pixi/Shop/Shop';
+import { ResourceBars } from '../app/Pixi/UI/ResourceBars';
+import { Shop } from '../app/Pixi/UI/Shop';
 import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
 import { MouseManager } from '../app/Pixi/MouseManager';
 import AbstractGameManager from './AbstractGameManager';
