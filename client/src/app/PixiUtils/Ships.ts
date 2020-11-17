@@ -89,6 +89,11 @@ export class PieceObject extends GameObject {
       return { row: -1, col: -1 }; // TODO remove this when you have a good way to deal with invisible commitments
     }
   }
+
+  loop() {
+    super.loop();
+    this.setActive(this.pieceData.alive);
+  }
 }
 
 export class Ship extends PieceObject {
@@ -164,7 +169,6 @@ export class Ship extends PieceObject {
 
   loop() {
     super.loop();
-    this.setActive(this.pieceData.alive);
 
     const { hp, atk } = this.pieceData;
     this.atkObj.setValue(atk);
