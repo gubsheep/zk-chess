@@ -36,7 +36,7 @@ export class GameAPI {
     this.pixiManager = pixiManager;
     this.gameManager = gameManager;
 
-    this.syncGameState();
+    this.gameState = this.gameManager.getGameState();
 
     autoBind(this);
 
@@ -50,13 +50,10 @@ export class GameAPI {
   private stateAdvanced() {
     console.log('state advanced');
     this.syncGameState();
-
-    this.syncShips();
   }
 
   // purges all existing ships and adds new ones
   syncShips(): void {
-    this.syncGameState();
     const { shipManager } = this.pixiManager;
 
     shipManager.clear();
@@ -86,11 +83,13 @@ export class GameAPI {
 
   deploy(type: PieceType, coords: BoardCoords): void {
     this.gameManager.summonPiece(type, boardLocFromCoords(coords));
+    this.syncGameState();
   }
 
   move(ship: PieceObject, to: BoardCoords): void {
     console.log(ship.pieceData.id, to);
     this.gameManager.movePiece(ship.pieceData.id, boardLocFromCoords(to));
+    this.syncGameState();
   }
 
   attack(from: PieceObject, to: BoardCoords): void {
@@ -98,6 +97,7 @@ export class GameAPI {
     if (toShip) {
       this.gameManager.attack(from.pieceData.id, toShip.pieceData.id);
     }
+    this.syncGameState();
   }
 
   moveAttack(
@@ -106,8 +106,10 @@ export class GameAPI {
     attackTo: BoardCoords
   ): void {
     this.move(from, moveTo);
+    this.syncGameState();
     setTimeout(() => {
       this.attack(from, attackTo);
+      this.syncGameState();
     }, 5000);
   }
 
@@ -258,8 +260,9 @@ export class GameAPI {
 
   /* private utils */
   private syncGameState(): void {
-    this.gameState = this.gameManager.getGameState();
+    this.gameState = this.gameManager.getLatestGameState();
     console.log(this.gameState);
+    this.syncShips();
   }
 
   private canMove(

@@ -55,11 +55,11 @@ const corvette: ShipData = {
 const submarine: ShipData = {
   type: PieceType.Submarine_04,
   cost: 4,
-  attack: 4,
+  attack: 3,
   health: 1,
   minRange: 0,
   maxRange: 0,
-  movement: 2,
+  movement: 1,
   name: 'Submarine',
   isZk: true,
 };

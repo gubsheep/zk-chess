@@ -130,9 +130,30 @@ export class MouseManager {
     } else {
       console.error('error with moving sub');
     }
+
+    this.setClickState(ClickState.None);
   }
 
-  attackSub(): void {}
+  attackSub(): void {
+    const {
+      selectedShip,
+      clickState,
+      manager: { api },
+      moveStaged,
+    } = this;
+
+    if (
+      clickState === ClickState.Acting &&
+      selectedShip &&
+      selectedShip.isZk() &&
+      !moveStaged
+    ) {
+      api.attack(selectedShip, selectedShip.getCoords());
+    } else {
+      console.error('error with moving sub');
+    }
+    this.setClickState(ClickState.None);
+  }
 
   cancel() {
     this.setClickState(ClickState.None);
