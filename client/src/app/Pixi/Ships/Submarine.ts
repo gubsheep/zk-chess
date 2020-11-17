@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { ZKPiece, isKnown } from '../../../_types/global/GlobalTypes';
 import { CanvasCoords, PlayerColor } from '../@PixiTypes';
-import { PieceObject } from '../PieceObject';
+import { PieceObject } from './PieceObject';
 import { boardCoordsFromLoc } from '../Utils/PixiUtils';
 
 export const SUB_X = 6;

@@ -1,16 +1,16 @@
 import * as PIXI from 'pixi.js';
-import { PixiManager } from '../../api/PixiManager';
+import { PixiManager } from '../../../api/PixiManager';
 import {
   isLocatable,
   isZKPiece,
   Piece,
   PieceType,
-} from '../../_types/global/GlobalTypes';
-import { PixiObject, Wrapper } from './PixiObject';
-import { BoardCoords, CanvasCoords } from './@PixiTypes';
-import { boardCoordsFromLoc } from './Utils/PixiUtils';
-import { ShipManager } from './Ships/ShipManager';
-import { ShipSprite } from './Ships/ShipSprite';
+} from '../../../_types/global/GlobalTypes';
+import { PixiObject, Wrapper } from '../PixiObject';
+import { BoardCoords, CanvasCoords } from '../@PixiTypes';
+import { boardCoordsFromLoc } from '../Utils/PixiUtils';
+import { ShipManager } from './ShipManager';
+import { ShipSprite } from './ShipSprite';
 
 export enum ShipState {
   Summoned,

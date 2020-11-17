@@ -1,6 +1,6 @@
-import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { Objective } from '../../_types/global/GlobalTypes';
-import { PixiObject, Wrapper } from './PixiObject';
+import { GameZIndex, PixiManager } from '../../../api/PixiManager';
+import { Objective } from '../../../_types/global/GlobalTypes';
+import { PixiObject, Wrapper } from '../PixiObject';
 import { ObjectiveObject } from './ObjectiveObject';
 import * as PIXI from 'pixi.js';
 

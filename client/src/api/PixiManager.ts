@@ -7,7 +7,7 @@ import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
 import { MouseManager } from '../app/Pixi/MouseManager';
 import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
-import { ObjectiveManager } from '../app/Pixi/ObjectiveManager';
+import { ObjectiveManager } from '../app/Pixi/Objectives/ObjectiveManager';
 import { Background } from '../app/Pixi/Utils/Background';
 import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
 import { ShipManager } from '../app/Pixi/Ships/ShipManager';

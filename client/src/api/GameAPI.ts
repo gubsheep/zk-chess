@@ -18,7 +18,7 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../app/Pixi/GameBoard/GameBoard';
 import autoBind from 'auto-bind';
 import { findPath, getObstacles } from '../utils/Utils';
 import { Ship } from '../app/Pixi/Ships/Ship';
-import { PieceObject } from '../app/Pixi/PieceObject';
+import { PieceObject } from '../app/Pixi/Ships/PieceObject';
 import { Submarine } from '../app/Pixi/Ships/Submarine';
 import { boardLocFromCoords, compareBoardCoords, taxiCab } from '../app/Pixi/Utils/PixiUtils';
 
