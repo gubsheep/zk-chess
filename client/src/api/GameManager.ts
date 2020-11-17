@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -21,7 +21,7 @@ import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
+import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 
 import {
   ContractsAPIEvent,
@@ -39,12 +39,13 @@ import {
   UnsubmittedEndTurn,
   UnsubmittedJoin,
 } from '../_types/darkforest/api/ContractsAPITypes';
-import { address } from '../utils/CheckedTypeUtils';
-import { findPath, getRandomTxIntentId, taxiDist } from '../utils/Utils';
+import {address} from '../utils/CheckedTypeUtils';
+import {findPath, getRandomTxIntentId, taxiDist} from '../utils/Utils';
 import bigInt from 'big-integer';
 import mimcHash from '../hash/mimc';
-import { LOCATION_ID_UB } from '../utils/constants';
-import { GameState } from './GameState';
+import {LOCATION_ID_UB} from '../utils/constants';
+import {GameState} from './GameState';
+import {LocalStorageManager} from './LocalStorageManager';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -388,6 +389,10 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     }
     await this.contractsAPI.setGame(gameId);
     const contractGameState = await this.contractsAPI.getGameState();
+    LocalStorageManager.addGame(
+      contractGameState.myAddress,
+      contractGameState.gameAddress
+    );
     this.gameState = new GameState(contractGameState);
     this.refreshInterval = setInterval(() => {
       this.refreshGameState();
@@ -456,9 +461,13 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         gameState.nRows,
         gameState.nCols
       );
-      localStorage.setItem(
-        `COMMIT_${mimcHash(at[1], at[0], newSalt).toString()}`,
-        JSON.stringify([at[1], at[0], newSalt])
+      const commitment = mimcHash(at[1], at[0], newSalt).toString();
+      LocalStorageManager.saveCommitment(
+        commitment,
+        at,
+        newSalt,
+        gameState.myAddress,
+        gameState.gameAddress
       );
       unsubmittedSummon.zkp = zkp;
     }
@@ -513,9 +522,13 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         gameState.nRows,
         gameState.nCols
       );
-      localStorage.setItem(
-        `COMMIT_${mimcHash(to[1], to[0], newSalt).toString()}`,
-        JSON.stringify([to[1], to[0], newSalt])
+      const commitment = mimcHash(to[1], to[0], newSalt).toString();
+      LocalStorageManager.saveCommitment(
+        commitment,
+        to,
+        newSalt,
+        gameState.myAddress,
+        gameState.gameAddress
       );
       unsubmittedMove.isZk = true;
       unsubmittedMove.zkp = zkp;
