@@ -101,6 +101,7 @@ export class ShipManager extends GameObject {
     const loc = obj.getCoords();
     if (loc) {
       const sortedIds = this.getSubsAtIdx(loc)
+        .filter((sub) => sub.isAlive())
         .map((sub) => sub.pieceData.id)
         .sort();
       return sortedIds.indexOf(obj.pieceData.id);

@@ -1,8 +1,9 @@
-import { PixiManager } from "../../api/PixiManager";
-import { ZKPiece, isKnown } from "../../_types/global/GlobalTypes";
-import { PieceObject } from "./PieceObject";
-import { CanvasCoords, PlayerColor } from "./PixiTypes";
-import { boardCoordsFromLoc } from "./PixiUtils";
+import * as PIXI from 'pixi.js';
+import { PixiManager } from '../../api/PixiManager';
+import { ZKPiece, isKnown } from '../../_types/global/GlobalTypes';
+import { PieceObject } from './PieceObject';
+import { CanvasCoords, PlayerColor } from './PixiTypes';
+import { boardCoordsFromLoc } from './PixiUtils';
 
 export const SUB_X = 6;
 export const SUB_Y = 11;

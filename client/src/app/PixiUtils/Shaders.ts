@@ -91,7 +91,7 @@ export const perlinFrag: string = glsl`
     vec3 color2 = vec3(0.329, 0.721, 0.918);
     vec3 color3 = vec3(0.200, 0.698, 0.921);
 
-    vec3 color = n > 0.75 ? color1 : n > 0.4 ? color2 : color3;
+    vec3 color = n > 1.2 ? color1 : n > 0.8 ? color2 : color3;
 
     gl_FragColor = vec4(color, 1.0);
   }

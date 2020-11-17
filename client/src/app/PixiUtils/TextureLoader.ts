@@ -12,6 +12,7 @@ export const SPRITE_W = 32;
 export const BG_IMAGE = imgUri('backgroundsmall.png');
 export const FONT = imgUri('font.png');
 export const OBJECTIVE = imgUri('oilrig.png');
+export const WATERLINE = imgUri('waterline.png');
 export const SHIPS = [
   imgUri('00_mothership.png'),
   imgUri('01_cruiser.png'),
@@ -28,7 +29,14 @@ export const ICONS = {
   BOMB: imgUri('icons/bomb.png'),
 };
 
-const textures = [FONT, BG_IMAGE, OBJECTIVE, ...SHIPS, ...Object.values(ICONS)];
+const textures = [
+  FONT,
+  BG_IMAGE,
+  OBJECTIVE,
+  WATERLINE,
+  ...SHIPS,
+  ...Object.values(ICONS),
+];
 
 export const loadTextures = (callbackFn: () => void): void => {
   const loader = PIXI.Loader.shared;

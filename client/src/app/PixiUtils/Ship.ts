@@ -1,16 +1,17 @@
-import { PixiManager } from "../../api/PixiManager";
-import { VisiblePiece, GameObject, PieceType } from "../../_types/global/GlobalTypes";
-import { PieceObject } from "./PieceObject";
-import { BoardCoords, CanvasCoords } from "./PixiTypes";
-import { boardCoordsFromLoc } from "./PixiUtils";
-import { ShipSprite } from "./ShipSprite";
-import { StatIcon, StatType, STATICON_W } from "./StatIcon";
-import { SPRITE_W } from "./TextureLoader";
+import * as PIXI from 'pixi.js';
+import { PixiManager } from '../../api/PixiManager';
+import { VisiblePiece, PieceType } from '../../_types/global/GlobalTypes';
+import { Wrapper } from './GameObject';
+import { PieceObject } from './PieceObject';
+import { BoardCoords, CanvasCoords } from './PixiTypes';
+import { boardCoordsFromLoc } from './PixiUtils';
+import { ShipSprite } from './ShipSprite';
+import { StatIcon, StatType, STATICON_W } from './StatIcon';
+import { SPRITE_W } from './TextureLoader';
 
 const waterline = (type: PieceType): number => {
-  if (type === PieceType.Mothership_00) return 28;
-  else if (type === PieceType.Submarine_04) return 32;
-  else return 25;
+  if (type === PieceType.Submarine_04) return 32;
+  else return 28;
 };
 
 export class Ship extends PieceObject {
@@ -23,6 +24,8 @@ export class Ship extends PieceObject {
   hpObj: StatIcon;
 
   sprite: ShipSprite;
+
+  waterline: PIXI.Graphics;
 
   constructor(manager: PixiManager, data: VisiblePiece) {
     super(manager, data);
@@ -39,6 +42,9 @@ export class Ship extends PieceObject {
     hpObj.setPosition({ x: SPRITE_W - STATICON_W, y: iconY });
     this.shipContainer.addChild(atkObj, hpObj);
 
+    this.waterline = new PIXI.Graphics();
+    this.object.addChild(this.waterline);
+
     const hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
     this.setInteractive({
       hitArea,
@@ -47,8 +53,8 @@ export class Ship extends PieceObject {
       click: this.onClick,
     });
 
-    let mask = new PIXI.Graphics();
-    // this.shipContainer.object.mask = mask;
+    const mask = new PIXI.Graphics();
+    this.shipContainer.children[0].object.mask = mask;
     this.mask = mask;
     this.updateMask();
 
@@ -63,7 +69,7 @@ export class Ship extends PieceObject {
   }
 
   private updateMask() {
-    const { x, y } = this.shipContainer.object;
+    const { x, y } = this.object.position;
     const mask = this.mask;
     mask.clear();
     mask.beginFill(0xffffff, 1.0);
@@ -97,10 +103,17 @@ export class Ship extends PieceObject {
   private bob() {
     const frames = 30;
     const boat = this.shipContainer;
+    this.waterline.clear();
     if (this.manager.frameCount % (2 * frames) < frames) {
       boat.setPosition({ y: 2 });
+      this.waterline.beginFill(0x000000, 0.8);
+      this.waterline.drawRect(3, 27, 26, 1);
     } else {
-      boat.setPosition({ y: 0 });
+      boat.setPosition({ y: 1 });
+      this.waterline.beginFill(0x000000, 0.6);
+      this.waterline.drawRect(5, 27, 22, 1);
     }
+    this.waterline.endFill();
+    this.updateMask();
   }
 }
