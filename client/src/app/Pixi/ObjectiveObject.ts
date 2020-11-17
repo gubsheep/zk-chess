@@ -2,7 +2,7 @@ import { PixiManager } from '../../api/PixiManager';
 import { Objective } from '../../_types/global/GlobalTypes';
 import { PixiObject, Wrapper } from './PixiObject';
 import { ObjectiveSprite } from './ObjectiveSprite';
-import { BoardCoords } from './PixiTypes';
+import { BoardCoords } from './@PixiTypes';
 import { boardCoordsFromLoc } from './PixiUtils';
 import { SPRITE_W, WATERLINE } from './TextureLoader';
 import * as PIXI from 'pixi.js';

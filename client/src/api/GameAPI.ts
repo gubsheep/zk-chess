@@ -2,7 +2,7 @@ import {
   BoardCoords,
   MoveAttack,
   PlayerColor,
-} from '../app/Pixi/PixiTypes';
+} from '../app/Pixi/@PixiTypes';
 import {
   boardLocFromCoords,
   compareBoardCoords,

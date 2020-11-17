@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js';
-import { PixiManager } from '../../api/PixiManager';
-import { PieceType } from '../../_types/global/GlobalTypes';
-import { PixiObject } from './PixiObject';
-import { ClickState } from './MouseManager';
+import { PixiManager } from '../../../api/PixiManager';
+import { PieceType } from '../../../_types/global/GlobalTypes';
+import { ClickState } from '../MouseManager';
+import { PixiObject } from '../PixiObject';
 import { ShopCard, CARD_W, CARD_H } from './ShopCard';
 import { ShopModal } from './ShopModal';
 

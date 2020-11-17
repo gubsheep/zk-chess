@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { ZKPiece } from '../../_types/global/GlobalTypes';
 import Game from '../Game';
-import { CanvasCoords } from './PixiTypes';
+import { CanvasCoords } from './@PixiTypes';
 import { objFromHitArea } from './PixiUtils';
 
 const autoIncrement = (() => {

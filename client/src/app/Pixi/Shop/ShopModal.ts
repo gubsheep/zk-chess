@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js';
-import { PixiManager } from '../../api/PixiManager';
-import { PieceType } from '../../_types/global/GlobalTypes';
-import { PixiObject } from './PixiObject';
-import { pieceNames } from './PixiUtils';
+import { PixiManager } from '../../../api/PixiManager';
+import { PieceType } from '../../../_types/global/GlobalTypes';
+import { PixiObject } from '../PixiObject';
+import { pieceNames } from '../PixiUtils';
 import { CARD_W } from './ShopCard';
 
 const MODAL_W = 80;

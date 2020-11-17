@@ -1,11 +1,11 @@
 import * as PIXI from 'pixi.js';
-import { PixiManager } from '../../api/PixiManager';
-import { PieceType } from '../../_types/global/GlobalTypes';
-import { CHAR_W } from './Utils/FontLoader';
-import { PixiObject } from './PixiObject';
-import { LineAlignment } from './PixiTypes';
-import { ShipSprite } from './ShipSprite';
-import { getCoinSprite, BASELINE_ICONS, SPRITE_W } from './TextureLoader';
+import { PixiManager } from '../../../api/PixiManager';
+import { PieceType } from '../../../_types/global/GlobalTypes';
+import { LineAlignment } from '../@PixiTypes';
+import { PixiObject } from '../PixiObject';
+import { ShipSprite } from '../ShipSprite';
+import { getCoinSprite, BASELINE_ICONS, SPRITE_W } from '../TextureLoader';
+import { CHAR_W } from '../Utils/FontLoader';
 
 export const CARD_W = 46;
 export const CARD_H = 46;

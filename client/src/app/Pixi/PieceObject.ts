@@ -10,7 +10,7 @@ import {
   ZKPiece,
 } from '../../_types/global/GlobalTypes';
 import { PixiObject, Wrapper } from './PixiObject';
-import { BoardCoords, CanvasCoords, PlayerColor } from './PixiTypes';
+import { BoardCoords, CanvasCoords, PlayerColor } from './@PixiTypes';
 import { boardCoordsFromLoc } from './PixiUtils';
 import { ShipManager } from './ShipManager';
 import { ShipSprite } from './ShipSprite';

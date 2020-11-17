@@ -1,7 +1,7 @@
 import { PixiManager } from "../../../api/PixiManager";
 import { GAME_WIDTH, GAME_HEIGHT } from "./GameBoard";
 import { PixiObject } from "../PixiObject";
-import { BoardCoords } from "../PixiTypes";
+import { BoardCoords } from "../@PixiTypes";
 import { BoardCell, CELL_W } from "./BoardCell";
 
 const BORDER = 2;

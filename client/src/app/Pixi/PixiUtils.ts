@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
 import { BoardLocation } from '../../_types/global/GlobalTypes';
-import { BoardCoords, CanvasCoords, LineAlignment } from './PixiTypes';
+import { BoardCoords, CanvasCoords, LineAlignment } from './@PixiTypes';
 
 // general-purpose, smaller utils
 

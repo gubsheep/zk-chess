@@ -3,7 +3,7 @@ import { PixiManager } from '../../api/PixiManager';
 import { VisiblePiece, PieceType } from '../../_types/global/GlobalTypes';
 import { Wrapper } from './PixiObject';
 import { PieceObject } from './PieceObject';
-import { BoardCoords, CanvasCoords } from './PixiTypes';
+import { BoardCoords, CanvasCoords } from './@PixiTypes';
 import { boardCoordsFromLoc } from './PixiUtils';
 import { ShipSprite } from './ShipSprite';
 import { StatIcon, StatType, STATICON_W } from './StatIcon';

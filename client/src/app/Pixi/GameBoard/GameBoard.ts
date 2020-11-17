@@ -1,4 +1,4 @@
-import { BoardCoords, BoxBounds, CanvasCoords } from '../PixiTypes';
+import { BoardCoords, BoxBounds, CanvasCoords } from '../@PixiTypes';
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../../api/PixiManager';
 import { PixiObject } from '../PixiObject';

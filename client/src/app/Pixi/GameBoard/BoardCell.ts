@@ -3,7 +3,7 @@ import { PixiManager } from '../../../api/PixiManager';
 import Game from '../../Game';
 import { PixiObject } from '../PixiObject';
 import { ClickState } from '../MouseManager';
-import { CanvasCoords, BoardCoords, LineAlignment } from '../PixiTypes';
+import { CanvasCoords, BoardCoords, LineAlignment } from '../@PixiTypes';
 import { idxsIncludes, compareBoardCoords } from '../PixiUtils';
 import { Ship } from '../Ship';
 import { ShipSprite } from '../ShipSprite';

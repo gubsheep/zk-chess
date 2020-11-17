@@ -1,6 +1,6 @@
 import { PixiManager } from '../../api/PixiManager';
 import { PixiObject } from './PixiObject';
-import { PlayerColor } from './PixiTypes';
+import { PlayerColor } from './@PixiTypes';
 import { objectiveShader } from './Shaders';
 import { OBJECTIVE } from './TextureLoader';
 import * as PIXI from 'pixi.js';

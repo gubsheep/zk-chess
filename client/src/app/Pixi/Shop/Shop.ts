@@ -1,6 +1,6 @@
-import { PixiObject } from './PixiObject';
-import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { PieceType } from '../../_types/global/GlobalTypes';
+import { PixiManager, GameZIndex } from '../../../api/PixiManager';
+import { PieceType } from '../../../_types/global/GlobalTypes';
+import { PixiObject } from '../PixiObject';
 import { CARD_W } from './ShopCard';
 import { ShopItem } from './ShopItem';
 
