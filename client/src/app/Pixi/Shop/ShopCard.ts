@@ -4,8 +4,12 @@ import { PieceType } from '../../../_types/global/GlobalTypes';
 import { LineAlignment } from '../@PixiTypes';
 import { PixiObject } from '../PixiObject';
 import { ShipSprite } from '../Ships/ShipSprite';
-import { getCoinSprite, BASELINE_ICONS, SPRITE_W } from '../TextureLoader';
 import { CHAR_W } from '../Utils/FontLoader';
+import {
+  getCoinSprite,
+  BASELINE_ICONS,
+  SPRITE_W,
+} from '../Utils/TextureLoader';
 
 export const CARD_W = 46;
 export const CARD_H = 46;

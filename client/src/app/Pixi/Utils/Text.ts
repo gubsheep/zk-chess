@@ -1,7 +1,7 @@
-import { PixiManager } from '../../api/PixiManager';
-import { PixiObject } from './PixiObject';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
-import { CanvasCoords } from './@PixiTypes';
+import { PixiManager } from '../../../api/PixiManager';
+import { CanvasCoords } from '../@PixiTypes';
+import { PixiObject } from '../PixiObject';
 
 export enum TextAlign {
   Left,

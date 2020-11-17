@@ -4,11 +4,6 @@ import {
   PlayerColor,
 } from '../app/Pixi/@PixiTypes';
 import {
-  boardLocFromCoords,
-  compareBoardCoords,
-  taxiCab,
-} from '../app/Pixi/PixiUtils';
-import {
   ChessGame,
   EthAddress,
   GameStatus,
@@ -25,6 +20,7 @@ import { findPath, getObstacles } from '../utils/Utils';
 import { Ship } from '../app/Pixi/Ships/Ship';
 import { PieceObject } from '../app/Pixi/PieceObject';
 import { Submarine } from '../app/Pixi/Ships/Submarine';
+import { boardLocFromCoords, compareBoardCoords, taxiCab } from '../app/Pixi/Utils/PixiUtils';
 
 export class GameAPI {
   private pixiManager: PixiManager;

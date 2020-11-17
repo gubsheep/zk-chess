@@ -2,9 +2,9 @@ import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../../api/PixiManager';
 import { PixiObject } from '../PixiObject';
 import { ClickState } from '../MouseManager';
-import { LinkObject, TextAlign } from '../Text';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';
+import { LinkObject, TextAlign } from '../Utils/Text';
 
 export class ToggleButton extends GameBoardObject {
   text: LinkObject;

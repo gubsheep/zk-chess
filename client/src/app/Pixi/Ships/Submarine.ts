@@ -3,7 +3,7 @@ import { PixiManager } from '../../../api/PixiManager';
 import { ZKPiece, isKnown } from '../../../_types/global/GlobalTypes';
 import { CanvasCoords, PlayerColor } from '../@PixiTypes';
 import { PieceObject } from '../PieceObject';
-import { boardCoordsFromLoc } from '../PixiUtils';
+import { boardCoordsFromLoc } from '../Utils/PixiUtils';
 
 export const SUB_X = 6;
 export const SUB_Y = 11;

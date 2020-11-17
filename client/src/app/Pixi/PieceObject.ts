@@ -7,8 +7,8 @@ import {
   PieceType,
 } from '../../_types/global/GlobalTypes';
 import { PixiObject, Wrapper } from './PixiObject';
-import { BoardCoords, CanvasCoords, PlayerColor } from './@PixiTypes';
-import { boardCoordsFromLoc } from './PixiUtils';
+import { BoardCoords, CanvasCoords } from './@PixiTypes';
+import { boardCoordsFromLoc } from './Utils/PixiUtils';
 import { ShipManager } from './Ships/ShipManager';
 import { ShipSprite } from './Ships/ShipSprite';
 

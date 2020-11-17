@@ -1,7 +1,7 @@
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
 import { BoardCoords } from '../@PixiTypes';
 import { PixiObject } from '../PixiObject';
-import { compareBoardCoords } from '../PixiUtils';
+import { compareBoardCoords } from '../Utils/PixiUtils';
 import { Ship } from './Ship';
 import { Submarine } from './Submarine';
 

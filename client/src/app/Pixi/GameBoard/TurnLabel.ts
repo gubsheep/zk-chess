@@ -2,9 +2,9 @@ import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { CHAR_H } from '../Utils/FontLoader';
 import { PixiObject } from '../PixiObject';
-import { TextAlign, TextObject } from '../Text';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';
+import { TextObject, TextAlign } from '../Utils/Text';
 
 export class TurnLabel extends GameBoardObject {
   yourTurn: PixiObject;

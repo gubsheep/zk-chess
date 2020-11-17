@@ -4,7 +4,7 @@ import Game from '../../Game';
 import { PixiObject } from '../PixiObject';
 import { ClickState } from '../MouseManager';
 import { CanvasCoords, BoardCoords, LineAlignment } from '../@PixiTypes';
-import { idxsIncludes, compareBoardCoords } from '../PixiUtils';
+import { idxsIncludes, compareBoardCoords } from '../Utils/PixiUtils';
 import { Ship } from '../Ships/Ship';
 import { ShipSprite } from '../Ships/ShipSprite';
 

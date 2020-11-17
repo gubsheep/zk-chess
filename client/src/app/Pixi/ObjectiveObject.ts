@@ -3,9 +3,9 @@ import { Objective } from '../../_types/global/GlobalTypes';
 import { PixiObject, Wrapper } from './PixiObject';
 import { ObjectiveSprite } from './ObjectiveSprite';
 import { BoardCoords } from './@PixiTypes';
-import { boardCoordsFromLoc } from './PixiUtils';
-import { SPRITE_W, WATERLINE } from './TextureLoader';
 import * as PIXI from 'pixi.js';
+import { boardCoordsFromLoc } from './Utils/PixiUtils';
+import { WATERLINE, SPRITE_W } from './Utils/TextureLoader';
 
 // TODO write gridobject abstraction for this and ships?
 export class ObjectiveObject extends PixiObject {

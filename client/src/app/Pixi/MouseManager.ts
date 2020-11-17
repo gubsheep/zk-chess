@@ -2,7 +2,7 @@ import { PixiManager } from '../../api/PixiManager';
 import { PieceType } from '../../_types/global/GlobalTypes';
 import { PieceObject } from './PieceObject';
 import { BoardCoords, MoveAttack } from './@PixiTypes';
-import { compareBoardCoords, idxsIncludes } from './PixiUtils';
+import { compareBoardCoords, idxsIncludes } from './Utils/PixiUtils';
 import { Ship } from './Ships/Ship';
 import { Submarine } from './Ships/Submarine';
 

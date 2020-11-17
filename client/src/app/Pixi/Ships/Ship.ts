@@ -4,10 +4,10 @@ import { VisiblePiece, PieceType } from '../../../_types/global/GlobalTypes';
 import { Wrapper } from '../PixiObject';
 import { PieceObject } from '../PieceObject';
 import { BoardCoords, CanvasCoords } from '../@PixiTypes';
-import { boardCoordsFromLoc } from '../PixiUtils';
+import { boardCoordsFromLoc } from '../Utils/PixiUtils';
+import { StatIcon, StatType, STATICON_W } from '../Utils/StatIcon';
+import { SPRITE_W } from '../Utils/TextureLoader';
 import { ShipSprite } from './ShipSprite';
-import { StatIcon, StatType, STATICON_W } from '../StatIcon';
-import { SPRITE_W } from '../TextureLoader';
 
 const waterline = (type: PieceType): number => {
   if (type === PieceType.Submarine_04) return 32;

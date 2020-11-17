@@ -2,8 +2,8 @@ import { PixiManager } from '../../../api/PixiManager';
 import { PieceType } from '../../../_types/global/GlobalTypes';
 import { PlayerColor } from '../@PixiTypes';
 import { PixiObject } from '../PixiObject';
-import { playerShader } from '../Shaders';
-import { SHIPS, SPRITE_W } from '../TextureLoader';
+import { playerShader } from '../Utils/Shaders';
+import { SHIPS, SPRITE_W } from '../Utils/TextureLoader';
 
 export class ShipSprite extends PixiObject {
   type: PieceType | null;

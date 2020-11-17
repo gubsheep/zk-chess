@@ -1,7 +1,6 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
 import { PixiObject } from '../app/Pixi/PixiObject';
-import { FONT, loadTextures } from '../app/Pixi/TextureLoader';
 import { ResourceBars } from '../app/Pixi/ResourceBars';
 import { Shop } from '../app/Pixi/Shop/Shop';
 import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
@@ -12,6 +11,7 @@ import { ObjectiveManager } from '../app/Pixi/ObjectiveManager';
 import { Background } from '../app/Pixi/Utils/Background';
 import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
 import { ShipManager } from '../app/Pixi/Ships/ShipManager';
+import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
 
 type InitProps = {
   canvas: HTMLCanvasElement;

@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { PlayerColor } from './@PixiTypes';
+import { PlayerColor } from '../@PixiTypes';
 
 const toStrSafe = (x: any) => (x ? x.toString() : '');
 const glsl = (arr: TemplateStringsArray, ...args: any[]): string =>
