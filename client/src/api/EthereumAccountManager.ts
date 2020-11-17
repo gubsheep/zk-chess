@@ -53,15 +53,13 @@ class EthereumAccountManager extends EventEmitter {
     try {
       this.rpcURL = url;
       const newProvider = new providers.JsonRpcProvider(this.rpcURL);
+      this.provider = newProvider;
+      this.provider.pollingInterval = 4000;
       if (isProd) {
         if ((await newProvider.getNetwork()).chainId !== XDAI_CHAIN_ID) {
           throw new Error('not a valid xDAI RPC URL');
         }
       }
-      // TODO need to set provider to something before an async call, otherwise other async
-      // calls will fail as provider has not yet been set by this point
-      this.provider = newProvider;
-      this.provider.pollingInterval = 8000;
       if (this.signer) {
         this.signer = new Wallet(this.signer.privateKey, this.provider);
       } else {
