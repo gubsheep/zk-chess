@@ -1,8 +1,9 @@
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { GameObject, Wrapper } from './GameObject';
+import { GameObject } from './GameObject';
 import { BoardCoords } from './PixiTypes';
 import { compareBoardCoords } from './PixiUtils';
-import { Ship, Submarine } from './Ships';
+import { Ship } from './Ship';
+import { Submarine } from './Submarine';
 
 enum ShipZIndex {
   Below,

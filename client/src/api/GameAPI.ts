@@ -3,7 +3,6 @@ import {
   MoveAttack,
   PlayerColor,
 } from '../app/PixiUtils/PixiTypes';
-import { PieceObject, Ship, Submarine } from '../app/PixiUtils/Ships';
 import {
   boardLocFromCoords,
   compareBoardCoords,
@@ -24,6 +23,9 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../app/PixiUtils/GameBoard';
 import autoBind from 'auto-bind';
 import { findPath, getObstacles } from '../utils/Utils';
 import { BoardCell } from '../app/PixiUtils/GameBoardComponents/BoardCell';
+import { Ship } from '../app/PixiUtils/Ship';
+import { PieceObject } from '../app/PixiUtils/PieceObject';
+import { Submarine } from '../app/PixiUtils/Submarine';
 
 export class GameAPI {
   private pixiManager: PixiManager;
@@ -331,7 +333,7 @@ export class GameAPI {
     // TODO make this get data from contract
     const data = this.getStats(type);
     const dist = taxiCab(from, to);
-    if (0 /* min range */ <= dist && dist <= data.mvRange) {
+    if (0 /* min range */ <= dist && dist <= data.atkRange) {
       const ship = this.shipAt(to);
       if (ship && this.ownedByMe(ship)) return false;
       return true;
