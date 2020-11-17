@@ -1,6 +1,6 @@
 import { PixiManager } from '../../api/PixiManager';
 import { Objective } from '../../_types/global/GlobalTypes';
-import { GameObject, Wrapper } from './GameObject';
+import { PixiObject, Wrapper } from './PixiObject';
 import { ObjectiveSprite } from './ObjectiveSprite';
 import { BoardCoords } from './PixiTypes';
 import { boardCoordsFromLoc } from './PixiUtils';
@@ -8,11 +8,11 @@ import { SPRITE_W, WATERLINE } from './TextureLoader';
 import * as PIXI from 'pixi.js';
 
 // TODO write gridobject abstraction for this and ships?
-export class ObjectiveObject extends GameObject {
+export class ObjectiveObject extends PixiObject {
   objectiveData: Objective;
   sprite: ObjectiveSprite;
   mask: PIXI.Graphics;
-  waterline: GameObject;
+  waterline: PixiObject;
 
   constructor(manager: PixiManager, objective: Objective) {
     super(manager);

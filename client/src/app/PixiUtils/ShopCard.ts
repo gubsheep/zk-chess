@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
 import { PieceType } from '../../_types/global/GlobalTypes';
-import { CHAR_W } from './FontLoader';
-import { GameObject } from './GameObject';
+import { CHAR_W } from '../Pixi/Utils/FontLoader';
+import { PixiObject } from './PixiObject';
 import { LineAlignment } from './PixiTypes';
 import { ShipSprite } from './ShipSprite';
 import { getCoinSprite, BASELINE_ICONS, SPRITE_W } from './TextureLoader';
@@ -10,7 +10,7 @@ import { getCoinSprite, BASELINE_ICONS, SPRITE_W } from './TextureLoader';
 export const CARD_W = 46;
 export const CARD_H = 46;
 
-export class ShopCard extends GameObject {
+export class ShopCard extends PixiObject {
   type: PieceType;
   hover: boolean;
   bgOverlay: PIXI.DisplayObject;

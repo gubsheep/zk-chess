@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
-import { GameObject } from './GameObject';
+import { PixiObject } from './PixiObject';
 import { TextAlign, TextObject } from './Text';
 import { getBombSprite, getHeartSprite } from './TextureLoader';
 
@@ -16,7 +16,7 @@ export const getStatSprite = (stat: StatType): PIXI.Sprite => {
   else return getHeartSprite();
 };
 
-export class StatIcon extends GameObject {
+export class StatIcon extends PixiObject {
   type: StatType;
   text: TextObject;
   value: number;

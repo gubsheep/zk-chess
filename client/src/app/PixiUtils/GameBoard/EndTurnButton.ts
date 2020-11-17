@@ -1,5 +1,5 @@
 import { PixiManager } from '../../../api/PixiManager';
-import { CHAR_H } from '../FontLoader';
+import { CHAR_H } from '../../Pixi/Utils/FontLoader';
 import { LinkObject, TextAlign } from '../Text';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';

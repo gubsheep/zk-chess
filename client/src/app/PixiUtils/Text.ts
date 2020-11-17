@@ -1,5 +1,5 @@
 import { PixiManager } from '../../api/PixiManager';
-import { GameObject } from './GameObject';
+import { PixiObject } from './PixiObject';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { CanvasCoords } from './PixiTypes';
 
@@ -9,7 +9,7 @@ export enum TextAlign {
   Right,
 }
 
-export class TextObject extends GameObject {
+export class TextObject extends PixiObject {
   width: number;
   text: string;
   color: number;

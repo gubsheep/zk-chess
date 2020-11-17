@@ -1,12 +1,12 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
 import { PieceType } from '../../_types/global/GlobalTypes';
-import { GameObject } from './GameObject';
+import { PixiObject } from './PixiObject';
 import { ClickState } from './MouseManager';
 import { ShopCard, CARD_W, CARD_H } from './ShopCard';
 import { ShopModal } from './ShopModal';
 
-export class ShopItem extends GameObject {
+export class ShopItem extends PixiObject {
   modal: ShopModal;
   card: ShopCard;
 

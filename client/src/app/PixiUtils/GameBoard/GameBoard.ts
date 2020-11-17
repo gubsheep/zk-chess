@@ -1,18 +1,18 @@
-import { BoardCoords, BoxBounds, CanvasCoords } from './PixiTypes';
+import { BoardCoords, BoxBounds, CanvasCoords } from '../PixiTypes';
 import * as PIXI from 'pixi.js';
-import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { GameObject } from './GameObject';
-import { BoardCell, CELL_W } from './GameBoardComponents/BoardCell';
-import { ConfirmCancelButtons } from './GameBoardComponents/ConfirmCancelButtons';
-import { TurnLabel } from './GameBoardComponents/TurnLabel';
-import { ToggleButton } from './GameBoardComponents/ToggleButton';
-import { EndTurnButton } from './GameBoardComponents/EndTurnButton';
-import { GameGrid } from './GameBoardComponents/GameGrid';
+import { GameZIndex, PixiManager } from '../../../api/PixiManager';
+import { PixiObject } from '../PixiObject';
+import { BoardCell } from './BoardCell';
+import { ConfirmCancelButtons } from './ConfirmCancelButtons';
+import { EndTurnButton } from './EndTurnButton';
+import { GameGrid } from './GameGrid';
+import { ToggleButton } from './ToggleButton';
+import { TurnLabel } from './TurnLabel';
 
 export const GAME_WIDTH = 7;
 export const GAME_HEIGHT = 5;
 
-export class GameBoard extends GameObject {
+export class GameBoard extends PixiObject {
   bounds: BoxBounds;
   grid: GameGrid;
 

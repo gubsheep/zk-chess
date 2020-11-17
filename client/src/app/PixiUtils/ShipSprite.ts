@@ -1,12 +1,12 @@
 import { PixiManager } from '../../api/PixiManager';
-import { GameObject } from './GameObject';
+import { PixiObject } from './PixiObject';
 import * as PIXI from 'pixi.js';
 import { PieceType } from '../../_types/global/GlobalTypes';
 import { PlayerColor } from './PixiTypes';
 import { playerShader } from './Shaders';
 import { SHIPS, SPRITE_W } from './TextureLoader';
 
-export class ShipSprite extends GameObject {
+export class ShipSprite extends PixiObject {
   type: PieceType | null;
   color: PlayerColor | null;
   rect: PIXI.Graphics;

@@ -24,15 +24,15 @@ export enum PixiEvents {
 type HandlerProps = Record<PixiEvents, Function>;
 
 // TODO do this smartly using typescript
-export type GameObjectInteractiveProps = {
+export type InteractiveProps = {
   hitArea?: PIXI.Rectangle;
   debug?: boolean;
 } & Partial<HandlerProps>;
 // top-level game object abstraction. all of our game things should be wrapped in these guys
-export class GameObject {
+export class PixiObject {
   objectId: number;
   object: PIXI.Container;
-  children: GameObject[];
+  children: PixiObject[];
 
   manager: PixiManager;
 
@@ -66,14 +66,14 @@ export class GameObject {
     autoBind(this);
   }
 
-  addChild(...children: GameObject[]): void {
+  addChild(...children: PixiObject[]): void {
     children.forEach((child) => {
       this.object.addChild(child.object);
       this.children.push(child);
     });
   }
 
-  removeChild(...children: GameObject[]): void {
+  removeChild(...children: PixiObject[]): void {
     children.forEach((child) => {
       this.object.removeChild(child.object);
       for (let i = 0; i < this.children.length; i++) {
@@ -111,7 +111,7 @@ export class GameObject {
     if (y !== undefined) this.object.y = y;
   }
 
-  setInteractive(props: GameObjectInteractiveProps | null): void {
+  setInteractive(props: InteractiveProps | null): void {
     if (props === null) {
       this.object.interactive = false;
       this.object.removeAllListeners();
@@ -148,7 +148,7 @@ export class GameObject {
   }
 }
 
-export class Wrapper extends GameObject {
+export class Wrapper extends PixiObject {
   constructor(manager: PixiManager, object: PIXI.Container) {
     super(manager);
     this.object.addChild(object);

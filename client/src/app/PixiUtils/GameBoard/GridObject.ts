@@ -1,8 +1,8 @@
 import { PixiManager } from '../../../api/PixiManager';
-import { GameObject } from '../GameObject';
+import { PixiObject } from '../PixiObject';
 import { GameGrid } from './GameGrid';
 
-export class GameBoardObject extends GameObject {
+export class GameBoardObject extends PixiObject {
   constructor(manager: PixiManager, grid: GameGrid) {
     super(manager);
 

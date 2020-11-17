@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import Game from '../../Game';
-import { GameObject } from '../GameObject';
+import { PixiObject } from '../PixiObject';
 import { ClickState } from '../MouseManager';
 import { CanvasCoords, BoardCoords, LineAlignment } from '../PixiTypes';
 import { idxsIncludes, compareBoardCoords } from '../PixiUtils';
@@ -15,7 +15,7 @@ enum BoardCellZIndex {
   Staged,
 }
 
-class BoardRect extends GameObject {
+class BoardRect extends PixiObject {
   rect: PIXI.Graphics;
   idx: BoardCoords;
   constructor(manager: PixiManager, idx: BoardCoords) {
@@ -107,7 +107,7 @@ class BoardRect extends GameObject {
   }
 }
 
-class StagedShip extends GameObject {
+class StagedShip extends PixiObject {
   sprite: ShipSprite;
   idx: BoardCoords;
 
@@ -151,7 +151,7 @@ class StagedShip extends GameObject {
   }
 }
 
-export class BoardCell extends GameObject {
+export class BoardCell extends PixiObject {
   topLeft: CanvasCoords;
   ship: Ship | null;
   submarines: Ship[];

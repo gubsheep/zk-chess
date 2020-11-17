@@ -1,11 +1,10 @@
-import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { GameObject } from './GameObject';
-import { BG_IMAGE } from './TextureLoader';
-import * as PIXI from 'pixi.js';
-import { BGShaderUniforms, perlinFrag } from './Shaders';
-import { makeRect } from './PixiUtils';
+import { PixiManager, GameZIndex } from '../../../api/PixiManager';
+import { PixiObject } from '../../PixiUtils/PixiObject';
+import { makeRect } from '../../PixiUtils/PixiUtils';
+import { BGShaderUniforms, perlinFrag } from '../../PixiUtils/Shaders';
+import { BG_IMAGE } from '../../PixiUtils/TextureLoader';
 
-export class Background extends GameObject {
+export class Background extends PixiObject {
   shader: PIXI.Filter;
 
   constructor(manager: PixiManager) {

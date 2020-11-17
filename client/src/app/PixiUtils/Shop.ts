@@ -1,4 +1,4 @@
-import { GameObject } from './GameObject';
+import { PixiObject } from './PixiObject';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { PieceType } from '../../_types/global/GlobalTypes';
 import { CARD_W } from './ShopCard';
@@ -8,7 +8,7 @@ const NUM_SHIPS = 5;
 
 const CARD_MARGIN = 4;
 
-export class Shop extends GameObject {
+export class Shop extends PixiObject {
   constructor(manager: PixiManager) {
     super(manager, GameZIndex.Shop);
 

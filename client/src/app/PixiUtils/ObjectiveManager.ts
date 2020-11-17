@@ -1,10 +1,10 @@
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { Objective } from '../../_types/global/GlobalTypes';
-import { GameObject, Wrapper } from './GameObject';
+import { PixiObject, Wrapper } from './PixiObject';
 import { ObjectiveObject } from './ObjectiveObject';
 import * as PIXI from 'pixi.js';
 
-export class ObjectiveManager extends GameObject {
+export class ObjectiveManager extends PixiObject {
   objectives: ObjectiveObject[];
   objLayer: Wrapper;
 

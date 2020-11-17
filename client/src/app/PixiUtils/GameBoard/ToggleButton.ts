@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../../api/PixiManager';
-import { GameObject } from '../GameObject';
+import { PixiObject } from '../PixiObject';
 import { ClickState } from '../MouseManager';
 import { LinkObject, TextAlign } from '../Text';
 import { GameGrid } from './GameGrid';

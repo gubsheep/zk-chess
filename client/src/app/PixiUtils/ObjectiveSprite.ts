@@ -1,11 +1,11 @@
 import { PixiManager } from '../../api/PixiManager';
-import { GameObject } from './GameObject';
+import { PixiObject } from './PixiObject';
 import { PlayerColor } from './PixiTypes';
 import { objectiveShader } from './Shaders';
 import { OBJECTIVE } from './TextureLoader';
 import * as PIXI from 'pixi.js';
 
-export class ObjectiveSprite extends GameObject {
+export class ObjectiveSprite extends PixiObject {
   color: PlayerColor | null;
 
   constructor(manager: PixiManager, color: PlayerColor | null = null) {

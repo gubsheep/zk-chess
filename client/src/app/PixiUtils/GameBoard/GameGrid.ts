@@ -1,12 +1,12 @@
 import { PixiManager } from "../../../api/PixiManager";
-import { GAME_WIDTH, GAME_HEIGHT } from "../GameBoard";
-import { GameObject } from "../GameObject";
+import { GAME_WIDTH, GAME_HEIGHT } from "./GameBoard";
+import { PixiObject } from "../PixiObject";
 import { BoardCoords } from "../PixiTypes";
 import { BoardCell, CELL_W } from "./BoardCell";
 
 const BORDER = 2;
 
-export class GameGrid extends GameObject {
+export class GameGrid extends PixiObject {
   cells: BoardCell[][];
 
   width: number;

@@ -1,14 +1,14 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
-import { CHAR_H } from '../FontLoader';
-import { GameObject } from '../GameObject';
+import { CHAR_H } from '../../Pixi/Utils/FontLoader';
+import { PixiObject } from '../PixiObject';
 import { TextAlign, TextObject } from '../Text';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';
 
 export class TurnLabel extends GameBoardObject {
-  yourTurn: GameObject;
-  enemyTurn: GameObject;
+  yourTurn: PixiObject;
+  enemyTurn: PixiObject;
 
   constructor(manager: PixiManager, grid: GameGrid) {
     super(manager, grid);

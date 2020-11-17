@@ -1,14 +1,14 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
 import { PieceType } from '../../_types/global/GlobalTypes';
-import { GameObject } from './GameObject';
+import { PixiObject } from './PixiObject';
 import { pieceNames } from './PixiUtils';
 import { CARD_W } from './ShopCard';
 
 const MODAL_W = 80;
 const MODAL_H = 60;
 
-export class ShopModal extends GameObject {
+export class ShopModal extends PixiObject {
   type: PieceType;
   hover: boolean;
 

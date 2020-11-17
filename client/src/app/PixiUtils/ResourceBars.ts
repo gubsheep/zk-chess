@@ -1,5 +1,5 @@
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { GameObject } from './GameObject';
+import { PixiObject } from './PixiObject';
 import * as PIXI from 'pixi.js';
 import { BASELINE_ICONS, BASELINE_TEXT, ICONS } from './TextureLoader';
 import { CanvasCoords } from './PixiTypes';
@@ -31,7 +31,7 @@ function makeRow(icon: string, length: number): PIXI.DisplayObject {
   return row;
 }
 
-class ResourceBar extends GameObject {
+class ResourceBar extends PixiObject {
   label: TextObject;
   numbersObj: TextObject;
 
@@ -188,7 +188,7 @@ export class HPBar extends ResourceBar {
   }
 }
 
-export class ResourceBars extends GameObject {
+export class ResourceBars extends PixiObject {
   hpBar: HPBar;
   goldBar: GoldBar;
   constructor(manager: PixiManager) {

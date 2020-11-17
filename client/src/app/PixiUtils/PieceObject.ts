@@ -9,7 +9,7 @@ import {
   VisiblePiece,
   ZKPiece,
 } from '../../_types/global/GlobalTypes';
-import { GameObject, Wrapper } from './GameObject';
+import { PixiObject, Wrapper } from './PixiObject';
 import { BoardCoords, CanvasCoords, PlayerColor } from './PixiTypes';
 import { boardCoordsFromLoc } from './PixiUtils';
 import { ShipManager } from './ShipManager';
@@ -23,7 +23,7 @@ export enum ShipState {
   Attacked,
 }
 
-export class PieceObject extends GameObject {
+export class PieceObject extends PixiObject {
   pieceData: Piece;
 
   sprite: ShipSprite;

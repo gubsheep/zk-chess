@@ -1,5 +1,5 @@
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { GameObject } from './GameObject';
+import { PixiObject } from './PixiObject';
 import { BoardCoords } from './PixiTypes';
 import { compareBoardCoords } from './PixiUtils';
 import { Ship } from './Ship';
@@ -10,7 +10,7 @@ enum ShipZIndex {
   Above,
 }
 
-class PieceLayer extends GameObject {
+class PieceLayer extends PixiObject {
   showWhen: boolean;
 
   constructor(manager: PixiManager, showWhen: boolean) {
@@ -28,7 +28,7 @@ class PieceLayer extends GameObject {
   }
 }
 
-export class ShipManager extends GameObject {
+export class ShipManager extends PixiObject {
   shipLayer: PieceLayer;
   subLayer: PieceLayer;
 
@@ -46,7 +46,7 @@ export class ShipManager extends GameObject {
     this.addChild(this.shipLayer, this.subLayer);
   }
 
-  removeLazy(obj: GameObject) {
+  removeLazy(obj: PixiObject) {
     obj.setActive(false);
   }
 
