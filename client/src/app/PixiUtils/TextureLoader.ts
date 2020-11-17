@@ -1,8 +1,9 @@
 import * as PIXI from 'pixi.js';
-import { PieceType } from '../../_types/global/GlobalTypes';
-import { PlayerColor } from './PixiTypes';
-import { playerShader } from './Shaders';
+import {PieceType} from '../../_types/global/GlobalTypes';
+import {PlayerColor} from './PixiTypes';
+import {playerShader} from './Shaders';
 
+// TODO make this battleship/public
 const PATH = 'public/assets/';
 const imgUri = (file: string) => PATH + file;
 

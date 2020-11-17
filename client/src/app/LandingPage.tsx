@@ -1,12 +1,12 @@
 import React from 'react';
-import { useState } from 'react';
+import {useState} from 'react';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
-import { ContractEvent } from '../_types/darkforest/api/ContractsAPITypes';
-import { EthAddress, GameStatus } from '../_types/global/GlobalTypes';
+import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
+import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
 import Game from './Game';
 import styled from 'styled-components';
 
@@ -61,16 +61,20 @@ export function LandingPage() {
   const selectAccount = (id: EthAddress) => async () => {
     const ethConnection = EthereumAccountManager.getInstance();
     ethConnection.setAccount(id);
-
-    setInitState(InitState.FETCHING_ETH_DATA);
-    let newGameManager: AbstractGameManager;
-    newGameManager = await GameManager.create();
-    setGameManager(newGameManager);
-    setGameIds(newGameManager.getAllGameIds());
-    newGameManager.on(ContractEvent.CreatedGame, () => {
+    try {
+      setInitState(InitState.FETCHING_ETH_DATA);
+      let newGameManager: AbstractGameManager;
+      newGameManager = await GameManager.create();
+      setGameManager(newGameManager);
       setGameIds(newGameManager.getAllGameIds());
-    });
-    setInitState(InitState.DISPLAY_GAMES);
+      newGameManager.on(ContractEvent.CreatedGame, () => {
+        setGameIds(newGameManager.getAllGameIds());
+      });
+      setInitState(InitState.DISPLAY_GAMES);
+    } catch (e) {
+      console.error(e);
+      setInitState(InitState.DISPLAY_ACCOUNTS);
+    }
   };
 
   const selectGame = (id: string) => async () => {

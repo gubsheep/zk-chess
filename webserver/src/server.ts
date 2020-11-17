@@ -1,12 +1,12 @@
 import express, {Request, Response} from 'express';
 import path from 'path';
 import http from 'http';
-import cors from 'cors';
+// import cors from 'cors';
 
 const PORT = 3000;
 
 const app = express();
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 
 const httpServer = http.createServer(app);

@@ -75,7 +75,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './index.html',
     }),
-    new CopyPlugin([{from: 'public', to: 'public'}]),
+    new CopyPlugin([{from: 'public', to: 'battleship/public'}]),
   ],
 
   // When importing a module whose path matches one of the following, just

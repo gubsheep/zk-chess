@@ -7,7 +7,6 @@ import {EventEmitter} from 'events';
 import {XDAI_CHAIN_ID} from '../utils/constants';
 
 const isProd = process.env.NODE_ENV === 'production';
-// const isProd = true;
 
 class EthereumAccountManager extends EventEmitter {
   static instance: EthereumAccountManager | null = null;
@@ -59,6 +58,8 @@ class EthereumAccountManager extends EventEmitter {
           throw new Error('not a valid xDAI RPC URL');
         }
       }
+      // TODO need to set provider to something before an async call, otherwise other async
+      // calls will fail as provider has not yet been set by this point
       this.provider = newProvider;
       this.provider.pollingInterval = 8000;
       if (this.signer) {
@@ -88,16 +89,18 @@ class EthereumAccountManager extends EventEmitter {
 
   public async loadGameContract(contractAddress: string): Promise<Contract> {
     const contractABI = (
-      await fetch('/public/contracts/ZKChessGame.json').then((x) => x.json())
+      await fetch('/battleship/public/contracts/ZKChessGame.json').then((x) =>
+        x.json()
+      )
     ).abi;
     return this.loadContract(contractAddress, contractABI);
   }
 
   public async loadFactoryContract(): Promise<Contract> {
     const contractABI = (
-      await fetch('/public/contracts/ZKChessGameFactory.json').then((x) =>
-        x.json()
-      )
+      await fetch(
+        '/battleship/public/contracts/ZKChessGameFactory.json'
+      ).then((x) => x.json())
     ).abi;
 
     const contractAddress = isProd
