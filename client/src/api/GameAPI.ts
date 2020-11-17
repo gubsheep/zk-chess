@@ -331,7 +331,7 @@ export class GameAPI {
     // TODO make this get data from contract
     const data = this.getStats(type);
     const dist = taxiCab(from, to);
-    if (0 /* min range */ <= dist && dist <= data.mvRange) {
+    if (0 /* min range */ <= dist && dist <= data.atkRange) {
       const ship = this.shipAt(to);
       if (ship && this.ownedByMe(ship)) return false;
       return true;
