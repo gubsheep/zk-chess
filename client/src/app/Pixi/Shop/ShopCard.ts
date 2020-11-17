@@ -3,7 +3,7 @@ import { PixiManager } from '../../../api/PixiManager';
 import { PieceType } from '../../../_types/global/GlobalTypes';
 import { LineAlignment } from '../@PixiTypes';
 import { PixiObject } from '../PixiObject';
-import { ShipSprite } from '../ShipSprite';
+import { ShipSprite } from '../Ships/ShipSprite';
 import { getCoinSprite, BASELINE_ICONS, SPRITE_W } from '../TextureLoader';
 import { CHAR_W } from '../Utils/FontLoader';
 

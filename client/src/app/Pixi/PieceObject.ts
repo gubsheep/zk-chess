@@ -1,20 +1,16 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
 import {
-  isKnown,
   isLocatable,
   isZKPiece,
   Piece,
   PieceType,
-  VisiblePiece,
-  ZKPiece,
 } from '../../_types/global/GlobalTypes';
 import { PixiObject, Wrapper } from './PixiObject';
 import { BoardCoords, CanvasCoords, PlayerColor } from './@PixiTypes';
 import { boardCoordsFromLoc } from './PixiUtils';
-import { ShipManager } from './ShipManager';
-import { ShipSprite } from './ShipSprite';
-
+import { ShipManager } from './Ships/ShipManager';
+import { ShipSprite } from './Ships/ShipSprite';
 
 export enum ShipState {
   Summoned,
@@ -88,6 +84,3 @@ export class PieceObject extends PixiObject {
     this.setActive(this.pieceData.alive);
   }
 }
-
-
-

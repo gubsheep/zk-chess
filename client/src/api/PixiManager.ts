@@ -8,10 +8,10 @@ import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
 import { MouseManager } from '../app/Pixi/MouseManager';
 import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
-import { ShipManager } from '../app/Pixi/ShipManager';
 import { ObjectiveManager } from '../app/Pixi/ObjectiveManager';
 import { Background } from '../app/Pixi/Utils/Background';
 import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
+import { ShipManager } from '../app/Pixi/Ships/ShipManager';
 
 type InitProps = {
   canvas: HTMLCanvasElement;

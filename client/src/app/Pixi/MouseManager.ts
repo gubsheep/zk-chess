@@ -3,8 +3,8 @@ import { PieceType } from '../../_types/global/GlobalTypes';
 import { PieceObject } from './PieceObject';
 import { BoardCoords, MoveAttack } from './@PixiTypes';
 import { compareBoardCoords, idxsIncludes } from './PixiUtils';
-import { Ship } from './Ship';
-import { Submarine } from './Submarine';
+import { Ship } from './Ships/Ship';
+import { Submarine } from './Ships/Submarine';
 
 export enum ClickState {
   None,

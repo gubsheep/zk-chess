@@ -1,13 +1,13 @@
 import * as PIXI from 'pixi.js';
-import { PixiManager } from '../../api/PixiManager';
-import { VisiblePiece, PieceType } from '../../_types/global/GlobalTypes';
-import { Wrapper } from './PixiObject';
-import { PieceObject } from './PieceObject';
-import { BoardCoords, CanvasCoords } from './@PixiTypes';
-import { boardCoordsFromLoc } from './PixiUtils';
+import { PixiManager } from '../../../api/PixiManager';
+import { VisiblePiece, PieceType } from '../../../_types/global/GlobalTypes';
+import { Wrapper } from '../PixiObject';
+import { PieceObject } from '../PieceObject';
+import { BoardCoords, CanvasCoords } from '../@PixiTypes';
+import { boardCoordsFromLoc } from '../PixiUtils';
 import { ShipSprite } from './ShipSprite';
-import { StatIcon, StatType, STATICON_W } from './StatIcon';
-import { SPRITE_W } from './TextureLoader';
+import { StatIcon, StatType, STATICON_W } from '../StatIcon';
+import { SPRITE_W } from '../TextureLoader';
 
 const waterline = (type: PieceType): number => {
   if (type === PieceType.Submarine_04) return 32;

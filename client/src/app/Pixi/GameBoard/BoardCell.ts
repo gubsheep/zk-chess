@@ -5,8 +5,8 @@ import { PixiObject } from '../PixiObject';
 import { ClickState } from '../MouseManager';
 import { CanvasCoords, BoardCoords, LineAlignment } from '../@PixiTypes';
 import { idxsIncludes, compareBoardCoords } from '../PixiUtils';
-import { Ship } from '../Ship';
-import { ShipSprite } from '../ShipSprite';
+import { Ship } from '../Ships/Ship';
+import { ShipSprite } from '../Ships/ShipSprite';
 
 export const CELL_W = 36;
 

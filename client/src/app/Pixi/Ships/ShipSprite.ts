@@ -1,10 +1,9 @@
-import { PixiManager } from '../../api/PixiManager';
-import { PixiObject } from './PixiObject';
-import * as PIXI from 'pixi.js';
-import { PieceType } from '../../_types/global/GlobalTypes';
-import { PlayerColor } from './@PixiTypes';
-import { playerShader } from './Shaders';
-import { SHIPS, SPRITE_W } from './TextureLoader';
+import { PixiManager } from '../../../api/PixiManager';
+import { PieceType } from '../../../_types/global/GlobalTypes';
+import { PlayerColor } from '../@PixiTypes';
+import { PixiObject } from '../PixiObject';
+import { playerShader } from '../Shaders';
+import { SHIPS, SPRITE_W } from '../TextureLoader';
 
 export class ShipSprite extends PixiObject {
   type: PieceType | null;
