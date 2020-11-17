@@ -2,15 +2,16 @@ import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
 import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
 import { GameObject } from '../app/PixiUtils/GameObject';
-import { Ship } from '../app/PixiUtils/Ships';
 import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
 import { ResourceBars } from '../app/PixiUtils/ResourceBars';
-import { Shop } from './Shop';
+import { Shop } from '../app/PixiUtils/Shop';
 import { GameBoard } from '../app/PixiUtils/GameBoard';
 import { Background } from '../app/PixiUtils/Background';
 import { MouseManager } from '../app/PixiUtils/MouseManager';
 import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
+import { ShipManager } from '../app/PixiUtils/ShipManager';
+import { ObjectiveManager } from '../app/PixiUtils/ObjectiveManager';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -18,11 +19,14 @@ type InitProps = {
 };
 
 export enum GameZIndex {
+  Default,
   Background,
   Board,
+  Objectives,
   Ships,
   UI,
   Shop,
+  MAX = Shop,
 }
 
 // this guy should only have to think about game objects and how they interact
@@ -31,7 +35,9 @@ export enum GameZIndex {
 export class PixiManager {
   static instance: PixiManager | null;
   canvas: HTMLCanvasElement;
-  app: PIXI.Application;
+
+  stage: PIXI.Container;
+  renderer: PIXI.Renderer;
 
   frameRequestId: number;
   frameCount: number;
@@ -40,33 +46,50 @@ export class PixiManager {
   mouseManager: MouseManager;
   api: GameAPI;
 
+  layers: PIXI.Container[];
   gameObjects: GameObject[];
 
   gameBoard: GameBoard;
-
-  ships: Ship[];
+  shipManager: ShipManager;
+  objectiveManager: ObjectiveManager;
 
   private constructor(props: InitProps) {
-    const {canvas, gameManager} = props;
+    const { canvas, gameManager } = props;
     this.canvas = canvas;
-    const {width, height} = canvas;
+    const { width, height } = canvas;
 
     // set up app
-    let app = new PIXI.Application({
+    let renderer = new PIXI.Renderer({
       width,
       height,
       view: canvas,
       resolution: 1,
     });
-    this.app = app;
-    this.app.stage.sortableChildren = true;
+    this.renderer = renderer;
+
+    const container = new PIXI.Container();
+    this.stage = container;
+    this.stage.sortableChildren = true;
 
     // initialize defaults
-    this.ships = [];
-    this.gameObjects = [];
     this.frameCount = 0;
+    this.gameObjects = [];
+
+    this.layers = Array(Object.keys(GameZIndex).length)
+      .fill(null)
+      .map((_e) => new PIXI.Container());
+    for (let i = GameZIndex.Default; i <= GameZIndex.MAX; i++) {
+      this.layers[i].zIndex = i;
+      this.stage.addChild(this.layers[i]);
+    }
 
     // set up managers
+    this.shipManager = new ShipManager(this);
+    this.addObject(this.shipManager);
+
+    this.objectiveManager = new ObjectiveManager(this);
+    this.addObject(this.objectiveManager);
+
     this.mouseManager = new MouseManager(this);
     this.api = new GameAPI(this, gameManager);
 
@@ -78,73 +101,36 @@ export class PixiManager {
 
   removeObject(obj: GameObject) {
     for (let i = 0; i < this.gameObjects.length; i++) {
-      if (this.gameObjects[i].id === obj.id) {
+      if (this.gameObjects[i].objectId === obj.objectId) {
         this.gameObjects.splice(i, 1);
-        this.app.stage.removeChild(obj.object);
+        this.layers[obj.layer].removeChild(obj.object);
         return;
       }
     }
   }
 
-  removeLazy(obj: GameObject) {
-    obj.setActive(false);
-  }
-
-  flush() {
-    const objs = this.gameObjects;
-    for (let i = 0; i < objs.length; i++) {
-      if (!objs[i].active) {
-        objs.splice(i--, 1);
-        this.app.stage.removeChild(objs[i].object);
-      }
-    }
-  }
-
-  clearShips() {
-    for (const ship of this.ships) this.removeLazy(ship);
-    // this.flush(); // TODO debug this, seems broken
-    this.ships = [];
-  }
-
   addObject(obj: GameObject) {
     // TODO manage systems, components, etc.
     this.gameObjects.push(obj);
-    this.app.stage.addChild(obj.object);
-  }
-
-  addShip(obj: Ship) {
-    this.addObject(obj);
-    this.ships.push(obj);
+    this.layers[obj.layer].addChild(obj.object);
   }
 
   private setup() {
     const cache = PIXI.utils.TextureCache;
     this.fontLoader = getFontLoader(cache[FONT]);
 
-    const app = this.app;
-
-    app.renderer.backgroundColor = 0x061639; // TODO set fallback color
+    this.renderer.backgroundColor = 0x061639; // TODO set fallback color
 
     // set up background
     this.addObject(new Background(this));
 
     // set up grid
     // this is definitely a bad way of doing it, but whatever TODO fix
-    const gameBoard = new GameBoard(this);
-    this.gameBoard = gameBoard;
-    this.addObject(gameBoard);
-
-    // set up ships
-    // const myMothership = getMothership(this, PlayerColor.Red);
-    // this.myMothership = myMothership;
-    // this.addShip(myMothership);
-    // this.addShip(getMothership(this, PlayerColor.Blue));
-
-    // this.addShip(
-    //   new Ship(this, PieceType.Cruiser_01, { row: 2, col: 5 }, PlayerColor.Blue)
-    // );
+    this.gameBoard = new GameBoard(this);
+    this.addObject(this.gameBoard);
 
     this.api.syncShips();
+    this.api.syncObjectives();
 
     // set up resource bars
     this.addObject(new ResourceBars(this));
@@ -160,6 +146,8 @@ export class PixiManager {
     for (const obj of this.gameObjects) {
       if (obj.active) obj.loop();
     }
+
+    this.renderer.render(this.stage);
 
     this.frameCount++;
     this.frameRequestId = window.requestAnimationFrame(this.loop);

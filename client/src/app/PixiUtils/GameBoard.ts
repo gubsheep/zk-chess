@@ -5,50 +5,12 @@ import { GameObject } from './GameObject';
 import { BoardCell, CELL_W } from './GameBoardComponents/BoardCell';
 import { ConfirmCancelButtons } from './GameBoardComponents/ConfirmCancelButtons';
 import { TurnLabel } from './GameBoardComponents/TurnLabel';
+import { ToggleButton } from './GameBoardComponents/ToggleButton';
+import { EndTurnButton } from './GameBoardComponents/EndTurnButton';
+import { GameGrid } from './GameBoardComponents/GameGrid';
 
 export const GAME_WIDTH = 7;
 export const GAME_HEIGHT = 5;
-const BORDER = 2;
-
-class GameGrid extends GameObject {
-  cells: BoardCell[][];
-
-  width: number;
-  height: number;
-
-  constructor(manager: PixiManager) {
-    super(manager);
-
-    // make grid
-    this.width = GAME_WIDTH;
-    this.height = GAME_HEIGHT;
-
-    const grid: (BoardCell | null)[][] = [...Array(this.height)].map((_e) =>
-      Array(this.width).map(() => null)
-    );
-
-    for (let i = 0; i < GAME_HEIGHT; i++) {
-      for (let j = 0; j < GAME_WIDTH; j++) {
-        const idx: BoardCoords = { row: i, col: j };
-        const x = idx.col * CELL_W + (idx.col - 1) * BORDER;
-        const y = idx.row * CELL_W + (idx.row - 1) * BORDER;
-
-        const cell = new BoardCell(manager, idx, { x, y });
-        grid[i][j] = cell;
-        this.addChild(cell);
-      }
-    }
-    this.cells = grid as BoardCell[][];
-  }
-
-  getWidth() {
-    return (BORDER + CELL_W) * GAME_WIDTH - BORDER;
-  }
-
-  getHeight() {
-    return (BORDER + CELL_W) * GAME_HEIGHT - BORDER;
-  }
-}
 
 export class GameBoard extends GameObject {
   bounds: BoxBounds;
@@ -60,17 +22,13 @@ export class GameBoard extends GameObject {
     const grid = new GameGrid(manager);
     this.grid = grid;
 
-    const gridW = grid.getWidth();
-    const gridH = grid.getHeight();
-
     // make text and things
-    const confirmCancel = new ConfirmCancelButtons(manager);
-    confirmCancel.positionGrid(gridW, gridH);
+    const confirmCancel = new ConfirmCancelButtons(manager, grid);
+    const turnLabel = new TurnLabel(manager, grid);
+    const endTurn = new EndTurnButton(manager, grid);
+    const toggle = new ToggleButton(manager, grid);
 
-    const turnLabel = new TurnLabel(manager);
-    turnLabel.positionGrid(gridW, gridH);
-
-    this.addChild(grid, confirmCancel, turnLabel);
+    this.addChild(grid, confirmCancel, turnLabel, toggle, endTurn);
 
     this.positionSelf();
   }
@@ -90,7 +48,7 @@ export class GameBoard extends GameObject {
   }
 
   private positionSelf() {
-    const { width: gameW, height: gameH } = this.manager.app.renderer;
+    const { width: gameW, height: gameH } = this.manager.renderer;
     const gridW = this.grid.getWidth();
     const gridH = this.grid.getHeight();
 

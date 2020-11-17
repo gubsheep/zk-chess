@@ -1,6 +1,9 @@
-import { BoardCoords, PlayerColor } from '../app/PixiUtils/PixiTypes';
-import { shipData } from '../app/PixiUtils/ShipData';
-import { Ship } from '../app/PixiUtils/Ships';
+import {
+  BoardCoords,
+  MoveAttack,
+  PlayerColor,
+} from '../app/PixiUtils/PixiTypes';
+import { PieceObject, Ship, Submarine } from '../app/PixiUtils/Ships';
 import {
   boardLocFromCoords,
   compareBoardCoords,
@@ -11,6 +14,8 @@ import {
   EthAddress,
   GameStatus,
   isVisiblePiece,
+  Piece,
+  PieceStatDefaults,
   PieceType,
 } from '../_types/global/GlobalTypes';
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
@@ -18,6 +23,7 @@ import { PixiManager } from './PixiManager';
 import { GAME_HEIGHT, GAME_WIDTH } from '../app/PixiUtils/GameBoard';
 import autoBind from 'auto-bind';
 import { findPath, getObstacles } from '../utils/Utils';
+import { BoardCell } from '../app/PixiUtils/GameBoardComponents/BoardCell';
 
 export class GameAPI {
   private pixiManager: PixiManager;
@@ -30,7 +36,7 @@ export class GameAPI {
     this.pixiManager = pixiManager;
     this.gameManager = gameManager;
 
-    this.syncGameState();
+    this.gameState = this.gameManager.getGameState();
 
     autoBind(this);
 
@@ -44,15 +50,13 @@ export class GameAPI {
   private stateAdvanced() {
     console.log('state advanced');
     this.syncGameState();
-
-    this.syncShips();
   }
 
   // purges all existing ships and adds new ones
   syncShips(): void {
-    this.syncGameState();
+    const { shipManager } = this.pixiManager;
 
-    this.pixiManager.clearShips();
+    shipManager.clear();
     const { pieces, myAddress } = this.gameState;
     for (const piece of pieces) {
       if (isVisiblePiece(piece)) {
@@ -64,35 +68,60 @@ export class GameAPI {
           this.myMothership = ship;
         }
 
-        this.pixiManager.addShip(ship);
+        shipManager.addShip(ship);
+      } else {
+        const sub = new Submarine(this.pixiManager, piece);
+        shipManager.addSubmarine(sub);
       }
+    }
+  }
+
+  // note that this might somewhat break abstractions?
+  syncObjectives(): void {
+    const { objectiveManager: om } = this.pixiManager;
+
+    om.clear();
+    for (const obj of this.gameState.objectives) {
+      om.addObjective(obj);
     }
   }
 
   // callable
   endTurn(): void {
-    console.log('sending endTurn from api');
     this.gameManager.endTurn();
+    this.syncGameState();
   }
 
   deploy(type: PieceType, coords: BoardCoords): void {
     this.gameManager.summonPiece(type, boardLocFromCoords(coords));
+    this.syncGameState();
   }
 
-  move(ship: Ship, to: BoardCoords): void {
+  move(ship: PieceObject, to: BoardCoords): void {
+    console.log(ship.pieceData.id, to);
     this.gameManager.movePiece(ship.pieceData.id, boardLocFromCoords(to));
+    this.syncGameState();
   }
 
-  attack(from: Ship, to: BoardCoords): void {
+  attack(from: PieceObject, to: BoardCoords): void {
     const toShip = this.shipAt(to);
     if (toShip) {
       this.gameManager.attack(from.pieceData.id, toShip.pieceData.id);
     }
+    this.syncGameState();
   }
 
-  attackMove(from: Ship, moveTo: BoardCoords, attackTo: BoardCoords) {
+  moveAttack(
+    from: PieceObject,
+    moveTo: BoardCoords,
+    attackTo: BoardCoords
+  ): void {
     this.move(from, moveTo);
-    this.attack(from, attackTo);
+    this.syncGameState();
+    setTimeout(() => {
+      this.attack(from, attackTo);
+      this.syncGameState();
+    }, 5000);
   }
 
   // finding tiles
@@ -122,24 +151,25 @@ export class GameAPI {
     return paths;
   }
 
-  findAttacksWithMove(type: PieceType, coords: BoardCoords): BoardCoords[] {
+  findMoveAttacks(type: PieceType, coords: BoardCoords): MoveAttack[] {
     const { nRows, nCols } = this.gameState;
-    const canMoves: boolean[][] = [...Array(nRows)].map((_el) =>
-      Array(nCols).fill(false)
+    const canMoves: (BoardCoords | null)[][] = [...Array(nRows)].map((_el) =>
+      Array(nCols).fill(null)
     );
-
-    const allAttacks: BoardCoords[] = [];
 
     const allMoves = this.findMoves(type, coords).concat([coords]);
 
     for (const move of allMoves) {
       const locAtks = this.findAttacks(type, move);
-      for (const atk of locAtks) canMoves[atk.row][atk.col] = true;
+      for (const atk of locAtks) canMoves[atk.row][atk.col] = move;
     }
 
+    const allAttacks: MoveAttack[] = [];
     for (let i = 0; i < canMoves.length; i++) {
       for (let j = 0; j < canMoves[i].length; j++) {
-        if (canMoves[i][j]) allAttacks.push({ row: i, col: j });
+        const atkLoc = { row: i, col: j };
+        const moveLoc = canMoves[i][j];
+        if (moveLoc) allAttacks.push({ move: moveLoc, attack: atkLoc });
       }
     }
 
@@ -147,6 +177,10 @@ export class GameAPI {
   }
 
   // getters
+
+  getStats(type: PieceType): PieceStatDefaults {
+    return this.gameState.defaults[type];
+  }
 
   getMyMothership(): Ship {
     return this.myMothership;
@@ -175,16 +209,31 @@ export class GameAPI {
   }
 
   shipAt(coords: BoardCoords): Ship | null {
-    const ships = this.pixiManager.ships;
+    const ships = this.pixiManager.shipManager.ships;
     for (const ship of ships) {
-      if (compareBoardCoords(ship.coords, coords)) return ship;
+      if (ship.isAlive() && compareBoardCoords(ship.coords, coords))
+        return ship;
     }
 
     return null;
   }
 
-  ownedByMe(ship: Ship): boolean {
+  subAt(coords: BoardCoords): Submarine | null {
+    const subs = this.pixiManager.shipManager.submarines;
+    for (const sub of subs) {
+      if (sub.isAlive() && compareBoardCoords(sub.getCoords(), coords))
+        return sub;
+    }
+
+    return null;
+  }
+
+  ownedByMe(ship: PieceObject): boolean {
     return ship.pieceData.owner === this.gameState.myAddress;
+  }
+
+  getOwner(ship: PieceObject): PlayerColor {
+    return this.getColor(ship.pieceData.owner);
   }
 
   getGold(): number {
@@ -194,7 +243,7 @@ export class GameAPI {
   }
 
   getMaxGold(): number {
-    return this.gameState.turnNumber;
+    return Math.min(this.gameState.turnNumber, 8);
   }
 
   getHealth(): number {
@@ -213,20 +262,22 @@ export class GameAPI {
     return true;
   }
 
-  hasMoved(ship: Ship): boolean {
+  hasMoved(ship: PieceObject): boolean {
     return (
       ship.pieceData.lastMove === this.gameState.turnNumber &&
       !this.hasAttacked(ship)
     );
   }
 
-  hasAttacked(ship: Ship): boolean {
+  hasAttacked(ship: PieceObject): boolean {
     return ship.pieceData.lastAttack === this.gameState.turnNumber;
   }
 
   /* private utils */
   private syncGameState(): void {
-    this.gameState = this.gameManager.getGameState();
+    this.gameState = this.gameManager.getLatestGameState();
+    this.syncShips();
+    this.syncObjectives();
   }
 
   private canMove(
@@ -234,18 +285,39 @@ export class GameAPI {
     from: BoardCoords,
     to: BoardCoords
   ): boolean {
+    if (type === PieceType.Submarine_04) return this.canMoveSub(type, from, to);
+    else return this.canMoveShip(type, from, to);
+  }
+
+  private canMoveSub(
+    type: PieceType,
+    from: BoardCoords,
+    to: BoardCoords
+  ): boolean {
+    if (!this.inBounds(to)) return false;
+    const data = this.getStats(type);
+    const dist = taxiCab(from, to);
+
+    return dist <= data.mvRange;
+  }
+
+  private canMoveShip(
+    type: PieceType,
+    from: BoardCoords,
+    to: BoardCoords
+  ): boolean {
     if (!this.inBounds(to)) return false;
 
     const { nRows, nCols } = this.gameState;
-    const data = shipData[type];
+    const data = this.getStats(type);
     const dist = taxiCab(from, to);
 
-    if (dist > 0 && dist <= data.movement) {
+    if (dist > 0 && dist <= data.mvRange) {
       const obstacles = getObstacles(this.gameState);
       const fromLoc = boardLocFromCoords(from);
       const toLoc = boardLocFromCoords(to);
       const path = findPath(fromLoc, toLoc, nRows, nCols, obstacles, false);
-      if (path && path.length <= data.movement) {
+      if (path && path.length <= data.mvRange) {
         return true;
       }
     }
@@ -253,16 +325,13 @@ export class GameAPI {
     return false;
   }
 
-  private canAttack(
-    type: PieceType,
-    from: BoardCoords,
-    to: BoardCoords
-  ): boolean {
+  canAttack(type: PieceType, from: BoardCoords, to: BoardCoords): boolean {
     if (!this.inBounds(to)) return false;
 
-    const data = shipData[type];
+    // TODO make this get data from contract
+    const data = this.getStats(type);
     const dist = taxiCab(from, to);
-    if (data.minRange <= dist && dist <= data.maxRange) {
+    if (0 /* min range */ <= dist && dist <= data.mvRange) {
       const ship = this.shipAt(to);
       if (ship && this.ownedByMe(ship)) return false;
       return true;

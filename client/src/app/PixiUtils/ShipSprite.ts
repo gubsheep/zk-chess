@@ -10,7 +10,6 @@ export class ShipSprite extends GameObject {
   type: PieceType | null;
   color: PlayerColor | null;
   rect: PIXI.Graphics;
-  filters: PIXI.Filter[];
 
   constructor(
     manager: PixiManager,
@@ -23,7 +22,6 @@ export class ShipSprite extends GameObject {
     this.object.addChild(rect);
 
     this.rect = rect;
-    this.filters = [];
 
     this.setType(type);
     this.setColor(color);
@@ -55,19 +53,6 @@ export class ShipSprite extends GameObject {
       this.rect.x = 0;
     }
 
-    this.updateFilters();
-  }
-
-  setFilters(filters: PIXI.Filter[]) {
-    this.filters = filters;
-    this.updateFilters();
-  }
-
-  private updateFilters() {
-    let colorFilters: PIXI.Filter[] = [];
-    if (this.color) {
-      colorFilters = [playerShader(this.color)];
-    }
-    this.rect.filters = [...colorFilters, ...this.filters];
+    this.setFilters(color ? [playerShader(color)] : []);
   }
 }

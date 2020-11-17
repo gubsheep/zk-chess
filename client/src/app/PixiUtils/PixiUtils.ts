@@ -1,19 +1,28 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
 import { BoardLocation } from '../../_types/global/GlobalTypes';
-import { GameObject } from './GameObject';
 import { BoardCoords, CanvasCoords, LineAlignment } from './PixiTypes';
 
 // general-purpose, smaller utils
+
+export const pieceNames = [
+  'Mothership', // Mothership_00,
+  'Cruiser', // Cruiser_01,
+  'Frigate', // Frigate_02,
+  'Corvette', // Corvette_03,
+  'Submarine', // Submarine_04,
+  'Warship', // Warship_05,
+];
+
 export function makeRect(
   width: number,
   height: number,
-  fill: number,
-  alpha: number,
+  fill: number = 0xff0000,
+  alpha: number = 1.0,
   stroke: number | null = null,
   strokeW: number = 2,
   strokeA = 1.0
-): PIXI.DisplayObject {
+): PIXI.Container {
   const rect = new PIXI.Graphics();
   rect.position.set(0, 0);
   rect.beginFill(fill, alpha);
@@ -25,11 +34,18 @@ export function makeRect(
   return rect;
 }
 
-export class Wrapper extends GameObject {
-  constructor(manager: PixiManager, object: PIXI.Container) {
-    super(manager);
-    this.object.addChild(object);
-  }
+export function objFromHitArea(rect: PIXI.Rectangle): PIXI.DisplayObject {
+  const rectObj = makeRect(
+    rect.width,
+    rect.height,
+    0xff0000,
+    1,
+    0x000000,
+    2,
+    0.3
+  );
+  rectObj.position.set(rect.left, rect.top);
+  return rectObj;
 }
 
 export const boardCoordsFromLoc = (loc: BoardLocation): BoardCoords => ({
@@ -60,9 +76,12 @@ export const compareCanvasCoords = (
 export const taxiCab = (a: BoardCoords, b: BoardCoords): number =>
   Math.abs(a.col - b.col) + Math.abs(a.row - b.row);
 
-export const idxsIncludes = (idxs: BoardCoords[], idx: BoardCoords | null) => {
+export const idxsIncludes = (
+  idxs: BoardCoords[],
+  idx: BoardCoords | null
+): BoardCoords | null => {
   for (const myIdx of idxs) {
-    if (compareBoardCoords(myIdx, idx)) return true;
+    if (compareBoardCoords(myIdx, idx)) return myIdx;
   }
-  return false;
+  return null;
 };

@@ -1,11 +1,20 @@
 import * as PIXI from 'pixi.js';
-import { GameZIndex, PixiManager } from '../../api/PixiManager';
-import { PieceType, VisiblePiece } from '../../_types/global/GlobalTypes';
-import { GameObject } from './GameObject';
-import { BoardCoords, CanvasCoords } from './PixiTypes';
-import { boardCoordsFromLoc, Wrapper } from './PixiUtils';
+import { PixiManager } from '../../api/PixiManager';
+import {
+  isKnown,
+  isLocatable,
+  isZKPiece,
+  Piece,
+  PieceType,
+  VisiblePiece,
+  ZKPiece,
+} from '../../_types/global/GlobalTypes';
+import { GameObject, Wrapper } from './GameObject';
+import { BoardCoords, CanvasCoords, PlayerColor } from './PixiTypes';
+import { boardCoordsFromLoc } from './PixiUtils';
+import { ShipManager } from './ShipManager';
 import { ShipSprite } from './ShipSprite';
-import { TextObject } from './Text';
+import { StatIcon, STATICON_W, StatType } from './StatIcon';
 import { SPRITE_W } from './TextureLoader';
 
 const waterline = (type: PieceType): number => {
@@ -21,46 +30,96 @@ export enum ShipState {
   Attacked,
 }
 
-export class Ship extends GameObject {
-  coords: BoardCoords;
+export class PieceObject extends GameObject {
+  pieceData: Piece;
 
-  hasMoved: boolean;
+  sprite: ShipSprite;
+  shipContainer: Wrapper; // just holds the sprite (so we can anchor icons to it)
+  container: Wrapper; // holds info about masking, interactability, etc.
+
+  shipManager: ShipManager;
+
+  constructor(manager: PixiManager, data: Piece) {
+    super(manager);
+    this.shipManager = manager.shipManager;
+    this.pieceData = data;
+
+    const { owner } = data;
+    const color = manager.api.getColor(owner);
+
+    const sprite = new ShipSprite(manager, this.pieceData.pieceType, color);
+    this.sprite = sprite;
+
+    const shipContainer = new Wrapper(manager, new PIXI.Container());
+    shipContainer.addChild(sprite);
+    this.shipContainer = shipContainer;
+
+    const container = new Wrapper(manager, new PIXI.Container());
+    container.addChild(shipContainer);
+    this.container = container;
+
+    this.addChild(shipContainer);
+  }
+
+  isZk() {
+    return isZKPiece(this.pieceData);
+  }
+
+  getType(): PieceType {
+    return this.pieceData.pieceType;
+  }
+
+  isAlive(): boolean {
+    return this.pieceData.alive;
+  }
+
+  setLocation(coords: BoardCoords) {
+    const topLeft = this.manager.gameBoard.getTopLeft(coords);
+    this.setPosition(this.calcLoc(topLeft));
+  }
+
+  calcLoc({ x, y }: CanvasCoords): CanvasCoords {
+    return { x: x + 2, y: y + 2 };
+  }
+
+  getCoords(): BoardCoords {
+    if (isLocatable(this.pieceData)) {
+      return boardCoordsFromLoc(this.pieceData.location);
+    } else {
+      return { row: -1, col: -1 }; // TODO remove this when you have a good way to deal with invisible commitments
+    }
+  }
+}
+
+export class Ship extends PieceObject {
+  coords: BoardCoords;
 
   mask: PIXI.Graphics;
   pieceData: VisiblePiece;
   shipContainer: GameObject;
 
-  stats: TextObject;
+  atkObj: StatIcon;
+  hpObj: StatIcon;
+
+  sprite: ShipSprite;
 
   constructor(manager: PixiManager, data: VisiblePiece) {
-    super(manager, GameZIndex.Ships);
+    super(manager, data);
 
-    this.pieceData = data;
+    const atkObj = new StatIcon(manager, StatType.Atk);
+    const hpObj = new StatIcon(manager, StatType.Hp);
+    this.atkObj = atkObj;
+    this.hpObj = hpObj;
 
-    const { location, owner } = data;
-    const color = manager.api.getColor(owner);
-    const coords = boardCoordsFromLoc(location);
+    this.addChild(atkObj, hpObj);
 
-    const container = new PIXI.Container();
-    const shipContainer = new Wrapper(manager, container);
-    this.shipContainer = shipContainer;
-
-    const stats = new TextObject(manager, '1/1');
-    this.stats = stats;
-
-    this.addChild(shipContainer, stats);
-
-    this.hasMoved = false;
-
-    // probably gets rolled up into general props
-
-    const sprite = new ShipSprite(manager, this.pieceData.pieceType, color);
-    // sprite.y = 16; // doesn't work? investigate
-
-    shipContainer.addChild(sprite);
+    const iconY = 1;
+    atkObj.setPosition({ x: SPRITE_W - 2 * STATICON_W - 3, y: iconY });
+    hpObj.setPosition({ x: SPRITE_W - STATICON_W, y: iconY });
+    this.shipContainer.addChild(atkObj, hpObj);
 
     const hitArea = new PIXI.Rectangle(0, 0, SPRITE_W, SPRITE_W);
-    shipContainer.setInteractive({
+    this.setInteractive({
       hitArea,
       mouseover: this.onMouseOver,
       mouseout: this.onMouseOut,
@@ -68,22 +127,18 @@ export class Ship extends GameObject {
     });
 
     let mask = new PIXI.Graphics();
-    container.mask = mask;
+    // this.shipContainer.object.mask = mask;
     this.mask = mask;
     this.updateMask();
 
-    this.setCoords(coords);
-
+    const coords = boardCoordsFromLoc(data.location);
     this.coords = coords;
+    this.setLocation(coords);
   }
 
   setPosition({ x, y }: CanvasCoords) {
     super.setPosition({ x, y });
     this.updateMask();
-  }
-
-  getType(): PieceType {
-    return this.pieceData.pieceType;
   }
 
   private updateMask() {
@@ -95,14 +150,8 @@ export class Ship extends GameObject {
     mask.endFill();
   }
 
-  setCoords(coords: BoardCoords) {
-    this.coords = coords;
-    const { x, y } = this.manager.gameBoard.getTopLeft(coords);
-    this.setPosition({ x: x + 2, y: y + 2 });
-  }
-
   onMouseOver() {
-    this.manager.mouseManager.setHoveringShip(this.id);
+    this.manager.mouseManager.setHoveringShip(this);
   }
 
   onMouseOut() {
@@ -115,20 +164,79 @@ export class Ship extends GameObject {
 
   loop() {
     super.loop();
-    const { frameCount } = this.manager;
+    this.setActive(this.pieceData.alive);
 
     const { hp, atk } = this.pieceData;
-    this.stats.setText(`${atk}/${hp}`);
+    this.atkObj.setValue(atk);
+    this.hpObj.setValue(hp);
 
+    // bob
+    this.bob();
+  }
+
+  private bob() {
     const frames = 30;
-    const boat = this.shipContainer.children[0].object;
-    if (frameCount % (2 * frames) < frames) {
-      boat.y = 2;
+    const boat = this.shipContainer;
+    if (this.manager.frameCount % (2 * frames) < frames) {
+      boat.setPosition({ y: 2 });
     } else {
-      boat.y = 0;
+      boat.setPosition({ y: 0 });
     }
   }
 }
 
-export const RED_MOTHERSHIP_COORDS: BoardCoords = { row: 2, col: 0 };
-export const BLUE_MOTHERSHIP_COORDS: BoardCoords = { row: 2, col: 6 };
+export const SUB_X = 6;
+export const SUB_Y = 11;
+export const SUB_W = 22;
+export const SUB_H = 12;
+
+export class Submarine extends PieceObject {
+  constructor(manager: PixiManager, data: ZKPiece) {
+    super(manager, data);
+
+    if (isKnown(data)) {
+      this.setLocation(boardCoordsFromLoc(data.location));
+    } else {
+      this.setLocation({ row: 0, col: 0 });
+    }
+    const hitArea = new PIXI.Rectangle(
+      SUB_X - 1,
+      SUB_Y - 1,
+      SUB_W + 2,
+      SUB_H + 2
+    );
+    this.setInteractive({
+      hitArea,
+      mouseover: this.onMouseOver,
+      mouseout: this.onMouseOut,
+      click: this.onClick,
+    });
+  }
+  onMouseOver() {
+    this.manager.mouseManager.setHoveringSubmarine(this);
+  }
+
+  onMouseOut() {
+    this.manager.mouseManager.setHoveringSubmarine(null);
+  }
+
+  onClick() {
+    this.manager.mouseManager.subClicked(this);
+  }
+
+  calcLoc({ x, y }: CanvasCoords): CanvasCoords {
+    const idx = this.shipManager.getSubIdx(this);
+    const delY = 12 - 8 * idx;
+    const sgn = this.manager.api.getOwner(this) === PlayerColor.Red ? 1 : -1;
+    const delX = (8 - 2 * idx) * sgn;
+    return { x: x + 2 + delX, y: y + 2 + delY };
+  }
+
+  loop() {
+    super.loop();
+    const coords = this.getCoords();
+    coords && this.setLocation(coords);
+
+    this.setZIndex(-this.shipManager.getSubIdx(this));
+  }
+}

@@ -1,7 +1,10 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import { PixiManager } from '../../api/PixiManager';
+import { GameZIndex, PixiManager } from '../../api/PixiManager';
+import { ZKPiece } from '../../_types/global/GlobalTypes';
+import Game from '../Game';
 import { CanvasCoords } from './PixiTypes';
+import { objFromHitArea } from './PixiUtils';
 
 const autoIncrement = (() => {
   let count = 0;
@@ -23,10 +26,11 @@ type HandlerProps = Record<PixiEvents, Function>;
 // TODO do this smartly using typescript
 export type GameObjectInteractiveProps = {
   hitArea?: PIXI.Rectangle;
+  debug?: boolean;
 } & Partial<HandlerProps>;
 // top-level game object abstraction. all of our game things should be wrapped in these guys
 export class GameObject {
-  id: number;
+  objectId: number;
   object: PIXI.Container;
   children: GameObject[];
 
@@ -37,16 +41,27 @@ export class GameObject {
   // skip inactive ones; we don't have enough objects to care about killing
   active: boolean;
 
+  filters: PIXI.Filter[];
+  alphaFilter: PIXI.filters.AlphaFilter;
+
+  layer: number;
+
   // TODO refactor this so that it doesn't need to be given a container
-  constructor(manager: PixiManager, zIndex: number = 0) {
-    this.id = autoIncrement();
+  constructor(manager: PixiManager, layer: GameZIndex = GameZIndex.Default) {
+    this.objectId = autoIncrement();
+    this.layer = layer;
     this.manager = manager;
 
     this.object = new PIXI.Container();
     this.lifetime = 0;
     this.children = [];
-    this.object.zIndex = zIndex;
     this.active = true;
+
+    this.filters = [];
+    this.alphaFilter = new PIXI.filters.AlphaFilter(1);
+    this.updateFilters();
+
+    this.object.sortableChildren = true;
 
     autoBind(this);
   }
@@ -58,9 +73,23 @@ export class GameObject {
     });
   }
 
+  removeChild(...children: GameObject[]): void {
+    children.forEach((child) => {
+      this.object.removeChild(child.object);
+      for (let i = 0; i < this.children.length; i++) {
+        if (this.children[i].objectId === child.objectId)
+          this.children.splice(i--, 1);
+      }
+    });
+  }
+
   setActive(active: boolean): void {
     this.active = active;
     this.object.visible = active;
+  }
+
+  setZIndex(zIndex: number): void {
+    this.object.zIndex = zIndex;
   }
 
   loop(): void {
@@ -72,13 +101,14 @@ export class GameObject {
 
   destroy(): void {
     this.active = false;
-    this.manager.app.stage.removeChild(this.object);
+    this.manager.stage.removeChild(this.object);
     // technically we should deallocate the object but whatever
     // this.object = null;
   }
 
-  setPosition({ x, y }: CanvasCoords): void {
-    this.object.position.set(x, y);
+  setPosition({ x, y }: Partial<CanvasCoords>): void {
+    if (x !== undefined) this.object.x = x;
+    if (y !== undefined) this.object.y = y;
   }
 
   setInteractive(props: GameObjectInteractiveProps | null): void {
@@ -95,5 +125,32 @@ export class GameObject {
         if (props[key]) this.object.on(key, props[key] as Function);
       }
     }
+
+    if (props.debug && props.hitArea) {
+      const debugRect = objFromHitArea(props.hitArea);
+      debugRect.zIndex = -999;
+      this.object.addChild(debugRect);
+    }
+  }
+
+  setFilters(filters: PIXI.Filter[]) {
+    this.filters = filters;
+    this.updateFilters();
+  }
+
+  setAlpha(alpha: number) {
+    this.alphaFilter.alpha = alpha;
+  }
+
+  private updateFilters() {
+    let colorFilter: PIXI.Filter[] = [];
+    this.object.filters = [...colorFilter, ...this.filters, this.alphaFilter];
+  }
+}
+
+export class Wrapper extends GameObject {
+  constructor(manager: PixiManager, object: PIXI.Container) {
+    super(manager);
+    this.object.addChild(object);
   }
 }

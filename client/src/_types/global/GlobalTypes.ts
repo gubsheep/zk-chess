@@ -124,8 +124,6 @@ export type PlayerInfo = {
   color: Color;
 };
 
-export type StagedLoc = [BoardLocation, Piece];
-
 export enum GameStatus {
   WAITING_FOR_PLAYERS,
   P1_TO_MOVE,
@@ -148,7 +146,7 @@ export type ChessGameContractData = {
 
   pieces: ContractPiece[];
   objectives: Objective[];
-  defaults: Map<PieceType, PieceStatDefaults>;
+  defaults: Record<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
   sequenceNumber: number;
@@ -172,26 +170,12 @@ export type ChessGame = {
   pieces: Piece[];
   objectives: Objective[];
   pieceById: Map<number, Piece>;
-  defaults: Map<PieceType, PieceStatDefaults>;
+  defaults: Record<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
   sequenceNumber: number;
   gameStatus: GameStatus;
 };
-
-export type ChessCell = {
-  // TODO should be able to have multiple ghosts
-  piece?: VisiblePiece;
-  ghost?: ZKPiece;
-};
-
-export type ChessBoard = ChessCell[][];
-
-export type DisplayedCell = ChessCell & {
-  canMove?: boolean;
-};
-
-export type DisplayedBoard = DisplayedCell[][];
 
 export interface SnarkJSProof {
   pi_a: [string, string, string];

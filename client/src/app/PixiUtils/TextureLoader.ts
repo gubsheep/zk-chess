@@ -1,7 +1,4 @@
 import * as PIXI from 'pixi.js';
-import {PieceType} from '../../_types/global/GlobalTypes';
-import {PlayerColor} from './PixiTypes';
-import {playerShader} from './Shaders';
 
 // TODO make this battleship/public
 const PATH = 'public/assets/';
@@ -14,6 +11,7 @@ export const SPRITE_W = 32;
 
 export const BG_IMAGE = imgUri('backgroundsmall.png');
 export const FONT = imgUri('font.png');
+export const OBJECTIVE = imgUri('oilrig.png');
 export const SHIPS = [
   imgUri('00_mothership.png'),
   imgUri('01_cruiser.png'),
@@ -27,9 +25,10 @@ export const ICONS = {
   HEART: imgUri('icons/heart.png'),
   COIN: imgUri('icons/coin.png'),
   COIN_USED: imgUri('icons/coin_used.png'),
+  BOMB: imgUri('icons/bomb.png'),
 };
 
-const textures = [FONT, BG_IMAGE, ...SHIPS, ...Object.values(ICONS)];
+const textures = [FONT, BG_IMAGE, OBJECTIVE, ...SHIPS, ...Object.values(ICONS)];
 
 export const loadTextures = (callbackFn: () => void): void => {
   const loader = PIXI.Loader.shared;
@@ -40,7 +39,7 @@ export const loadTextures = (callbackFn: () => void): void => {
 };
 
 const cache = PIXI.utils.TextureCache;
-
 export const getCoinSprite = () => new PIXI.Sprite(cache[ICONS.COIN]);
 export const getCoinUsedSprite = () => new PIXI.Sprite(cache[ICONS.COIN_USED]);
 export const getHeartSprite = () => new PIXI.Sprite(cache[ICONS.HEART]);
+export const getBombSprite = () => new PIXI.Sprite(cache[ICONS.BOMB]);

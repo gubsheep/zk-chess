@@ -19,7 +19,10 @@ type ShaderProps = {
 };
 */
 
-const getOverlayFrag = (color: PlayerColor): string => `
+const vecStr = (r: number, g: number, b: number): string =>
+  `vec4(${r.toFixed(3)}, ${g.toFixed(3)}, ${b.toFixed(3)}, 1.0)`;
+
+const getOverlayFrag = (r: number, g: number, b: number): string => `
   precision mediump float;
 
   varying vec2 vTextureCoord;
@@ -34,17 +37,18 @@ const getOverlayFrag = (color: PlayerColor): string => `
 
   void main() {
     vec4 baseColor = texture2D(uSampler, vTextureCoord);
-    vec4 overlayColor = ${
-      color === PlayerColor.Red
-        ? 'vec4(1.0, 0.0, 0.0, 1.0)'
-        : 'vec4(0.0, 0.0, 1.0, 1.0)'
-    };
+    vec4 overlayColor = ${vecStr(r, g, b)};
     gl_FragColor = overlay(baseColor, overlayColor);
   }
 `;
 
-export const redShader = new PIXI.Filter('', getOverlayFrag(PlayerColor.Red));
-export const blueShader = new PIXI.Filter('', getOverlayFrag(PlayerColor.Blue));
+export const redShader = new PIXI.Filter('', getOverlayFrag(1, 0, 0));
+export const blueShader = new PIXI.Filter('', getOverlayFrag(0, 0, 1));
+
+export const orangeShader = new PIXI.Filter('', getOverlayFrag(1, 0.5, 0));
 
 export const playerShader = (color: PlayerColor) =>
   color === PlayerColor.Red ? redShader : blueShader;
+
+export const objectiveShader = (color: PlayerColor | null) =>
+  color === null ? orangeShader : playerShader(color);
