@@ -180,6 +180,10 @@ export class GameAPI {
 
   // getters
 
+  canBuy(type: PieceType): boolean {
+    return this.getStats(type).cost <= this.getGold();
+  }
+
   getStats(type: PieceType): PieceStatDefaults {
     return this.gameState.defaults[type];
   }
