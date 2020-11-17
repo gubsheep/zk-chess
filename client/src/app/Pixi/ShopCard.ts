@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../api/PixiManager';
 import { PieceType } from '../../_types/global/GlobalTypes';
-import { CHAR_W } from '../Pixi/Utils/FontLoader';
+import { CHAR_W } from './Utils/FontLoader';
 import { PixiObject } from './PixiObject';
 import { LineAlignment } from './PixiTypes';
 import { ShipSprite } from './ShipSprite';

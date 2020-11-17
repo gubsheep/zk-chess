@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
 import { PieceType } from '../../../_types/global/GlobalTypes';
-import { CHAR_H, LINE_SPACING } from '../../Pixi/Utils/FontLoader';
+import { CHAR_H, LINE_SPACING } from '../Utils/FontLoader';
 import { PixiObject } from '../PixiObject';
 import { LinkObject, TextAlign } from '../Text';
 import { GameGrid } from './GameGrid';

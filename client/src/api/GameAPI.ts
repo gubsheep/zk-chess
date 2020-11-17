@@ -2,12 +2,12 @@ import {
   BoardCoords,
   MoveAttack,
   PlayerColor,
-} from '../app/PixiUtils/PixiTypes';
+} from '../app/Pixi/PixiTypes';
 import {
   boardLocFromCoords,
   compareBoardCoords,
   taxiCab,
-} from '../app/PixiUtils/PixiUtils';
+} from '../app/Pixi/PixiUtils';
 import {
   ChessGame,
   EthAddress,
@@ -19,12 +19,12 @@ import {
 } from '../_types/global/GlobalTypes';
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 import { PixiManager } from './PixiManager';
-import { GAME_HEIGHT, GAME_WIDTH } from '../app/PixiUtils/GameBoard/GameBoard';
+import { GAME_HEIGHT, GAME_WIDTH } from '../app/Pixi/GameBoard/GameBoard';
 import autoBind from 'auto-bind';
 import { findPath, getObstacles } from '../utils/Utils';
-import { Ship } from '../app/PixiUtils/Ship';
-import { PieceObject } from '../app/PixiUtils/PieceObject';
-import { Submarine } from '../app/PixiUtils/Submarine';
+import { Ship } from '../app/Pixi/Ship';
+import { PieceObject } from '../app/Pixi/PieceObject';
+import { Submarine } from '../app/Pixi/Submarine';
 
 export class GameAPI {
   private pixiManager: PixiManager;

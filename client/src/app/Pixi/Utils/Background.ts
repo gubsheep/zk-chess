@@ -1,8 +1,8 @@
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
-import { PixiObject } from '../../PixiUtils/PixiObject';
-import { makeRect } from '../../PixiUtils/PixiUtils';
-import { BGShaderUniforms, perlinFrag } from '../../PixiUtils/Shaders';
-import { BG_IMAGE } from '../../PixiUtils/TextureLoader';
+import { PixiObject } from '../PixiObject';
+import { makeRect } from '../PixiUtils';
+import { BGShaderUniforms, perlinFrag } from '../Shaders';
+import { BG_IMAGE } from '../TextureLoader';
 
 export class Background extends PixiObject {
   shader: PIXI.Filter;

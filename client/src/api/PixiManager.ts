@@ -1,15 +1,15 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import { PixiObject } from '../app/PixiUtils/PixiObject';
-import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
-import { ResourceBars } from '../app/PixiUtils/ResourceBars';
-import { Shop } from '../app/PixiUtils/Shop';
-import { GameBoard } from '../app/PixiUtils/GameBoard/GameBoard';
-import { MouseManager } from '../app/PixiUtils/MouseManager';
+import { PixiObject } from '../app/Pixi/PixiObject';
+import { FONT, loadTextures } from '../app/Pixi/TextureLoader';
+import { ResourceBars } from '../app/Pixi/ResourceBars';
+import { Shop } from '../app/Pixi/Shop';
+import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
+import { MouseManager } from '../app/Pixi/MouseManager';
 import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
-import { ShipManager } from '../app/PixiUtils/ShipManager';
-import { ObjectiveManager } from '../app/PixiUtils/ObjectiveManager';
+import { ShipManager } from '../app/Pixi/ShipManager';
+import { ObjectiveManager } from '../app/Pixi/ObjectiveManager';
 import { Background } from '../app/Pixi/Utils/Background';
 import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
 
