@@ -146,7 +146,7 @@ export type ChessGameContractData = {
 
   pieces: ContractPiece[];
   objectives: Objective[];
-  defaults: Map<PieceType, PieceStatDefaults>;
+  defaults: Record<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
   sequenceNumber: number;
@@ -170,7 +170,7 @@ export type ChessGame = {
   pieces: Piece[];
   objectives: Objective[];
   pieceById: Map<number, Piece>;
-  defaults: Map<PieceType, PieceStatDefaults>;
+  defaults: Record<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
   sequenceNumber: number;

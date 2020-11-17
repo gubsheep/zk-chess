@@ -3,7 +3,6 @@ import {
   MoveAttack,
   PlayerColor,
 } from '../app/PixiUtils/PixiTypes';
-import { shipData } from '../app/PixiUtils/ShipData';
 import { PieceObject, Ship, Submarine } from '../app/PixiUtils/Ships';
 import {
   boardLocFromCoords,
@@ -16,6 +15,7 @@ import {
   GameStatus,
   isVisiblePiece,
   Piece,
+  PieceStatDefaults,
   PieceType,
 } from '../_types/global/GlobalTypes';
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
@@ -76,9 +76,20 @@ export class GameAPI {
     }
   }
 
+  // note that this might somewhat break abstractions?
+  syncObjectives(): void {
+    const { objectiveManager: om } = this.pixiManager;
+
+    om.clear();
+    for (const obj of this.gameState.objectives) {
+      om.addObjective(obj);
+    }
+  }
+
   // callable
   endTurn(): void {
     this.gameManager.endTurn();
+    this.syncGameState();
   }
 
   deploy(type: PieceType, coords: BoardCoords): void {
@@ -166,6 +177,10 @@ export class GameAPI {
   }
 
   // getters
+
+  getStats(type: PieceType): PieceStatDefaults {
+    return this.gameState.defaults[type];
+  }
 
   getMyMothership(): Ship {
     return this.myMothership;
@@ -261,8 +276,8 @@ export class GameAPI {
   /* private utils */
   private syncGameState(): void {
     this.gameState = this.gameManager.getLatestGameState();
-    console.log(this.gameState);
     this.syncShips();
+    this.syncObjectives();
   }
 
   private canMove(
@@ -280,10 +295,10 @@ export class GameAPI {
     to: BoardCoords
   ): boolean {
     if (!this.inBounds(to)) return false;
-    const data = shipData[type];
+    const data = this.getStats(type);
     const dist = taxiCab(from, to);
 
-    return dist <= data.movement;
+    return dist <= data.mvRange;
   }
 
   private canMoveShip(
@@ -294,15 +309,15 @@ export class GameAPI {
     if (!this.inBounds(to)) return false;
 
     const { nRows, nCols } = this.gameState;
-    const data = shipData[type];
+    const data = this.getStats(type);
     const dist = taxiCab(from, to);
 
-    if (dist > 0 && dist <= data.movement) {
+    if (dist > 0 && dist <= data.mvRange) {
       const obstacles = getObstacles(this.gameState);
       const fromLoc = boardLocFromCoords(from);
       const toLoc = boardLocFromCoords(to);
       const path = findPath(fromLoc, toLoc, nRows, nCols, obstacles, false);
-      if (path && path.length <= data.movement) {
+      if (path && path.length <= data.mvRange) {
         return true;
       }
     }
@@ -314,9 +329,9 @@ export class GameAPI {
     if (!this.inBounds(to)) return false;
 
     // TODO make this get data from contract
-    const data = shipData[type];
+    const data = this.getStats(type);
     const dist = taxiCab(from, to);
-    if (data.minRange <= dist && dist <= data.maxRange) {
+    if (0 /* min range */ <= dist && dist <= data.mvRange) {
       const ship = this.shipAt(to);
       if (ship && this.ownedByMe(ship)) return false;
       return true;

@@ -2,7 +2,6 @@ import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
 import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
 import { GameObject } from '../app/PixiUtils/GameObject';
-import { Ship, Submarine } from '../app/PixiUtils/Ships';
 import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
 import { ResourceBars } from '../app/PixiUtils/ResourceBars';
 import { Shop } from '../app/PixiUtils/Shop';
@@ -11,11 +10,8 @@ import { Background } from '../app/PixiUtils/Background';
 import { MouseManager } from '../app/PixiUtils/MouseManager';
 import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
-import { render } from 'react-dom';
-import { BoardLocation, isLocatable } from '../_types/global/GlobalTypes';
-import { compareBoardCoords } from '../app/PixiUtils/PixiUtils';
-import { BoardCoords } from '../app/PixiUtils/PixiTypes';
 import { ShipManager } from '../app/PixiUtils/ShipManager';
+import { ObjectiveManager } from '../app/PixiUtils/ObjectiveManager';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -26,6 +22,7 @@ export enum GameZIndex {
   Default,
   Background,
   Board,
+  Objectives,
   Ships,
   UI,
   Shop,
@@ -54,6 +51,7 @@ export class PixiManager {
 
   gameBoard: GameBoard;
   shipManager: ShipManager;
+  objectiveManager: ObjectiveManager;
 
   private constructor(props: InitProps) {
     const { canvas, gameManager } = props;
@@ -75,7 +73,6 @@ export class PixiManager {
 
     // initialize defaults
     this.frameCount = 0;
-
     this.gameObjects = [];
 
     this.layers = Array(Object.keys(GameZIndex).length)
@@ -87,9 +84,11 @@ export class PixiManager {
     }
 
     // set up managers
-    const shipManager = new ShipManager(this);
-    this.shipManager = shipManager;
-    this.addObject(shipManager);
+    this.shipManager = new ShipManager(this);
+    this.addObject(this.shipManager);
+
+    this.objectiveManager = new ObjectiveManager(this);
+    this.addObject(this.objectiveManager);
 
     this.mouseManager = new MouseManager(this);
     this.api = new GameAPI(this, gameManager);
@@ -116,7 +115,6 @@ export class PixiManager {
     this.layers[obj.layer].addChild(obj.object);
   }
 
-
   private setup() {
     const cache = PIXI.utils.TextureCache;
     this.fontLoader = getFontLoader(cache[FONT]);
@@ -128,11 +126,11 @@ export class PixiManager {
 
     // set up grid
     // this is definitely a bad way of doing it, but whatever TODO fix
-    const gameBoard = new GameBoard(this);
-    this.gameBoard = gameBoard;
-    this.addObject(gameBoard);
+    this.gameBoard = new GameBoard(this);
+    this.addObject(this.gameBoard);
 
     this.api.syncShips();
+    this.api.syncObjectives();
 
     // set up resource bars
     this.addObject(new ResourceBars(this));

@@ -73,6 +73,16 @@ export class GameObject {
     });
   }
 
+  removeChild(...children: GameObject[]): void {
+    children.forEach((child) => {
+      this.object.removeChild(child.object);
+      for (let i = 0; i < this.children.length; i++) {
+        if (this.children[i].objectId === child.objectId)
+          this.children.splice(i--, 1);
+      }
+    });
+  }
+
   setActive(active: boolean): void {
     this.active = active;
     this.object.visible = active;

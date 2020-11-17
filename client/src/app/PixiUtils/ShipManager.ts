@@ -49,6 +49,7 @@ export class ShipManager extends GameObject {
     obj.setActive(false);
   }
 
+  // TODO this abstraction no longer makes sense now that ships live in a different arr
   flush() {
     const { shipLayer, subLayer, ships, submarines: subs } = this;
 

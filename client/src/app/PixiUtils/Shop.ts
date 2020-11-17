@@ -2,16 +2,12 @@ import { GameObject } from './GameObject';
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../api/PixiManager';
 import { LineAlignment } from './PixiTypes';
-import {
-  BASELINE_ICONS,
-  getCoinSprite,
-  SPRITE_W,
-} from './TextureLoader';
+import { BASELINE_ICONS, getCoinSprite, SPRITE_W } from './TextureLoader';
 import { CHAR_W } from './FontLoader';
 import { ClickState } from './MouseManager';
-import { shipData } from './ShipData';
 import { PieceType } from '../../_types/global/GlobalTypes';
 import { ShipSprite } from './ShipSprite';
+import { pieceNames } from './PixiUtils';
 
 const CARD_W = 46;
 const CARD_H = 46;
@@ -48,7 +44,7 @@ class ShopCard extends GameObject {
 
     const sprite = new ShipSprite(manager, type, manager.api.getMyColor());
 
-    const data = shipData[type];
+    const data = this.manager.api.getStats(type);
 
     const textContainer = new PIXI.Container();
     const text = manager.fontLoader(`${data.cost}`, 0xffffff).object;
@@ -75,17 +71,13 @@ class ShopCard extends GameObject {
     modalBg.endFill();
 
     const _costStr = `Cost: ${data.cost}`;
-    const atkStr = `ATK: ${data.attack}`;
-    const hpStr = `HP: ${data.health}`;
-    const mvtStr = `Movement: ${data.movement}`;
-    const rngStr = `Range: ${
-      data.minRange === data.maxRange
-        ? data.minRange
-        : data.minRange + '-' + data.maxRange
-    }`;
+    const atkStr = `ATK: ${data.atk}`;
+    const hpStr = `HP: ${data.hp}`;
+    const mvtStr = `Movement: ${data.mvRange}`;
+    const rngStr = `Range: ${data.atkRange}`;
 
     const shopText = manager.fontLoader(
-      `${data.name}\n${atkStr}\n${hpStr}\n${mvtStr}\n${rngStr}`,
+      `${pieceNames[type]}\n${atkStr}\n${hpStr}\n${mvtStr}\n${rngStr}`,
       0xffffff
     ).object;
 

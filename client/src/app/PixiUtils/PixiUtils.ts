@@ -4,15 +4,25 @@ import { BoardLocation } from '../../_types/global/GlobalTypes';
 import { BoardCoords, CanvasCoords, LineAlignment } from './PixiTypes';
 
 // general-purpose, smaller utils
+
+export const pieceNames = [
+  'Mothership', // Mothership_00,
+  'Cruiser', // Cruiser_01,
+  'Frigate', // Frigate_02,
+  'Corvette', // Corvette_03,
+  'Submarine', // Submarine_04,
+  'Warship', // Warship_05,
+];
+
 export function makeRect(
   width: number,
   height: number,
-  fill: number,
-  alpha: number,
+  fill: number = 0xff0000,
+  alpha: number = 1.0,
   stroke: number | null = null,
   strokeW: number = 2,
   strokeA = 1.0
-): PIXI.DisplayObject {
+): PIXI.Container {
   const rect = new PIXI.Graphics();
   rect.position.set(0, 0);
   rect.beginFill(fill, alpha);

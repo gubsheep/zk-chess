@@ -40,7 +40,7 @@ export class GameState {
   pieces: Piece[];
   objectives: Objective[];
   pieceById: Map<number, Piece>;
-  defaults: Map<PieceType, PieceStatDefaults>;
+  defaults: Record<PieceType, PieceStatDefaults>;
   gameActions: GameAction[];
 
   turnNumber: number;
@@ -73,9 +73,7 @@ export class GameState {
 
     for (let i = 0; i < contractData.pieces.length; i++) {
       let contractPiece = contractData.pieces[i];
-      const defaultsForPiece = contractData.defaults.get(
-        contractPiece.pieceType
-      );
+      const defaultsForPiece = contractData.defaults[contractPiece.pieceType];
       if (!defaultsForPiece) continue;
       let piece: Piece = {
         ...contractPiece,
@@ -263,7 +261,7 @@ export class GameState {
     owner: EthAddress,
     at?: BoardLocation
   ): [Piece, number] {
-    const defaults = this.defaults.get(pieceType);
+    const defaults = this.defaults[pieceType];
     if (!defaults) throw new Error('unknown piecetype');
     const base: AbstractPiece = {
       id: pieceId,

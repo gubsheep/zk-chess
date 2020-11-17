@@ -1,4 +1,4 @@
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -21,7 +21,7 @@ import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
+import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 
 import {
   ContractsAPIEvent,
@@ -39,12 +39,12 @@ import {
   UnsubmittedEndTurn,
   UnsubmittedJoin,
 } from '../_types/darkforest/api/ContractsAPITypes';
-import {address} from '../utils/CheckedTypeUtils';
-import {findPath, getRandomTxIntentId, taxiDist} from '../utils/Utils';
+import { address } from '../utils/CheckedTypeUtils';
+import { findPath, getRandomTxIntentId, taxiDist } from '../utils/Utils';
 import bigInt from 'big-integer';
 import mimcHash from '../hash/mimc';
-import {LOCATION_ID_UB} from '../utils/constants';
-import {GameState} from './GameState';
+import { LOCATION_ID_UB } from '../utils/constants';
+import { GameState } from './GameState';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -130,7 +130,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
           player: address(player),
           pieceType,
         };
-        if (!this.gameState.defaults.get(pieceType)?.isZk) {
+        if (!this.gameState.defaults[pieceType as PieceType].isZk) {
           action.at = [atCol, atRow];
         }
         this.gameState.addGameAction(action);
@@ -435,7 +435,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     unsubmittedSummon.row = at[1];
     unsubmittedSummon.col = at[0];
     unsubmittedSummon.sequenceNumber = gameState.sequenceNumber;
-    if (gameState.defaults.get(pieceType)?.isZk) {
+    if (gameState.defaults[pieceType].isZk) {
       unsubmittedSummon.isZk = true;
       const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
       let homeRow = 0;
