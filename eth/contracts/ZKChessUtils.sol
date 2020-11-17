@@ -118,6 +118,49 @@ library ZKChessUtils {
         objectives.push(Objective({row: 4, col: 3}));
     }
 
+    function initializePieces(
+        address player1,
+        address player2,
+        mapping(uint8 => Piece) storage pieces,
+        uint8[] storage pieceIds,
+        uint8[][] storage boardPieces,
+        mapping(PieceType => PieceDefaultStats) storage defaultStats
+    ) public {
+        pieces[1] = Piece({
+            id: 1,
+            pieceType: PieceType.MOTHERSHIP_00,
+            owner: player1,
+            row: 2,
+            col: 0,
+            alive: true,
+            commitment: 0,
+            initialized: true,
+            hp: defaultStats[PieceType.MOTHERSHIP_00].hp,
+            initializedOnTurn: 0,
+            lastMove: 0,
+            lastAttack: 0
+        });
+        pieceIds.push(1);
+        boardPieces[2][0] = 1;
+        pieces[2] = Piece({
+            id: 2,
+            pieceType: PieceType.MOTHERSHIP_00,
+            owner: player2,
+            row: 2,
+            col: 6,
+            alive: true,
+            commitment: 0,
+            initialized: true,
+            hp: defaultStats[PieceType.MOTHERSHIP_00].hp,
+            initializedOnTurn: 0,
+            lastMove: 0,
+            lastAttack: 0
+        });
+        pieceIds.push(2);
+        boardPieces[2][6] = 2;
+        return;
+    }
+
     function checkAction(
         uint8 claimedTurnNumber,
         uint8 turnNumber,

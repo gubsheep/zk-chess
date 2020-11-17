@@ -15,12 +15,17 @@ enum PieceType {
 }
 
 struct GameInfo {
+    uint256 gameId;
+    uint8 NROWS;
+    uint8 NCOLS;
     uint8 turnNumber;
+    uint16 sequenceNumber;
     GameState gameState;
     address player1;
     address player2;
     uint8 player1Mana;
     uint8 player2Mana;
+    uint256 lastActionTimestamp;
 }
 
 struct PieceDefaultStats {
