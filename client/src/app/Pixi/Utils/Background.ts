@@ -1,3 +1,4 @@
+import * as PIXI from 'pixi.js';
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
 import { PixiObject } from '../PixiObject';
 import { makeRect } from './PixiUtils';

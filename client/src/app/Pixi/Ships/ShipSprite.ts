@@ -1,3 +1,4 @@
+import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { PieceType } from '../../../_types/global/GlobalTypes';
 import { PlayerColor } from '../@PixiTypes';
