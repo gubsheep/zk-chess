@@ -1,17 +1,17 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import { FontLoader, getFontLoader } from '../app/PixiUtils/FontLoader';
-import { GameObject } from '../app/PixiUtils/GameObject';
-import { FONT, loadTextures } from '../app/PixiUtils/TextureLoader';
-import { ResourceBars } from '../app/PixiUtils/ResourceBars';
-import { Shop } from '../app/PixiUtils/Shop';
-import { GameBoard } from '../app/PixiUtils/GameBoard';
-import { Background } from '../app/PixiUtils/Background';
-import { MouseManager } from '../app/PixiUtils/MouseManager';
+import { PixiObject } from '../app/Pixi/PixiObject';
+import { ResourceBars } from '../app/Pixi/UI/ResourceBars';
+import { Shop } from '../app/Pixi/UI/Shop';
+import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
+import { MouseManager } from '../app/Pixi/MouseManager';
 import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
-import { ShipManager } from '../app/PixiUtils/ShipManager';
-import { ObjectiveManager } from '../app/PixiUtils/ObjectiveManager';
+import { ObjectiveManager } from '../app/Pixi/Objectives/ObjectiveManager';
+import { Background } from '../app/Pixi/Utils/Background';
+import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
+import { ShipManager } from '../app/Pixi/Ships/ShipManager';
+import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -47,7 +47,7 @@ export class PixiManager {
   api: GameAPI;
 
   layers: PIXI.Container[];
-  gameObjects: GameObject[];
+  gameObjects: PixiObject[];
 
   gameBoard: GameBoard;
   shipManager: ShipManager;
@@ -99,7 +99,7 @@ export class PixiManager {
     loadTextures(() => this.setup());
   }
 
-  removeObject(obj: GameObject) {
+  removeObject(obj: PixiObject) {
     for (let i = 0; i < this.gameObjects.length; i++) {
       if (this.gameObjects[i].objectId === obj.objectId) {
         this.gameObjects.splice(i, 1);
@@ -109,7 +109,7 @@ export class PixiManager {
     }
   }
 
-  addObject(obj: GameObject) {
+  addObject(obj: PixiObject) {
     // TODO manage systems, components, etc.
     this.gameObjects.push(obj);
     this.layers[obj.layer].addChild(obj.object);

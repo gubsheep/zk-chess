@@ -2,12 +2,7 @@ import {
   BoardCoords,
   MoveAttack,
   PlayerColor,
-} from '../app/PixiUtils/PixiTypes';
-import {
-  boardLocFromCoords,
-  compareBoardCoords,
-  taxiCab,
-} from '../app/PixiUtils/PixiUtils';
+} from '../app/Pixi/@PixiTypes';
 import {
   ChessGame,
   EthAddress,
@@ -19,13 +14,13 @@ import {
 } from '../_types/global/GlobalTypes';
 import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 import { PixiManager } from './PixiManager';
-import { GAME_HEIGHT, GAME_WIDTH } from '../app/PixiUtils/GameBoard';
+import { GAME_HEIGHT, GAME_WIDTH } from '../app/Pixi/GameBoard/GameBoard';
 import autoBind from 'auto-bind';
 import { findPath, getObstacles } from '../utils/Utils';
-import { BoardCell } from '../app/PixiUtils/GameBoardComponents/BoardCell';
-import { Ship } from '../app/PixiUtils/Ship';
-import { PieceObject } from '../app/PixiUtils/PieceObject';
-import { Submarine } from '../app/PixiUtils/Submarine';
+import { Ship } from '../app/Pixi/Ships/Ship';
+import { PieceObject } from '../app/Pixi/Ships/PieceObject';
+import { Submarine } from '../app/Pixi/Ships/Submarine';
+import { boardLocFromCoords, compareBoardCoords, taxiCab } from '../app/Pixi/Utils/PixiUtils';
 
 export class GameAPI {
   private pixiManager: PixiManager;
@@ -179,6 +174,10 @@ export class GameAPI {
   }
 
   // getters
+
+  canBuy(type: PieceType): boolean {
+    return this.getStats(type).cost <= this.getGold();
+  }
 
   getStats(type: PieceType): PieceStatDefaults {
     return this.gameState.defaults[type];
