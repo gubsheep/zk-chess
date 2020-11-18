@@ -34,14 +34,23 @@ const overlayFrag = glsl`
   }
 `;
 
+type OverlayProps = {
+  cr: number;
+  cg: number;
+  cb: number;
+};
+
+const makeOverlayFilter = (props: OverlayProps): PIXI.Filter =>
+  new PIXI.Filter('', overlayFrag, props);
+
 export const redShader = (): PIXI.Filter => {
-  return new PIXI.Filter('', overlayFrag, { cr: 1, cg: 0, cb: 0 });
+  return makeOverlayFilter({ cr: 1, cg: 0, cb: 0 });
 };
 export const blueShader = (): PIXI.Filter => {
-  return new PIXI.Filter('', overlayFrag, { cr: 0, cg: 0, cb: 1 });
+  return makeOverlayFilter({ cr: 0, cg: 0, cb: 1 });
 };
 export const orangeShader = (): PIXI.Filter => {
-  return new PIXI.Filter('', overlayFrag, { cr: 1, cg: 0.5, b: 0 });
+  return makeOverlayFilter({ cr: 1, cg: 0.5, cb: 0 });
 };
 
 export const playerShader = (color: PlayerColor) =>

@@ -7,6 +7,8 @@ import {
   Piece,
   PieceStatDefaults,
   PieceType,
+  Player,
+  VisiblePiece,
 } from '../_types/global/GlobalTypes';
 import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
 import {PixiManager} from './PixiManager';
@@ -21,11 +23,15 @@ import {
   compareBoardCoords,
   taxiCab,
 } from '../app/Pixi/Utils/PixiUtils';
+import { playerShader } from '../app/Pixi/Utils/Shaders';
 
 export class GameAPI {
   private pixiManager: PixiManager;
   private gameManager: AbstractGameManager;
   private myMothership: Ship;
+
+  private p1Mothership: VisiblePiece;
+  private p2Mothership: VisiblePiece;
 
   gameState: ChessGame;
 
@@ -34,6 +40,7 @@ export class GameAPI {
     this.gameManager = gameManager;
 
     this.gameState = this.gameManager.getGameState();
+    console.log(this.gameState);
 
     autoBind(this);
 
@@ -58,15 +65,19 @@ export class GameAPI {
     const {shipManager} = this.pixiManager;
 
     shipManager.clear();
-    const {pieces, myAddress} = this.gameState;
+    const { pieces, myAddress, player1, player2 } = this.gameState;
     for (const piece of pieces) {
       if (isVisiblePiece(piece)) {
         const ship = new Ship(this.pixiManager, piece);
-        if (
-          piece.owner === myAddress &&
-          piece.pieceType === PieceType.Mothership_00
-        ) {
-          this.myMothership = ship;
+        if (piece.pieceType === PieceType.Mothership_00) {
+          if (piece.owner === myAddress) {
+            this.myMothership = ship;
+          }
+          if (piece.owner === player1.address) {
+            this.p1Mothership = piece;
+          } else {
+            this.p2Mothership = piece;
+          }
         }
 
         shipManager.addShip(ship);
@@ -204,6 +215,18 @@ export class GameAPI {
       : PlayerColor.Blue;
   }
 
+  gameOver(): boolean {
+    return this.gameState.gameStatus === GameStatus.COMPLETE;
+  }
+
+  getWinner(): PlayerColor | null {
+    if (!this.gameOver()) return null;
+    if (this.p1Mothership.hp === 0) return PlayerColor.Red;
+    else if (this.p2Mothership.hp === 0) return PlayerColor.Blue;
+
+    return null;
+  }
+
   // p1 is red, p2 is blue
   getMyColor(): PlayerColor {
     return this.getColor(this.gameState.myAddress);
@@ -290,6 +313,7 @@ export class GameAPI {
   /* private utils */
   private syncGameState(): void {
     this.gameState = this.gameManager.getLatestGameState();
+    console.log(this.gameState);
     this.syncShips();
     this.syncObjectives();
   }

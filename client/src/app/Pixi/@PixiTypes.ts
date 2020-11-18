@@ -3,8 +3,8 @@ export type CanvasCoords = { x: number; y: number };
 export type BoardCoords = { row: number; col: number };
 
 export enum PlayerColor {
-  Red = 'Red',
-  Blue = 'Blue',
+  Red = 'RED',
+  Blue = 'BLUE',
 }
 
 export enum LineAlignment {
@@ -18,9 +18,9 @@ export type BoxBounds = {
   left: number;
   bottom: number;
   right: number;
-}
+};
 
 export type MoveAttack = {
-  attack: BoardCoords,
-  move: BoardCoords
-}
+  attack: BoardCoords;
+  move: BoardCoords;
+};
