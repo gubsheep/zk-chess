@@ -154,13 +154,7 @@ contract ZKChessGame is Initializable {
     }
 
     function gameShouldBeCompleted() public view returns (bool) {
-        return
-            ZKChessUtils.gameShouldBeCompleted(
-                pieceIds,
-                pieces,
-                player1,
-                player2
-            );
+        return ZKChessUtils.gameShouldBeCompleted(pieces);
     }
 
     //////////////////////
@@ -373,6 +367,7 @@ contract ZKChessGame is Initializable {
             defaultStats,
             hasAttacked
         );
+
         emit DidAttack(
             attack.sequenceNumber,
             attack.pieceId,
@@ -381,6 +376,11 @@ contract ZKChessGame is Initializable {
             pieces[attack.attackedId].hp
         );
         sequenceNumber++;
+
+        if (gameShouldBeCompleted()) {
+            gameState = GameState.COMPLETE;
+            emit GameFinished();
+        }
     }
 
     function endTurn(uint8 _turnNumber, uint8 _sequenceNumber) public {

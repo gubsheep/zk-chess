@@ -244,24 +244,13 @@ library ZKChessUtils {
         return true;
     }
 
-    function gameShouldBeCompleted(
-        uint8[] storage pieceIds,
-        mapping(uint8 => Piece) storage pieces,
-        address player1,
-        address player2
-    ) public view returns (bool) {
+    function gameShouldBeCompleted(mapping(uint8 => Piece) storage pieces)
+        public
+        view
+        returns (bool)
+    {
         // check if game is over: at least one player has no pieces left
-        bool player1HasPiecesLeft = false;
-        bool player2HasPiecesLeft = false;
-        for (uint8 i = 0; i < pieceIds.length; i++) {
-            Piece storage piece = pieces[pieceIds[i]];
-            if (piece.owner == player1 && piece.alive) {
-                player1HasPiecesLeft = true;
-            } else if (piece.owner == player2 && piece.alive) {
-                player2HasPiecesLeft = true;
-            }
-        }
-        return !(player1HasPiecesLeft && player2HasPiecesLeft);
+        return !pieces[1].alive || !pieces[2].alive;
     }
 
     function checkMove(
