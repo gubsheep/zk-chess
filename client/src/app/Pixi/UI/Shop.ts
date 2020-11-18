@@ -1,7 +1,7 @@
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
 import { PieceType } from '../../../_types/global/GlobalTypes';
 import { PixiObject } from '../PixiObject';
-import { CARD_W } from './ShopCard';
+import { CARD_H, CARD_W } from './ShopCard';
 import { ShopItem } from './ShopItem';
 
 const NUM_SHIPS = 5;
@@ -30,7 +30,7 @@ export class Shop extends PixiObject {
   positionSelf() {
     const { width, height } = this.manager.renderer;
     const shopX = 0.5 * (width - this.getWidth());
-    this.setPosition({ x: shopX, y: height - 70 });
+    this.setPosition({ x: shopX, y: height - CARD_H - 4 });
   }
 
   getWidth() {

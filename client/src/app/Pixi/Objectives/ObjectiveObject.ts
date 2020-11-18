@@ -1,9 +1,9 @@
 import * as PIXI from 'pixi.js';
-import { PixiManager } from '../../../api/PixiManager';
+import { GameZIndex, PixiManager } from '../../../api/PixiManager';
 import { Objective } from '../../../_types/global/GlobalTypes';
 import { BoardCoords } from '../@PixiTypes';
 import { PixiObject, Wrapper } from '../PixiObject';
-import { boardCoordsFromLoc } from '../Utils/PixiUtils';
+import { boardCoordsFromLoc, compareBoardCoords } from '../Utils/PixiUtils';
 import { WATERLINE, SPRITE_W } from '../Utils/TextureLoader';
 import { ObjectiveSprite } from './ObjectiveSprite';
 
@@ -15,7 +15,7 @@ export class ObjectiveObject extends PixiObject {
   waterline: PixiObject;
 
   constructor(manager: PixiManager, objective: Objective) {
-    super(manager);
+    super(manager, GameZIndex.Board);
 
     this.objectiveData = objective;
 
@@ -34,7 +34,11 @@ export class ObjectiveObject extends PixiObject {
 
   setLocation(coords: BoardCoords) {
     const topLeft = this.manager.gameBoard.getTopLeft(coords);
-    this.setPosition({ x: topLeft.x + 2, y: topLeft.y + 2 });
+    if (topLeft) {
+      this.setPosition({ x: topLeft.x + 2, y: topLeft.y + 2 });
+    } else {
+      console.error('tried to move objective out of bounds');
+    }
   }
 
   loop() {
@@ -48,6 +52,17 @@ export class ObjectiveObject extends PixiObject {
     } else {
       this.sprite.setColor(null);
       this.setAlpha(1);
+    }
+
+    const { moveStaged, selectedShip } = this.manager.mouseManager;
+    if (
+      !selectedShip?.isZk() &&
+      compareBoardCoords(
+        moveStaged,
+        boardCoordsFromLoc(this.objectiveData.location)
+      )
+    ) {
+      this.sprite.setColor(api.getMyColor());
     }
 
     this.bob();

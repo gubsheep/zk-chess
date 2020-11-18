@@ -50,6 +50,17 @@ export class PieceObject extends PixiObject {
     this.addChild(shipContainer);
   }
 
+  setLocation(coords: BoardCoords) {
+    const topLeft = this.manager.gameBoard.getTopLeft(coords);
+    if (topLeft) {
+      this.setPosition(this.calcLoc(topLeft));
+    }
+  }
+
+  calcLoc(c: CanvasCoords) {
+    return c;
+  }
+
   isZk() {
     return isZKPiece(this.pieceData);
   }
@@ -60,15 +71,6 @@ export class PieceObject extends PixiObject {
 
   isAlive(): boolean {
     return this.pieceData.alive;
-  }
-
-  setLocation(coords: BoardCoords) {
-    const topLeft = this.manager.gameBoard.getTopLeft(coords);
-    this.setPosition(this.calcLoc(topLeft));
-  }
-
-  calcLoc({ x, y }: CanvasCoords): CanvasCoords {
-    return { x: x + 2, y: y + 2 };
   }
 
   getCoords(): BoardCoords {
@@ -82,5 +84,16 @@ export class PieceObject extends PixiObject {
   loop() {
     super.loop();
     this.setActive(this.pieceData.alive);
+
+    if (this.getType() !== PieceType.Mothership_00) {
+      const { api } = this.manager;
+      if (api.hasAttacked(this)) {
+        this.sprite.setGray(0.4);
+      } else if (api.hasMoved(this)) {
+        this.sprite.setGray(1.0);
+      } else {
+        this.sprite.setGray(1);
+      }
+    }
   }
 }

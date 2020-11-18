@@ -1,12 +1,13 @@
+import * as PIXI from 'pixi.js';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { PixiManager } from '../../../api/PixiManager';
-import { CanvasCoords } from '../@PixiTypes';
 import { PixiObject } from '../PixiObject';
+import { CHAR_H } from './FontLoader';
 
 export enum TextAlign {
-  Left,
-  Center,
-  Right,
+  Left = 0,
+  Center = -0.5,
+  Right = -1,
 }
 
 export class TextObject extends PixiObject {
@@ -45,9 +46,12 @@ export class TextObject extends PixiObject {
     this.update();
   }
 
+
   private update() {
     const { align, text, color, manager, object } = this;
     const { width, object: textObj } = manager.fontLoader(text);
+
+    this.width = width;
 
     for (const child of object.children) object.removeChild(child);
 
@@ -61,63 +65,5 @@ export class TextObject extends PixiObject {
 
     const shader = new ColorOverlayFilter(color);
     textObj.filters = [shader];
-  }
-}
-
-export class LinkObject extends TextObject {
-  onClick: Function;
-  mousedown: boolean;
-  mouseover: boolean;
-
-  realPos: CanvasCoords;
-
-  constructor(
-    manager: PixiManager,
-    text: string,
-    onClick: Function,
-    align: TextAlign = TextAlign.Left,
-    color: number = 0xffffff
-  ) {
-    super(manager, text, align, color);
-
-    this.onClick = onClick;
-    this.mousedown = false;
-    this.mouseover = false;
-    this.realPos = { x: 0, y: 0 };
-
-    this.setInteractive({
-      mouseover: this.onMouseOver,
-      mousedown: this.onMouseDown,
-      mouseout: this.onMouseOut,
-      mouseup: this.onMouseUp,
-      mouseupoutside: this.onMouseUp,
-      click: this.onClick,
-    });
-  }
-
-  private onMouseOver() {
-    this.mouseover = true;
-  }
-
-  private onMouseOut() {
-    this.mouseover = false;
-  }
-
-  private onMouseDown() {
-    this.mousedown = true;
-  }
-
-  private onMouseUp() {
-    this.mousedown = false;
-  }
-
-  setPosition(coords: CanvasCoords) {
-    this.realPos = coords;
-  }
-
-  loop() {
-    const { x, y } = this.realPos;
-    const delY = this.mousedown ? 1 : this.mouseover ? -1 : 0;
-    super.setPosition({ x, y: y + delY });
   }
 }

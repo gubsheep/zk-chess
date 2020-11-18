@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { PixiObject } from '../PixiObject';
-import { TextAlign, TextObject } from './Text';
+import { TextAlign, TextObject } from './TextObject';
 import { getBombSprite, getHeartSprite } from './TextureLoader';
 
 export enum StatType {

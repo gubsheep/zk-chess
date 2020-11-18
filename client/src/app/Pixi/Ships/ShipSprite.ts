@@ -10,6 +10,7 @@ export class ShipSprite extends PixiObject {
   type: PieceType | null;
   color: PlayerColor | null;
   rect: PIXI.Graphics;
+  shader: PIXI.Filter | null;
 
   constructor(
     manager: PixiManager,
@@ -38,6 +39,18 @@ export class ShipSprite extends PixiObject {
     this.rect.endFill();
   }
 
+  // from 0 to 1
+  setGray(gray: number) {
+    if (!this.shader) return;
+    const val = Math.max(0, Math.min(gray, 1));
+
+    if (this.color === PlayerColor.Red) {
+      this.shader.uniforms.cr = val;
+    } else {
+      this.shader.uniforms.cb = val;
+    }
+  }
+
   setType(type: PieceType | null) {
     this.type = type;
   }
@@ -53,6 +66,12 @@ export class ShipSprite extends PixiObject {
       this.rect.x = 0;
     }
 
-    this.setFilters(color ? [playerShader(color)] : []);
+    if (color) {
+      this.shader = playerShader(color);
+      this.setFilters([this.shader]);
+    } else {
+      this.shader = null;
+      this.setFilters([]);
+    }
   }
 }

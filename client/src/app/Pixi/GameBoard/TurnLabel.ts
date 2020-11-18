@@ -4,7 +4,7 @@ import { CHAR_H } from '../Utils/FontLoader';
 import { PixiObject } from '../PixiObject';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';
-import { TextObject, TextAlign } from '../Utils/Text';
+import { TextObject, TextAlign } from '../Utils/TextObject';
 
 export class TurnLabel extends GameBoardObject {
   yourTurn: PixiObject;
