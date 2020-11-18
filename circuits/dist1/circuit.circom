@@ -16,7 +16,7 @@
     - r1, c1, r2, c2 are 8 bits
     - 0 <= r1 < nrows
     - 0 <= c1 < ncols
-    - |r1 - r2| + |c1 - c2| <= dist
+    - |r1 - r2| + |c1 - c2| = dist
     - mimc(r1, c1, salt1) = h1
 */
 
@@ -83,10 +83,14 @@ template Main() {
     absC.in[0] <== c1;
     absC.in[1] <== c2;
 
+    dist === absR.out + absC.out;
+
+/*
     component gtDist = GreaterThan(9); // 1 extra bit since adding two 8-bit numbers
     gtDist.in[0] <== absR.out + absC.out;
     gtDist.in[1] <== dist
     gtDist.out === 0;
+*/
 
     /* compute and prove MiMCSponge(r1, c1, salt1) = h1 */
     component mimc1 = MiMCSponge(3, 220, 1);

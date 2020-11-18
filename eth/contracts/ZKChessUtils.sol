@@ -348,8 +348,8 @@ library ZKChessUtils {
                 "ZKP invalid"
             );
             require(
-                attack.zkp.input[3] <= defaultStats[piece.pieceType].mvRange,
-                "out of attack range"
+                attack.zkp.input[3] == defaultStats[piece.pieceType].atkRange,
+                "not equal to attack range"
             );
             require(attack.zkp.input[4] == NROWS, "ZKP invalid");
             require(attack.zkp.input[5] == NCOLS, "ZKP invalid");
@@ -364,7 +364,7 @@ library ZKChessUtils {
             );
         } else {
             require(
-                taxiDist(piece.row, piece.col, attacked.row, attacked.col) <=
+                taxiDist(piece.row, piece.col, attacked.row, attacked.col) ==
                     defaultStats[piece.pieceType].atkRange,
                 "not in attack range"
             );
