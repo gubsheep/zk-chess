@@ -109,11 +109,7 @@ export class Ship extends PieceObject {
     this.atkObj.setValue(atk);
     this.hpObj.setValue(hp);
 
-    const { selectedShip } = this.manager.mouseManager;
-    const isSelected = selectedShip?.pieceData.id === this.pieceData.id;
-
-    this.setMaskEnabled(!isSelected);
-    this.outlineSprite.setActive(isSelected);
+    this.setMaskEnabled(!this.isSelected());
 
     // bob
     this.bob();

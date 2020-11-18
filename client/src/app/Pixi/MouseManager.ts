@@ -345,7 +345,7 @@ export class MouseManager {
   }
 
   subClicked(sub: Submarine) {
-    console.log('got a click from this sub: ' + sub.objectId);
+    console.log('got a click from this sub: ' + sub.objectId, sub.pieceData);
     const {
       manager: { api },
       clickState,

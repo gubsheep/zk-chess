@@ -79,6 +79,11 @@ export class PieceObject extends PixiObject {
     return this.pieceData.alive;
   }
 
+  isSelected(): boolean {
+    const { selectedShip } = this.manager.mouseManager;
+    return selectedShip?.pieceData.id === this.pieceData.id;
+  }
+
   getCoords(): BoardCoords {
     if (isLocatable(this.pieceData)) {
       return boardCoordsFromLoc(this.pieceData.location);
@@ -101,5 +106,7 @@ export class PieceObject extends PixiObject {
         this.sprite.setGray(1);
       }
     }
+
+    this.outlineSprite.setActive(this.isSelected());
   }
 }
