@@ -22,7 +22,7 @@ import {
   ZKPiece,
 } from '../_types/global/GlobalTypes';
 import _ from 'lodash';
-import {LocalStorageManager} from './LocalStorageManager';
+import { LocalStorageManager } from './LocalStorageManager';
 
 export class GameState {
   gameAddress: EthAddress;
@@ -82,7 +82,8 @@ export class GameState {
       let piece: Piece = {
         ...contractPiece,
         mvRange: defaultsForPiece.mvRange,
-        atkRange: defaultsForPiece.atkRange,
+        atkMinRange: defaultsForPiece.atkMinRange,
+        atkMaxRange: defaultsForPiece.atkMaxRange,
         atk: defaultsForPiece.atk,
         kamikaze: defaultsForPiece.kamikaze,
       };
@@ -276,7 +277,8 @@ export class GameState {
       lastMove: this.turnNumber,
       lastAttack: this.turnNumber,
       mvRange: defaults.mvRange,
-      atkRange: defaults.atkRange,
+      atkMinRange: defaults.atkMinRange,
+      atkMaxRange: defaults.atkMaxRange,
       atk: defaults.atk,
       kamikaze: defaults.kamikaze,
     };
@@ -363,7 +365,8 @@ export class GameState {
       p1.lastMove !== p2.lastMove ||
       p1.lastAttack !== p2.lastAttack ||
       p1.mvRange !== p2.mvRange ||
-      p1.atkRange !== p2.atkRange ||
+      p1.atkMinRange !== p2.atkMinRange ||
+      p1.atkMaxRange !== p2.atkMaxRange ||
       p1.atk !== p2.atk ||
       p1.kamikaze !== p2.kamikaze
     ) {

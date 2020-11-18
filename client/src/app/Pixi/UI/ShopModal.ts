@@ -29,7 +29,9 @@ export class ShopModal extends PixiObject {
     const atkStr = `ATK: ${data.atk}`;
     const hpStr = `HP: ${data.hp}`;
     const mvtStr = `Movement: ${data.mvRange}`;
-    const rngStr = `Range: ${data.atkRange}`;
+    let rngStr = `Range: ${data.atkMinRange}-${data.atkMaxRange}`;
+    if (data.atkMinRange === data.atkMaxRange)
+      rngStr = `Range: ${data.atkMaxRange}`;
 
     const shopText = manager.fontLoader(
       `${pieceNames[type]}\n${atkStr}\n${hpStr}\n${mvtStr}\n${rngStr}`,
