@@ -86,8 +86,7 @@ template Main() {
     compC2.in[1] <== ncols;
     compC2.out === 1;
 
-    /* check that |r1 - r2| + |c1 - c2| <= dist */
-    /* we do this by proving LHS is not greater than RHS */
+    /* check that |r1 - r2| + |c1 - c2| = dist */
     component absR = AbsoluteDifference(8);
     component absC = AbsoluteDifference(8);
 
@@ -96,10 +95,14 @@ template Main() {
     absC.in[0] <== c1;
     absC.in[1] <== c2;
 
+    dist === absR.out + absC.out;
+
+/*
     component gtDist = GreaterThan(9);
     gtDist.in[0] <== absR.out + absC.out;
     gtDist.in[1] <== dist
     gtDist.out === 0;
+*/
 
     /* compute and prove MiMCSponge(ri, ci, salt1) = hi */
     component mimc1 = MiMCSponge(3, 220, 1);

@@ -47,6 +47,7 @@ export class GameState {
   turnNumber: number;
   sequenceNumber: number;
   gameStatus: GameStatus;
+  lastActionTimestamp: number;
 
   constructor(game: ChessGameContractData) {
     this.gameActions = [];
@@ -69,6 +70,7 @@ export class GameState {
     this.turnNumber = contractData.turnNumber;
     this.sequenceNumber = contractData.sequenceNumber;
     this.gameStatus = contractData.gameStatus;
+    this.lastActionTimestamp = contractData.lastActionTimestamp;
 
     this.pieces = [];
     this.pieceById = new Map<number, Piece>();
@@ -153,6 +155,7 @@ export class GameState {
       turnNumber: this.turnNumber,
       sequenceNumber: this.sequenceNumber,
       gameStatus: this.gameStatus,
+      lastActionTimestamp: this.lastActionTimestamp,
     });
   }
 

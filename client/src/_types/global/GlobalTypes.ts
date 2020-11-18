@@ -151,6 +151,7 @@ export type ChessGameContractData = {
   turnNumber: number;
   sequenceNumber: number;
   gameStatus: GameStatus;
+  lastActionTimestamp: number;
 };
 
 export type ChessGame = {
@@ -175,6 +176,7 @@ export type ChessGame = {
   turnNumber: number;
   sequenceNumber: number;
   gameStatus: GameStatus;
+  lastActionTimestamp: number;
 };
 
 export interface SnarkJSProof {

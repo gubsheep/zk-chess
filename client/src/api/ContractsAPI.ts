@@ -30,6 +30,7 @@ import {
   RawDefaults,
   UnsubmittedAttack,
   RawObjective,
+  RawGameInfo,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -136,6 +137,8 @@ class ContractsAPI extends EventEmitter {
   private factoryContract: Contract;
   private gameContract: Contract | null;
   private readonly txRequestExecutor: TxExecutor;
+  private cachedStatDefaults: Record<PieceType, PieceStatDefaults> | null;
+  private cachedObjectives: Objective[] | null;
   private unminedTxs: Map<string, TxIntent>;
 
   private constructor(
@@ -149,6 +152,8 @@ class ContractsAPI extends EventEmitter {
     this.gameContract = null;
     this.txRequestExecutor = new TxExecutor(nonce);
     this.unminedTxs = new Map<string, TxIntent>();
+    this.cachedStatDefaults = null;
+    this.cachedObjectives = null;
   }
 
   static async create(): Promise<ContractsAPI> {
@@ -275,33 +280,43 @@ class ContractsAPI extends EventEmitter {
     if (!contract) {
       throw new Error('no contract set');
     }
-    const gameId = (await contract.gameId()).toNumber();
-    const nRows = await contract.NROWS();
-    const nCols = await contract.NCOLS();
+    const gameInfo: RawGameInfo = await contract.getInfo();
 
-    const player1Addr = address(await contract.player1());
-    const player2Addr = address(await contract.player2());
-    const player1Mana = await contract.player1Mana();
-    const player2Mana = await contract.player2Mana();
-    const rawObjectives: RawObjective[] = await contract.getObjectives();
+    const gameId = gameInfo[0].toString();
+    const nRows = gameInfo[1];
+    const nCols = gameInfo[2];
+    const turnNumber = gameInfo[3];
+    const sequenceNumber = gameInfo[4];
+    const gameState = gameInfo[5];
+    const player1Addr = address(gameInfo[6]);
+    const player2Addr = address(gameInfo[7]);
+    const player1Mana = gameInfo[8];
+    const player2Mana = gameInfo[9];
+    const lastActionTimestamp = gameInfo[10].toNumber();
+
     const rawPieces: RawPiece[] = await contract.getPieces();
-    const rawDefaults: RawDefaults[] = await contract.getDefaults();
-    const turnNumber = await contract.turnNumber();
-    const sequenceNumber = await contract.sequenceNumber();
-    const gameState = await contract.gameState();
-
     const pieces: ContractPiece[] = rawPieces.map(this.rawPieceToPiece);
-    const objectives: Objective[] = rawObjectives.map(
-      this.rawObjectiveToObjective
-    );
 
-    const defaultsRaw: Partial<Record<PieceType, PieceStatDefaults>> = {};
-    for (const rawDefault of rawDefaults) {
-      const defStats = this.rawDefaultToDefault(rawDefault);
-      defaultsRaw[defStats.pieceType] = defStats;
+    if (!this.cachedObjectives) {
+      const rawObjectives: RawObjective[] = await contract.getObjectives();
+
+      this.cachedObjectives = rawObjectives.map(this.rawObjectiveToObjective);
     }
 
-    const defaults = defaultsRaw as Record<PieceType, PieceStatDefaults>;
+    if (!this.cachedStatDefaults) {
+      const rawDefaults: RawDefaults[] = await contract.getDefaults();
+      // TODO these names suck
+      const defaultsRaw: Partial<Record<PieceType, PieceStatDefaults>> = {};
+      for (const rawDefault of rawDefaults) {
+        const defStats = this.rawDefaultToDefault(rawDefault);
+        defaultsRaw[defStats.pieceType] = defStats;
+      }
+
+      this.cachedStatDefaults = defaultsRaw as Record<
+        PieceType,
+        PieceStatDefaults
+      >;
+    }
 
     return {
       gameAddress: address(contract.address),
@@ -314,11 +329,12 @@ class ContractsAPI extends EventEmitter {
       player1Mana,
       player2Mana,
       pieces,
-      objectives,
-      defaults,
+      objectives: this.cachedObjectives,
+      defaults: this.cachedStatDefaults,
       turnNumber,
       sequenceNumber,
       gameStatus: gameState,
+      lastActionTimestamp,
     };
   }
 
@@ -332,6 +348,8 @@ class ContractsAPI extends EventEmitter {
     const gameContract: Contract = await ethConnection.loadGameContract(
       gameAddr
     );
+    this.cachedObjectives = null;
+    this.cachedStatDefaults = null;
     this.removeGameContractListeners();
     this.gameContract = gameContract;
     this.setupGameContractListeners();
