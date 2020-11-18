@@ -90,16 +90,26 @@ export class Ship extends PieceObject {
   }
 
   onMouseOver() {
+    super.onMouseOver();
     this.manager.mouseManager.setHoveringShip(this);
   }
 
   onMouseOut() {
+    super.onMouseOut();
     this.manager.mouseManager.setHoveringShip(null);
   }
 
   onClick() {
-    if (this.manager.api.isMyTurn())
-      this.manager.mouseManager.shipClicked(this);
+    const { api, mouseManager } = this.manager;
+    if (api.isMyTurn()) {
+      if (this.getType() === PieceType.Mothership_00) {
+        const gold = api.getGold();
+        if (gold == 0) return;
+        mouseManager.buyShip(Math.min(gold, 5));
+      } else {
+        mouseManager.shipClicked(this);
+      }
+    }
   }
 
   loop() {
@@ -109,7 +119,7 @@ export class Ship extends PieceObject {
     this.atkObj.setValue(atk);
     this.hpObj.setValue(hp);
 
-    this.setMaskEnabled(!this.isSelected());
+    this.setMaskEnabled(!this.isSelected() && !this.hover);
 
     // bob
     this.bob();

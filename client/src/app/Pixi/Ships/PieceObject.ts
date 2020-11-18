@@ -12,6 +12,7 @@ import { boardCoordsFromLoc } from '../Utils/PixiUtils';
 import { ShipManager } from './ShipManager';
 import { ShipSprite } from './ShipSprite';
 import { OutlineSprite } from './OutlineSprite';
+import { ClickState } from '../MouseManager';
 
 export enum ShipState {
   Summoned,
@@ -30,10 +31,14 @@ export class PieceObject extends PixiObject {
 
   shipManager: ShipManager;
 
+  hover: boolean;
+
   constructor(manager: PixiManager, data: Piece) {
     super(manager);
     this.shipManager = manager.shipManager;
     this.pieceData = data;
+
+    this.hover = false;
 
     const { owner } = data;
     const color = manager.api.getColor(owner);
@@ -80,8 +85,12 @@ export class PieceObject extends PixiObject {
   }
 
   isSelected(): boolean {
-    const { selectedShip } = this.manager.mouseManager;
-    return selectedShip?.pieceData.id === this.pieceData.id;
+    const { selectedShip, clickState } = this.manager.mouseManager;
+    if (this.getType() === PieceType.Mothership_00) {
+      return clickState === ClickState.Deploying;
+    } else {
+      return selectedShip?.pieceData.id === this.pieceData.id;
+    }
   }
 
   getCoords(): BoardCoords {
@@ -96,8 +105,8 @@ export class PieceObject extends PixiObject {
     super.loop();
     this.setActive(this.pieceData.alive);
 
+    const { api } = this.manager;
     if (this.getType() !== PieceType.Mothership_00) {
-      const { api } = this.manager;
       if (api.hasAttacked(this)) {
         this.sprite.setGray(0.4);
       } else if (api.hasMoved(this)) {
@@ -107,6 +116,14 @@ export class PieceObject extends PixiObject {
       }
     }
 
-    this.outlineSprite.setActive(this.isSelected());
+    this.outlineSprite.setAlpha(this.isSelected() ? 1 : this.hover ? 0.5 : 0);
+  }
+
+  onMouseOver() {
+    this.hover = true;
+  }
+
+  onMouseOut() {
+    this.hover = false;
   }
 }

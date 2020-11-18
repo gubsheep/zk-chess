@@ -333,11 +333,9 @@ export class MouseManager {
       if (type === PieceType.Mothership_00) return;
       if (api.hasAttacked(ship)) return;
 
-      if (clickState === ClickState.None || clickState === ClickState.Acting) {
-        // initiate ship actions
-        this.setSelected(ship);
-        return;
-      }
+      // initiate ship actions
+      this.setSelected(ship);
+      return;
     }
 
     // bubble the event
@@ -360,11 +358,9 @@ export class MouseManager {
 
     if (api.ownedByMe(sub)) {
       if (api.hasAttacked(sub)) return;
-      if (clickState === ClickState.None || clickState === ClickState.Acting) {
-        // initiate ship actions
-        this.setSelected(sub);
-        return;
-      }
+      // initiate ship actions
+      this.setSelected(sub);
+      return;
     }
 
     const coords = sub.getCoords();
