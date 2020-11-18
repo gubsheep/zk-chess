@@ -31,7 +31,8 @@ struct GameInfo {
 struct PieceDefaultStats {
     PieceType pieceType;
     uint8 mvRange;
-    uint8 atkRange;
+    uint8 atkMinRange;
+    uint8 atkMaxRange;
     uint8 hp;
     uint8 atk;
     uint8 cost;

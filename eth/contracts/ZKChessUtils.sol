@@ -53,7 +53,8 @@ library ZKChessUtils {
         defaultStats[PieceType.MOTHERSHIP_00] = PieceDefaultStats({
             pieceType: PieceType.MOTHERSHIP_00,
             mvRange: 0,
-            atkRange: 2,
+            atkMinRange: 2,
+            atkMaxRange: 2,
             hp: 20,
             atk: 2,
             isZk: false,
@@ -63,7 +64,8 @@ library ZKChessUtils {
         defaultStats[PieceType.CRUISER_01] = PieceDefaultStats({
             pieceType: PieceType.CRUISER_01,
             mvRange: 2,
-            atkRange: 1,
+            atkMinRange: 1,
+            atkMaxRange: 1,
             hp: 3,
             atk: 2,
             isZk: false,
@@ -73,7 +75,8 @@ library ZKChessUtils {
         defaultStats[PieceType.FRIGATE_02] = PieceDefaultStats({
             pieceType: PieceType.FRIGATE_02,
             mvRange: 2,
-            atkRange: 2,
+            atkMinRange: 2,
+            atkMaxRange: 2,
             hp: 3,
             atk: 2,
             isZk: false,
@@ -83,7 +86,8 @@ library ZKChessUtils {
         defaultStats[PieceType.CORVETTE_03] = PieceDefaultStats({
             pieceType: PieceType.CORVETTE_03,
             mvRange: 4,
-            atkRange: 1,
+            atkMinRange: 1,
+            atkMaxRange: 1,
             hp: 3,
             atk: 2,
             isZk: false,
@@ -93,7 +97,8 @@ library ZKChessUtils {
         defaultStats[PieceType.SUBMARINE_04] = PieceDefaultStats({
             pieceType: PieceType.SUBMARINE_04,
             mvRange: 1,
-            atkRange: 0,
+            atkMinRange: 0,
+            atkMaxRange: 0,
             hp: 1,
             atk: 3,
             isZk: true,
@@ -103,7 +108,8 @@ library ZKChessUtils {
         defaultStats[PieceType.WARSHIP_05] = PieceDefaultStats({
             pieceType: PieceType.WARSHIP_05,
             mvRange: 1,
-            atkRange: 3,
+            atkMinRange: 2,
+            atkMaxRange: 3,
             hp: 2,
             atk: 3,
             isZk: false,
@@ -238,24 +244,13 @@ library ZKChessUtils {
         return true;
     }
 
-    function gameShouldBeCompleted(
-        uint8[] storage pieceIds,
-        mapping(uint8 => Piece) storage pieces,
-        address player1,
-        address player2
-    ) public view returns (bool) {
+    function gameShouldBeCompleted(mapping(uint8 => Piece) storage pieces)
+        public
+        view
+        returns (bool)
+    {
         // check if game is over: at least one player has no pieces left
-        bool player1HasPiecesLeft = false;
-        bool player2HasPiecesLeft = false;
-        for (uint8 i = 0; i < pieceIds.length; i++) {
-            Piece storage piece = pieces[pieceIds[i]];
-            if (piece.owner == player1 && piece.alive) {
-                player1HasPiecesLeft = true;
-            } else if (piece.owner == player2 && piece.alive) {
-                player2HasPiecesLeft = true;
-            }
-        }
-        return !(player1HasPiecesLeft && player2HasPiecesLeft);
+        return !pieces[1].alive || !pieces[2].alive;
     }
 
     function checkMove(
@@ -348,8 +343,11 @@ library ZKChessUtils {
                 "ZKP invalid"
             );
             require(
-                attack.zkp.input[3] == defaultStats[piece.pieceType].atkRange,
-                "not equal to attack range"
+                attack.zkp.input[3] >=
+                    defaultStats[piece.pieceType].atkMinRange &&
+                    attack.zkp.input[3] <=
+                    defaultStats[piece.pieceType].atkMaxRange,
+                "out of range"
             );
             require(attack.zkp.input[4] == NROWS, "ZKP invalid");
             require(attack.zkp.input[5] == NCOLS, "ZKP invalid");
@@ -363,10 +361,16 @@ library ZKChessUtils {
                 "Failed zk attack check"
             );
         } else {
+            uint8 distance = taxiDist(
+                piece.row,
+                piece.col,
+                attacked.row,
+                attacked.col
+            );
             require(
-                taxiDist(piece.row, piece.col, attacked.row, attacked.col) ==
-                    defaultStats[piece.pieceType].atkRange,
-                "not in attack range"
+                distance >= defaultStats[piece.pieceType].atkMinRange &&
+                    distance <= defaultStats[piece.pieceType].atkMaxRange,
+                "out of range"
             );
         }
         return true;
@@ -394,9 +398,15 @@ library ZKChessUtils {
         // update attacking piece
         uint8 selfDmg = 0;
         if (!defaultStats[piece.pieceType].isZk) {
+            uint8 distance = taxiDist(
+                piece.row,
+                piece.col,
+                attacked.row,
+                attacked.col
+            );
             if (
-                taxiDist(piece.row, piece.col, attacked.row, attacked.col) <=
-                defaultStats[attacked.pieceType].atkRange
+                distance >= defaultStats[attacked.pieceType].atkMinRange &&
+                distance <= defaultStats[attacked.pieceType].atkMaxRange
             ) {
                 selfDmg += defaultStats[piece.pieceType].atk;
             }

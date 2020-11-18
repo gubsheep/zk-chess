@@ -608,12 +608,13 @@ class ContractsAPI extends EventEmitter {
     return {
       pieceType: rawDefault[0],
       mvRange: rawDefault[1],
-      atkRange: rawDefault[2],
-      hp: rawDefault[3],
-      atk: rawDefault[4],
-      cost: rawDefault[5],
-      isZk: rawDefault[6],
-      kamikaze: rawDefault[7],
+      atkMinRange: rawDefault[2],
+      atkMaxRange: rawDefault[3],
+      hp: rawDefault[4],
+      atk: rawDefault[5],
+      cost: rawDefault[6],
+      isZk: rawDefault[7],
+      kamikaze: rawDefault[8],
     };
   }
 }

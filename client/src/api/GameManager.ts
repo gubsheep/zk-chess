@@ -109,7 +109,11 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     });
     contractsAPI.on(ContractsAPIEvent.GameStart, async () => {
       console.log('game started');
-      await this.refreshGameState();
+      try {
+        await this.refreshGameState();
+      } catch (e) {
+        console.error(e);
+      }
       this.emit(GameManagerEvent.GameStart, this.getGameState());
     });
     contractsAPI.on(
@@ -245,7 +249,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
             let attackedHp = attacked.hp;
             const dist = taxiDist(attacker.location, attacked.location);
             attackedHp = Math.max(0, attackedHp - attacker.atk);
-            if (dist <= attacked.atkRange)
+            if (dist <= attacked.atkMaxRange && dist >= attacked.atkMinRange)
               attackerHp = Math.max(0, attackerHp - attacked.atk);
             if (attacker.kamikaze) attackerHp = 0;
             const action: AttackAction = {
@@ -359,6 +363,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   async refreshGameState(): Promise<void> {
+    // TODO handle errors :/
     if (!this.gameState) throw new Error('no game set');
     const oldGameState = this.gameState.getGameState();
     // console.log(this.gameState.getActions());
@@ -569,7 +574,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         attacker.salt,
         attacked.location[1],
         attacked.location[0],
-        attacker.atkRange,
+        taxiDist(attacker.location, attacked.location),
         gameState.nRows,
         gameState.nCols
       );
