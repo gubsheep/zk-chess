@@ -1,4 +1,4 @@
-import { BoardCoords, MoveAttack, PlayerColor } from '../app/Pixi/@PixiTypes';
+import {BoardCoords, MoveAttack, PlayerColor} from '../app/Pixi/@PixiTypes';
 import {
   ChessGame,
   EthAddress,
@@ -8,14 +8,14 @@ import {
   PieceStatDefaults,
   PieceType,
 } from '../_types/global/GlobalTypes';
-import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
-import { PixiManager } from './PixiManager';
-import { GAME_HEIGHT, GAME_WIDTH } from '../app/Pixi/GameBoard/GameBoard';
+import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
+import {PixiManager} from './PixiManager';
+import {GAME_HEIGHT, GAME_WIDTH} from '../app/Pixi/GameBoard/GameBoard';
 import autoBind from 'auto-bind';
-import { findPath, getObstacles } from '../utils/Utils';
-import { Ship } from '../app/Pixi/Ships/Ship';
-import { PieceObject } from '../app/Pixi/Ships/PieceObject';
-import { Submarine } from '../app/Pixi/Ships/Submarine';
+import {findPath, getObstacles} from '../utils/Utils';
+import {Ship} from '../app/Pixi/Ships/Ship';
+import {PieceObject} from '../app/Pixi/Ships/PieceObject';
+import {Submarine} from '../app/Pixi/Ships/Submarine';
 import {
   boardLocFromCoords,
   compareBoardCoords,
@@ -55,10 +55,10 @@ export class GameAPI {
 
   // purges all existing ships and adds new ones
   syncShips(): void {
-    const { shipManager } = this.pixiManager;
+    const {shipManager} = this.pixiManager;
 
     shipManager.clear();
-    const { pieces, myAddress } = this.gameState;
+    const {pieces, myAddress} = this.gameState;
     for (const piece of pieces) {
       if (isVisiblePiece(piece)) {
         const ship = new Ship(this.pixiManager, piece);
@@ -79,7 +79,7 @@ export class GameAPI {
 
   // note that this might somewhat break abstractions?
   syncObjectives(): void {
-    const { objectiveManager: om } = this.pixiManager;
+    const {objectiveManager: om} = this.pixiManager;
 
     om.clear();
     for (const obj of this.gameState.objectives) {
@@ -132,8 +132,7 @@ export class GameAPI {
 
     for (let row = 0; row < GAME_HEIGHT; row++) {
       for (let col = 0; col < GAME_WIDTH; col++) {
-        if (this.canAttack(type, coords, { row, col }))
-          attacks.push({ row, col });
+        if (this.canAttack(type, coords, {row, col})) attacks.push({row, col});
       }
     }
 
@@ -145,7 +144,7 @@ export class GameAPI {
     // TODO minor optimization using range
     for (let row = 0; row < GAME_HEIGHT; row++) {
       for (let col = 0; col < GAME_WIDTH; col++) {
-        if (this.canMove(type, coords, { row, col })) paths.push({ row, col });
+        if (this.canMove(type, coords, {row, col})) paths.push({row, col});
       }
     }
 
@@ -153,7 +152,7 @@ export class GameAPI {
   }
 
   findMoveAttacks(type: PieceType, coords: BoardCoords): MoveAttack[] {
-    const { nRows, nCols } = this.gameState;
+    const {nRows, nCols} = this.gameState;
     const canMoves: (BoardCoords | null)[][] = [...Array(nRows)].map((_el) =>
       Array(nCols).fill(null)
     );
@@ -168,9 +167,9 @@ export class GameAPI {
     const allAttacks: MoveAttack[] = [];
     for (let i = 0; i < canMoves.length; i++) {
       for (let j = 0; j < canMoves[i].length; j++) {
-        const atkLoc = { row: i, col: j };
+        const atkLoc = {row: i, col: j};
         const moveLoc = canMoves[i][j];
-        if (moveLoc) allAttacks.push({ move: moveLoc, attack: atkLoc });
+        if (moveLoc) allAttacks.push({move: moveLoc, attack: atkLoc});
       }
     }
 
@@ -211,7 +210,7 @@ export class GameAPI {
   }
 
   getColor(address: EthAddress | null): PlayerColor {
-    const { player1, player2 } = this.gameState;
+    const {player1, player2} = this.gameState;
     if (address === player1.address) return PlayerColor.Red;
     else if (address === player2.address) return PlayerColor.Blue;
     else {
@@ -263,7 +262,7 @@ export class GameAPI {
   }
 
   inBounds(coords: BoardCoords): boolean {
-    const { nRows, nCols } = this.gameState;
+    const {nRows, nCols} = this.gameState;
     if (
       coords.col >= nCols ||
       coords.row >= nRows ||
@@ -323,7 +322,7 @@ export class GameAPI {
   ): boolean {
     if (!this.inBounds(to)) return false;
 
-    const { nRows, nCols } = this.gameState;
+    const {nRows, nCols} = this.gameState;
     const data = this.getStats(type);
     const dist = taxiCab(from, to);
 
@@ -346,7 +345,7 @@ export class GameAPI {
     // TODO make this get data from contract
     const data = this.getStats(type);
     const dist = taxiCab(from, to);
-    if (0 /* min range */ <= dist && dist <= data.atkRange) {
+    if (data.atkMinRange <= dist && dist <= data.atkMaxRange) {
       const ship = this.shipAt(to);
       if (ship && this.ownedByMe(ship)) return false;
       return true;

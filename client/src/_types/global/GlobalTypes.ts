@@ -56,7 +56,8 @@ export type Objective = Locatable;
 export type PieceStatDefaults = {
   pieceType: PieceType;
   mvRange: number;
-  atkRange: number;
+  atkMinRange: number;
+  atkMaxRange: number;
   hp: number;
   atk: number;
   cost: number;
@@ -76,7 +77,8 @@ type PartialPiece = GameObject & {
 
 export type AbstractPiece = PartialPiece & {
   mvRange: number;
-  atkRange: number;
+  atkMinRange: number;
+  atkMaxRange: number;
   atk: number;
   kamikaze: boolean;
 };

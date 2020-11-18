@@ -6,7 +6,8 @@ import {address} from '../utils/CheckedTypeUtils';
 import {EventEmitter} from 'events';
 import {XDAI_CHAIN_ID} from '../utils/constants';
 
-const isProd = process.env.NODE_ENV === 'production';
+// const isProd = process.env.NODE_ENV === 'production';
+const isProd = true;
 
 class EthereumAccountManager extends EventEmitter {
   static instance: EthereumAccountManager | null = null;

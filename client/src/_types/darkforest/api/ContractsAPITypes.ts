@@ -148,21 +148,24 @@ export type RawDefaults = {
   mvRange?: number;
 
   2: number;
-  atkRange?: number;
+  atkMinRange?: number;
 
   3: number;
-  hp?: number;
+  atkMaxRange?: number;
 
   4: number;
-  atk?: number;
+  hp?: number;
 
   5: number;
+  atk?: number;
+
+  6: number;
   cost?: number;
 
-  6: boolean;
+  7: boolean;
   isZk?: boolean;
 
-  7: boolean;
+  8: boolean;
   kamikaze?: boolean;
 };
 
