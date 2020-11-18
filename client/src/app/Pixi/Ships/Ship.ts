@@ -4,10 +4,11 @@ import { VisiblePiece, PieceType } from '../../../_types/global/GlobalTypes';
 import { Wrapper } from '../PixiObject';
 import { PieceObject } from './PieceObject';
 import { BoardCoords, CanvasCoords } from '../@PixiTypes';
-import { boardCoordsFromLoc } from '../Utils/PixiUtils';
+import { boardCoordsFromLoc, idxsIncludes } from '../Utils/PixiUtils';
 import { StatIcon, StatType, STATICON_W } from '../Utils/StatIcon';
 import { SPRITE_W } from '../Utils/TextureLoader';
 import { ShipSprite } from './ShipSprite';
+import { ClickState } from '../MouseManager';
 
 const waterline = (type: PieceType): number => {
   if (type === PieceType.Submarine_04) return 32;
@@ -102,7 +103,7 @@ export class Ship extends PieceObject {
   onClick() {
     const { api, mouseManager } = this.manager;
     if (api.isMyTurn()) {
-      if (this.getType() === PieceType.Mothership_00) {
+      if (this.pieceData.id === api.getMyMothership().pieceData.id) {
         const gold = api.getGold();
         if (gold == 0) return;
         mouseManager.buyShip(Math.min(gold, 5));
@@ -119,7 +120,32 @@ export class Ship extends PieceObject {
     this.atkObj.setValue(atk);
     this.hpObj.setValue(hp);
 
-    this.setMaskEnabled(!this.isSelected() && !this.hover);
+    // check if is hoverable
+    const {
+      api,
+      mouseManager: { clickState, attackIdxs, moveAttackIdxs },
+    } = this.manager;
+    if (clickState === ClickState.None) {
+      this.setHoverable(!api.hasAttacked(this));
+    } else if (clickState === ClickState.Acting) {
+      if (api.ownedByMe(this)) this.setHoverable(!api.hasAttacked(this));
+      else {
+        // in attack range
+        const idx = boardCoordsFromLoc(this.pieceData.location);
+        const attack = idxsIncludes(attackIdxs, idx);
+        const movAtk = idxsIncludes(
+          moveAttackIdxs.map((el) => el.attack),
+          idx
+        );
+        if (attack || movAtk) this.setHoverable(true);
+      }
+    }
+
+    if (this.isSelected()) {
+      this.setMaskEnabled(false);
+    } else {
+      this.setMaskEnabled(!this.hoverable || !this.hover);
+    }
 
     // bob
     this.bob();

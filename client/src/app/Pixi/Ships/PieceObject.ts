@@ -32,6 +32,7 @@ export class PieceObject extends PixiObject {
   shipManager: ShipManager;
 
   hover: boolean;
+  hoverable: boolean;
 
   constructor(manager: PixiManager, data: Piece) {
     super(manager);
@@ -39,6 +40,7 @@ export class PieceObject extends PixiObject {
     this.pieceData = data;
 
     this.hover = false;
+    this.hoverable = true;
 
     const { owner } = data;
     const color = manager.api.getColor(owner);
@@ -59,6 +61,10 @@ export class PieceObject extends PixiObject {
     this.container = container;
 
     this.addChild(shipContainer);
+  }
+
+  setHoverable(hoverable: boolean) {
+    this.hoverable = hoverable;
   }
 
   setLocation(coords: BoardCoords) {
@@ -85,8 +91,12 @@ export class PieceObject extends PixiObject {
   }
 
   isSelected(): boolean {
-    const { selectedShip, clickState } = this.manager.mouseManager;
-    if (this.getType() === PieceType.Mothership_00) {
+    const {
+      mouseManager: { selectedShip, clickState },
+      api,
+    } = this.manager;
+
+    if (this.pieceData.id === api.getMyMothership().pieceData.id) {
       return clickState === ClickState.Deploying;
     } else {
       return selectedShip?.pieceData.id === this.pieceData.id;
@@ -116,7 +126,11 @@ export class PieceObject extends PixiObject {
       }
     }
 
-    this.outlineSprite.setAlpha(this.isSelected() ? 1 : this.hover ? 0.5 : 0);
+    if (this.isSelected()) {
+      this.outlineSprite.setAlpha(1);
+    } else {
+      if (this.hoverable) this.outlineSprite.setAlpha(this.hover ? 0.5 : 0);
+    }
   }
 
   onMouseOver() {
