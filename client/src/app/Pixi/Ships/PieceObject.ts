@@ -84,5 +84,14 @@ export class PieceObject extends PixiObject {
   loop() {
     super.loop();
     this.setActive(this.pieceData.alive);
+
+    if (this.getType() !== PieceType.Mothership_00) {
+      const { api } = this.manager;
+      if (api.hasMoved(this)) {
+        this.sprite.setGray(0.5);
+      } else {
+        this.sprite.setGray(1);
+      }
+    }
   }
 }

@@ -122,7 +122,7 @@ export class GameAPI {
     setTimeout(() => {
       this.attack(from, attackTo);
       this.syncGameState();
-    }, 5000);
+    }, 500);
   }
 
   // finding tiles

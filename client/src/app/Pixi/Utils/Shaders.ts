@@ -7,11 +7,15 @@ const glsl = (arr: TemplateStringsArray, ...args: any[]): string =>
     return toStrSafe(acc) + toStrSafe(args[idx - 1]) + toStrSafe(curr);
   });
 
-const vecStr = (r: number, g: number, b: number): string =>
+const _vecStr = (r: number, g: number, b: number): string =>
   `vec4(${r.toFixed(3)}, ${g.toFixed(3)}, ${b.toFixed(3)}, 1.0)`;
 
-const getOverlayFrag = (r: number, g: number, b: number): string => glsl`
+const overlayFrag = glsl`
   precision mediump float;
+
+  uniform float cr;
+  uniform float cg;
+  uniform float cb;
 
   varying vec2 vTextureCoord;
   uniform sampler2D uSampler;
@@ -25,21 +29,26 @@ const getOverlayFrag = (r: number, g: number, b: number): string => glsl`
 
   void main() {
     vec4 baseColor = texture2D(uSampler, vTextureCoord);
-    vec4 overlayColor = ${vecStr(r, g, b)};
+    vec4 overlayColor = vec4(cr, cg, cb, 1.0);
     gl_FragColor = overlay(baseColor, overlayColor);
   }
 `;
 
-export const redShader = new PIXI.Filter('', getOverlayFrag(1, 0, 0));
-export const blueShader = new PIXI.Filter('', getOverlayFrag(0, 0, 1));
-
-export const orangeShader = new PIXI.Filter('', getOverlayFrag(1, 0.5, 0));
+export const redShader = (): PIXI.Filter => {
+  return new PIXI.Filter('', overlayFrag, { cr: 1, cg: 0, cb: 0 });
+};
+export const blueShader = (): PIXI.Filter => {
+  return new PIXI.Filter('', overlayFrag, { cr: 0, cg: 0, cb: 1 });
+};
+export const orangeShader = (): PIXI.Filter => {
+  return new PIXI.Filter('', overlayFrag, { cr: 1, cg: 0.5, b: 0 });
+};
 
 export const playerShader = (color: PlayerColor) =>
-  color === PlayerColor.Red ? redShader : blueShader;
+  color === PlayerColor.Red ? redShader() : blueShader();
 
 export const objectiveShader = (color: PlayerColor | null) =>
-  color === null ? orangeShader : playerShader(color);
+  color === null ? orangeShader() : playerShader(color);
 
 export type BGShaderUniforms = {
   time: number;

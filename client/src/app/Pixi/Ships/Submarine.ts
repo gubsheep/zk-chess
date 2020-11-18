@@ -15,9 +15,10 @@ export class Submarine extends PieceObject {
     super(manager, data);
 
     if (isKnown(data)) {
+      this.setActive(true);
       this.setLocation(boardCoordsFromLoc(data.location));
     } else {
-      this.setLocation({ row: 0, col: 0 });
+      this.setActive(false);
     }
     const hitArea = new PIXI.Rectangle(
       SUB_X - 1,
@@ -46,11 +47,12 @@ export class Submarine extends PieceObject {
 
   calcLoc({ x, y }: CanvasCoords): CanvasCoords {
     const idx = this.shipManager.getSubIdx(this);
+    if (this.lifetime % 60 === 0) console.log(idx);
     const delY = 12 - 8 * idx;
     const sgn = this.manager.api.getOwner(this) === PlayerColor.Red ? 1 : -1;
     const delX = (8 - 2 * idx) * sgn;
-    // return { x: x + 2 + delX, y: y + 2 + delY };
-    return { x: x + 2, y: y + 2 };
+    return { x: x + 2 + delX, y: y + 2 + delY };
+    // return { x: x + 2, y: y + 2 };
   }
 
   loop() {
