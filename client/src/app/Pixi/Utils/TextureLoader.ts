@@ -22,6 +22,9 @@ export const SHIPS = [
   imgUri('05_warship.png'),
 ];
 
+export const BUBBLE_CLOSED = imgUri('bubble_closed.png');
+export const BUBBLE_OPEN = imgUri('bubble_open.png');
+
 export const ICONS = {
   HEART: imgUri('icons/heart.png'),
   COIN: imgUri('icons/coin.png'),
@@ -36,6 +39,8 @@ const textures = [
   WATERLINE,
   ...SHIPS,
   ...Object.values(ICONS),
+  BUBBLE_CLOSED,
+  BUBBLE_OPEN,
 ];
 
 export const loadTextures = (callbackFn: () => void): void => {
