@@ -163,6 +163,7 @@ export class MouseManager {
 
   endTurn() {
     this.manager.api.endTurn();
+    this.setClickState(ClickState.None);
   }
 
   buyShip(type: PieceType) {

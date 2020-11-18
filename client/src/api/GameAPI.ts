@@ -40,6 +40,7 @@ export class GameAPI {
     this.gameManager = gameManager;
 
     this.gameState = this.gameManager.getGameState();
+    console.log(this.gameState);
 
     autoBind(this);
 
@@ -216,11 +217,11 @@ export class GameAPI {
   }
 
   gameOver(): boolean {
-    return this.gameState.gameStatus !== GameStatus.COMPLETE;
+    return this.gameState.gameStatus === GameStatus.COMPLETE;
   }
 
   getWinner(): PlayerColor | null {
-    if (this.gameOver()) return null;
+    if (!this.gameOver()) return null;
     if (this.p1Mothership.hp === 0) return PlayerColor.Red;
     else if (this.p2Mothership.hp === 0) return PlayerColor.Blue;
 
@@ -313,6 +314,7 @@ export class GameAPI {
   /* private utils */
   private syncGameState(): void {
     this.gameState = this.gameManager.getLatestGameState();
+    console.log(this.gameState);
     this.syncShips();
     this.syncObjectives();
   }
