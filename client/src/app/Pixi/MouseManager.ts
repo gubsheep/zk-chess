@@ -311,6 +311,7 @@ export class MouseManager {
       manager: { api },
       clickState,
       selectedShip,
+      deployType,
     } = this;
 
     if (this.showZk && clickState === ClickState.None) return;
@@ -319,11 +320,15 @@ export class MouseManager {
     //   return;
     // }
 
+    const deployingSub =
+      clickState === ClickState.Deploying &&
+      deployType === PieceType.Submarine_04;
+
     const subSelected =
       selectedShip && selectedShip.getType() === PieceType.Submarine_04;
 
     const type = ship.getType();
-    if (api.ownedByMe(ship) && !subSelected) {
+    if (api.ownedByMe(ship) && !subSelected && !deployingSub) {
       // clicked your own ship, time to move it
       if (type === PieceType.Mothership_00) return;
       if (api.hasAttacked(ship)) return;

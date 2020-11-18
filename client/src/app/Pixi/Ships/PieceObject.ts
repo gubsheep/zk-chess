@@ -11,6 +11,7 @@ import { BoardCoords, CanvasCoords } from '../@PixiTypes';
 import { boardCoordsFromLoc } from '../Utils/PixiUtils';
 import { ShipManager } from './ShipManager';
 import { ShipSprite } from './ShipSprite';
+import { OutlineSprite } from './OutlineSprite';
 
 export enum ShipState {
   Summoned,
@@ -23,6 +24,7 @@ export class PieceObject extends PixiObject {
   pieceData: Piece;
 
   sprite: ShipSprite;
+  outlineSprite: OutlineSprite;
   shipContainer: Wrapper; // just holds the sprite (so we can anchor icons to it)
   container: Wrapper; // holds info about masking, interactability, etc.
 
@@ -36,11 +38,15 @@ export class PieceObject extends PixiObject {
     const { owner } = data;
     const color = manager.api.getColor(owner);
 
-    const sprite = new ShipSprite(manager, this.pieceData.pieceType, color);
-    this.sprite = sprite;
+    this.sprite = new ShipSprite(manager, this.pieceData.pieceType, color);
+    this.outlineSprite = new OutlineSprite(
+      manager,
+      this.pieceData.pieceType,
+      color
+    );
 
     const shipContainer = new Wrapper(manager, new PIXI.Container());
-    shipContainer.addChild(sprite);
+    shipContainer.addChild(this.outlineSprite, this.sprite);
     this.shipContainer = shipContainer;
 
     const container = new Wrapper(manager, new PIXI.Container());

@@ -23,8 +23,6 @@ export class Ship extends PieceObject {
   atkObj: StatIcon;
   hpObj: StatIcon;
 
-  sprite: ShipSprite;
-
   waterline: PIXI.Graphics;
 
   constructor(manager: PixiManager, data: VisiblePiece) {
@@ -54,7 +52,7 @@ export class Ship extends PieceObject {
     });
 
     const mask = new PIXI.Graphics();
-    this.shipContainer.children[0].object.mask = mask;
+    this.sprite.object.mask = mask;
     this.mask = mask;
     this.updateMask();
 
@@ -70,6 +68,16 @@ export class Ship extends PieceObject {
   setPosition({ x, y }: CanvasCoords) {
     super.setPosition({ x, y });
     this.updateMask();
+  }
+
+  setMaskEnabled(enabled: boolean) {
+    if (enabled) {
+      this.sprite.object.mask = this.mask;
+      this.waterline.visible = true;
+    } else {
+      this.sprite.object.mask = null;
+      this.waterline.visible = false;
+    }
   }
 
   private updateMask() {
@@ -100,6 +108,12 @@ export class Ship extends PieceObject {
     const { hp, atk } = this.pieceData;
     this.atkObj.setValue(atk);
     this.hpObj.setValue(hp);
+
+    const { selectedShip } = this.manager.mouseManager;
+    const isSelected = selectedShip?.pieceData.id === this.pieceData.id;
+
+    this.setMaskEnabled(!isSelected);
+    this.outlineSprite.setActive(isSelected);
 
     // bob
     this.bob();
