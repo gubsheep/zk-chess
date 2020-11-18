@@ -13,11 +13,11 @@ export class CancelButton extends LinkObject {
   isEnabled() {
     const {
       api,
-      mouseManager: { selectedShip, clickState },
+      mouseManager: { selectedShip, clickState, deployStaged },
     } = this.manager;
     if (!api.isMyTurn()) return false;
     if (clickState !== ClickState.None) return true;
 
-    return !!selectedShip;
+    return !!(selectedShip || deployStaged);
   }
 }
