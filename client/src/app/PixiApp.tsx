@@ -5,7 +5,6 @@ import AbstractGameManager from '../api/AbstractGameManager';
 
 const StyledPixiApp = styled.div`
   canvas {
-    border: 1px solid red;
     image-rendering: -moz-crisp-edges;
     image-rendering: -webkit-crisp-edges;
     image-rendering: pixelated;
@@ -21,8 +20,11 @@ export default function PixiApp({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [pixiManager, setPixiManager] = useState<PixiManager | null>(null);
 
-  const width = 640;
-  const height = 400;
+  // note: gather is about 1000 x 800, gba is 240 x 160, NES is 256 x 240
+  // const width = 360;
+  // const height = 240;
+  const width = 480;
+  const height = 320;
   const scale = 2;
 
   useEffect(() => {
@@ -31,7 +33,9 @@ export default function PixiApp({
       return;
     }
 
-    setPixiManager(PixiManager.initialize({ canvas: canvasRef.current, gameManager }));
+    setPixiManager(
+      PixiManager.initialize({ canvas: canvasRef.current, gameManager })
+    );
   }, [canvasRef, gameManager]);
 
   return (

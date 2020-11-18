@@ -13,6 +13,8 @@ export class ShopItem extends PixiObject {
   hovering: boolean;
   type: PieceType;
 
+  canBuy: boolean;
+
   constructor(manager: PixiManager, type: PieceType) {
     super(manager);
     this.type = type;
@@ -23,6 +25,7 @@ export class ShopItem extends PixiObject {
     this.addChild(this.card, this.modal);
 
     this.hovering = false;
+    this.canBuy = false;
 
     const hitArea = new PIXI.Rectangle(0, 0, CARD_W, CARD_H);
     this.setInteractive({
@@ -34,6 +37,7 @@ export class ShopItem extends PixiObject {
   }
 
   private onClick() {
+    if (!this.canBuy) return;
     this.manager.mouseManager.buyShip(this.type);
   }
 
@@ -47,12 +51,15 @@ export class ShopItem extends PixiObject {
 
   loop() {
     super.loop();
-    const { mouseManager: mm } = this.manager;
+    const { mouseManager: mm, api } = this.manager;
+
+    this.canBuy = api.canBuy(this.type);
 
     const buyingThis =
       mm.clickState === ClickState.Deploying && mm.deployType === this.type;
 
-    this.card.setHover(this.hovering || buyingThis);
+    this.card.setHover(this.canBuy && (this.hovering || buyingThis));
+    this.card.setAlpha(this.canBuy ? 1 : 0.5);
     this.modal.setHover(this.hovering);
   }
 }

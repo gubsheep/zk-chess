@@ -63,6 +63,10 @@ export class Ship extends PieceObject {
     this.setLocation(coords);
   }
 
+  calcLoc({ x, y }: CanvasCoords): CanvasCoords {
+    return { x: x + 2, y: y + 2 };
+  }
+
   setPosition({ x, y }: CanvasCoords) {
     super.setPosition({ x, y });
     this.updateMask();
@@ -86,7 +90,8 @@ export class Ship extends PieceObject {
   }
 
   onClick() {
-    this.manager.mouseManager.shipClicked(this);
+    if (this.manager.api.isMyTurn())
+      this.manager.mouseManager.shipClicked(this);
   }
 
   loop() {

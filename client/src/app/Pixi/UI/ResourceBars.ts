@@ -215,7 +215,7 @@ export class ResourceBars extends PixiObject {
   }
 
   positionSelf() {
-    this.setPosition({ x: 10, y: 10 });
+    this.setPosition({ x: 4, y: 4 });
   }
 
   loop() {

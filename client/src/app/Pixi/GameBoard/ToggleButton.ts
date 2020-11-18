@@ -1,35 +1,36 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../../api/PixiManager';
-import { PixiObject } from '../PixiObject';
 import { ClickState } from '../MouseManager';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';
-import { LinkObject, TextAlign } from '../Utils/Text';
+import { TextAlign } from '../Utils/Text';
+import { LinkObject } from '../Utils/LinkObject';
 
-export class ToggleButton extends GameBoardObject {
-  text: LinkObject;
-
+class ToggleText extends LinkObject {
   showZk: boolean = false;
-
-  constructor(manager: PixiManager, grid: GameGrid) {
-    super(manager, grid);
-
-    const text = new LinkObject(manager, '', this.toggleZk, TextAlign.Left);
-    this.text = text;
-    this.addChild(text);
-
-    this.syncText();
+  constructor(manager: PixiManager) {
+    super(manager, '', TextAlign.Left);
+    this.showZk = false;
   }
-
-  toggleZk(): void {
+  private syncText(): void {
+    this.setText(this.showZk ? 'Show Ships' : 'Show Submarines');
+    this.manager.mouseManager.setShowZk(this.showZk);
+  }
+  onClick() {
     this.showZk = !this.showZk;
     this.syncText();
     this.manager.mouseManager.setClickState(ClickState.None);
   }
+}
+export class ToggleButton extends GameBoardObject {
+  text: LinkObject;
 
-  private syncText(): void {
-    this.text.setText(this.showZk ? 'Show Ships' : 'Show Submarines');
-    this.manager.mouseManager.setShowZk(this.showZk);
+  constructor(manager: PixiManager, grid: GameGrid) {
+    super(manager, grid);
+
+    const text = new ToggleText(manager);
+    this.text = text;
+    this.addChild(text);
   }
 
   positionGrid(_gridW: number, gridH: number) {

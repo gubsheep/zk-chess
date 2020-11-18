@@ -41,7 +41,7 @@ export class Submarine extends PieceObject {
   }
 
   onClick() {
-    this.manager.mouseManager.subClicked(this);
+    if (this.manager.api.isMyTurn()) this.manager.mouseManager.subClicked(this);
   }
 
   calcLoc({ x, y }: CanvasCoords): CanvasCoords {
@@ -49,7 +49,8 @@ export class Submarine extends PieceObject {
     const delY = 12 - 8 * idx;
     const sgn = this.manager.api.getOwner(this) === PlayerColor.Red ? 1 : -1;
     const delX = (8 - 2 * idx) * sgn;
-    return { x: x + 2 + delX, y: y + 2 + delY };
+    // return { x: x + 2 + delX, y: y + 2 + delY };
+    return { x: x + 2, y: y + 2 };
   }
 
   loop() {

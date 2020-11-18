@@ -12,6 +12,7 @@ import { Background } from '../app/Pixi/Utils/Background';
 import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
 import { ShipManager } from '../app/Pixi/Ships/ShipManager';
 import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
+import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -23,6 +24,7 @@ export enum GameZIndex {
   Background,
   Board,
   Objectives,
+  Staged,
   Ships,
   UI,
   Shop,
@@ -132,10 +134,8 @@ export class PixiManager {
     this.api.syncShips();
     this.api.syncObjectives();
 
-    // set up resource bars
     this.addObject(new ResourceBars(this));
-
-    // set up shop
+    this.addObject(new StagedShip(this));
     this.addObject(new Shop(this));
 
     // initialize loop

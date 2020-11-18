@@ -37,11 +37,10 @@ export class GameBoard extends PixiObject {
     return this.grid.cells[row][col] || null;
   }
 
-  getTopLeft({ row, col }: BoardCoords): CanvasCoords {
+  getTopLeft({ row, col }: BoardCoords): CanvasCoords | null {
     const { cells } = this.grid;
     if (!cells[row] || !cells[row][col]) {
-      console.error('array out of bounds on grid');
-      return { x: 0, y: 0 };
+      return null;
     } else {
       return this.object.toGlobal(cells[row][col].topLeft);
     }

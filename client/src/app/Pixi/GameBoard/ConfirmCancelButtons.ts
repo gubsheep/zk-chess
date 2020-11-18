@@ -5,7 +5,12 @@ import { CHAR_H, LINE_SPACING } from '../Utils/FontLoader';
 import { PixiObject } from '../PixiObject';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';
-import { LinkObject, TextAlign } from '../Utils/Text';
+import { TextAlign } from '../Utils/Text';
+import { LinkObject } from '../Utils/LinkObject';
+import { ConfirmButton } from './ConfirmButton';
+import { MoveSubButton } from './MoveSubButton';
+import { StrikeButton } from './StrikeButton';
+import { CancelButton } from './CancelButton';
 
 // TODO make a GridObject class?
 export class ConfirmCancelButtons extends GameBoardObject {
@@ -16,55 +21,14 @@ export class ConfirmCancelButtons extends GameBoardObject {
   constructor(manager: PixiManager, grid: GameGrid) {
     super(manager, grid);
 
-    const confirm = new LinkObject(
-      manager,
-      'Confirm',
-      this.onConfirm,
-      TextAlign.Right
-    );
-    this.confirm = confirm;
+    this.confirm = new ConfirmButton(manager);
+    this.moveSub = new MoveSubButton(manager);
+    this.atkSub = new StrikeButton(manager);
+    const cancel = new CancelButton(manager);
 
-    const moveSub = new LinkObject(
-      manager,
-      'Move Sub',
-      this.onMove,
-      TextAlign.Right
-    );
-    this.moveSub = moveSub;
-
-    const atkSub = new LinkObject(
-      manager,
-      'Strike!',
-      this.onStrike,
-      TextAlign.Right
-    );
-    this.atkSub = atkSub;
-
-    const cancel = new LinkObject(
-      manager,
-      'Cancel',
-      this.onCancel,
-      TextAlign.Right
-    );
     cancel.setPosition({ x: 0, y: CHAR_H + LINE_SPACING });
 
-    this.addChild(cancel, confirm, atkSub, moveSub);
-  }
-
-  private onCancel() {
-    this.manager.mouseManager.cancel();
-  }
-
-  private onConfirm() {
-    this.manager.mouseManager.confirm();
-  }
-
-  private onMove() {
-    this.manager.mouseManager.moveSub();
-  }
-
-  private onStrike() {
-    this.manager.mouseManager.attackSub();
+    this.addChild(cancel, this.confirm, this.atkSub, this.moveSub);
   }
 
   loop() {

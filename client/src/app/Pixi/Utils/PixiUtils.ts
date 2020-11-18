@@ -38,7 +38,7 @@ export function objFromHitArea(rect: PIXI.Rectangle): PIXI.DisplayObject {
     rect.width,
     rect.height,
     0xff0000,
-    1,
+    0.5,
     0x000000,
     2,
     0.3
