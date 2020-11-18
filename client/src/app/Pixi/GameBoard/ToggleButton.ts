@@ -11,7 +11,9 @@ class ToggleText extends LinkObject {
   constructor(manager: PixiManager) {
     super(manager, '', TextAlign.Left);
     this.showZk = false;
+    this.syncText();
   }
+
   private syncText(): void {
     this.setText(this.showZk ? 'Show Ships' : 'Show Submarines');
     this.manager.mouseManager.setShowZk(this.showZk);

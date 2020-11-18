@@ -106,7 +106,9 @@ export class Ship extends PieceObject {
   }
 
   private bob() {
-    const frames = 30;
+    const { api } = this.manager;
+    const frames = api.hasAttacked(this) ? 60 : 30;
+
     const boat = this.shipContainer;
     this.waterline.clear();
     if (this.manager.frameCount % (2 * frames) < frames) {

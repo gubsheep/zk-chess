@@ -198,6 +198,13 @@ export class GameAPI {
     else return status === GameStatus.P2_TO_MOVE;
   }
 
+  whoseTurn(): PlayerColor {
+    const status = this.gameState.gameStatus;
+    return status === GameStatus.P1_TO_MOVE
+      ? PlayerColor.Red
+      : PlayerColor.Blue;
+  }
+
   // p1 is red, p2 is blue
   getMyColor(): PlayerColor {
     return this.getColor(this.gameState.myAddress);
@@ -267,7 +274,9 @@ export class GameAPI {
     return true;
   }
 
+  // TODO invert these to canMoveNow and canAttackNow
   hasMoved(ship: PieceObject): boolean {
+    if (this.whoseTurn() !== this.getOwner(ship)) return true;
     return (
       ship.pieceData.lastMove === this.gameState.turnNumber &&
       !this.hasAttacked(ship)
@@ -275,6 +284,7 @@ export class GameAPI {
   }
 
   hasAttacked(ship: PieceObject): boolean {
+    if (this.whoseTurn() !== this.getOwner(ship)) return true;
     return ship.pieceData.lastAttack === this.gameState.turnNumber;
   }
 

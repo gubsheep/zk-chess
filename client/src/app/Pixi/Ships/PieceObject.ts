@@ -87,8 +87,13 @@ export class PieceObject extends PixiObject {
 
     if (this.getType() !== PieceType.Mothership_00) {
       const { api } = this.manager;
-      if (api.hasMoved(this)) {
-        this.sprite.setGray(0.5);
+      if (api.hasAttacked(this)) {
+        this.lifetime % 60 == 0 &&
+          isLocatable(this.pieceData) &&
+          console.log(this.pieceData.location);
+        this.sprite.setGray(0.4);
+      } else if (api.hasMoved(this)) {
+        this.sprite.setGray(1.0);
       } else {
         this.sprite.setGray(1);
       }
