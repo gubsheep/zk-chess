@@ -1,4 +1,5 @@
 import { PixiManager } from '../../../api/PixiManager';
+import { ClickState } from '../MouseManager';
 import { CHAR_H } from '../Utils/FontLoader';
 import { LinkObject } from '../Utils/LinkObject';
 import { TextAlign } from '../Utils/TextObject';
@@ -15,7 +16,10 @@ class EndTurnText extends LinkObject {
   }
 
   isEnabled(): boolean {
-    return this.manager.api.isMyTurn();
+    return (
+      this.manager.api.isMyTurn() &&
+      this.manager.mouseManager.clickState === ClickState.None
+    );
   }
 }
 

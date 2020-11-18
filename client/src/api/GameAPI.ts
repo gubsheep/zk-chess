@@ -222,8 +222,8 @@ export class GameAPI {
 
   getWinner(): PlayerColor | null {
     if (!this.gameOver()) return null;
-    if (this.p1Mothership.hp === 0) return PlayerColor.Red;
-    else if (this.p2Mothership.hp === 0) return PlayerColor.Blue;
+    if (this.p1Mothership.hp === 0) return PlayerColor.Blue;
+    else if (this.p2Mothership.hp === 0) return PlayerColor.Red;
 
     return null;
   }

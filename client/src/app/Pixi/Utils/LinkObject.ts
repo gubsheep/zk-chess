@@ -47,9 +47,11 @@ export class LinkObject extends PixiObject {
   }
 
   private getHitArea(): PIXI.Rectangle {
+    const { x, y } = this.realPos;
+
     return new PIXI.Rectangle(
-      this.text.align * this.text.width - 1,
-      -1,
+      x + (this.text.align * this.text.width - 1),
+      y - 1,
       this.text.width + 2,
       CHAR_H + 2
     );
@@ -81,6 +83,7 @@ export class LinkObject extends PixiObject {
 
   setPosition(coords: CanvasCoords) {
     this.realPos = coords;
+    this.setInteractive({ hitArea: this.getHitArea() });
   }
 
   loop() {

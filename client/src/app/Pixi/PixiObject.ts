@@ -44,6 +44,8 @@ export class PixiObject {
 
   layer: number;
 
+  private debugInteractive: boolean;
+
   // TODO refactor this so that it doesn't need to be given a container
   constructor(manager: PixiManager, layer: GameZIndex = GameZIndex.Default) {
     this.objectId = autoIncrement();
@@ -109,6 +111,14 @@ export class PixiObject {
     if (y !== undefined) this.object.y = y;
   }
 
+  getPosition(): CanvasCoords {
+    return { x: this.object.x, y: this.object.y };
+  }
+
+  isInteractive(): boolean {
+    return this.object.interactive;
+  }
+
   // send null to cancel all listeners, otherwise you can keywise set hitarea and listeners
   setInteractive(props: InteractiveProps | null): void {
     if (props === null) {
@@ -127,7 +137,8 @@ export class PixiObject {
     if (hitArea) this.object.hitArea = hitArea;
 
     // set debug: true to see the hitarea
-    if (props.debug && props.hitArea) {
+    if (props.debug) this.debugInteractive = true;
+    if (this.debugInteractive && props.hitArea) {
       const debugRect = objFromHitArea(props.hitArea);
       debugRect.zIndex = -999;
       this.object.addChild(debugRect);

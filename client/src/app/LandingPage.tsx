@@ -1,14 +1,15 @@
-import React from 'react';
-import {useState} from 'react';
+import React, { useEffect } from 'react';
+import { useState } from 'react';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
-import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
-import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
+import { ContractEvent } from '../_types/darkforest/api/ContractsAPITypes';
+import { EthAddress, GameStatus } from '../_types/global/GlobalTypes';
 import Game from './Game';
 import styled from 'styled-components';
+import { isBrave } from '../utils/Utils';
 
 enum InitState {
   NONE,
@@ -125,10 +126,24 @@ export function LandingPage() {
     setInitState(InitState.WAITING_FOR_PLAYERS);
   };
 
+  const [brave, setBrave] = useState<boolean>(false);
+  (async () => {
+    setBrave(await isBrave());
+  })();
+
   if (initState === InitState.NONE) {
     return (
       <div>
-        <Aa onClick={startGame}>start game!</Aa>
+        <p>
+          <Aa onClick={startGame}>start game!</Aa>
+        </p>
+        <br />
+        {brave && (
+          <p>
+            Looks like you're using Brave. Please make sure you turn off Brave
+            Shield, or the game may not work!
+          </p>
+        )}
       </div>
     );
   } else if (initState === InitState.DISPLAY_LOGIN_OPTIONS) {

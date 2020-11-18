@@ -6,6 +6,13 @@ import { PixiObject } from '../PixiObject';
 import { compareBoardCoords, idxsIncludes } from '../Utils/PixiUtils';
 import { BoardCellZIndex, CELL_W } from './BoardCell';
 
+const DARK_BLUE = [0x4444aa, 0.8]; // selected
+const BLUE = [0x7777bb, 0.8]; // move
+const BASE = [0x222266, 0.4];
+
+const RED = [0xaa7777, 0.8]; // deploy, atk
+const DARKER_RED = [0x663344, 0.8]; // target
+
 export class BoardRect extends PixiObject {
   rect: PIXI.Graphics;
   idx: BoardCoords;
@@ -52,18 +59,19 @@ export class BoardRect extends PixiObject {
     const move =
       clickState === ClickState.Acting && idxsIncludes(moveIdxs, this.idx);
 
-    const isAtk =
-      clickState === ClickState.Acting && idxsIncludes(attackIdxs, this.idx);
-    const atk = (isZk && enemyShipAt) || (!isZk && !move && isAtk);
+    const zkAtk = enemyShipAt;
 
     const movAtk =
-      !move &&
-      !atk &&
       clickState === ClickState.Acting &&
       idxsIncludes(
         moveAttackIdxs.map((el) => el.attack),
         this.idx
       );
+
+    const atk =
+      clickState === ClickState.Acting && idxsIncludes(attackIdxs, this.idx);
+
+    const notzkAtk = !move && (atk || movAtk);
 
     const target =
       enemyShipAt &&
@@ -74,19 +82,19 @@ export class BoardRect extends PixiObject {
       selectedShip && compareBoardCoords(selectedShip.getCoords(), this.idx);
 
     if (selected) {
-      fill = [0x4444aa, 0.8];
+      fill = DARK_BLUE;
     } else if (deploy) {
-      fill = [0xaa7777, 0.8];
+      fill = RED;
     } else if (target) {
-      fill = [0x995555, 0.8];
-    } else if (atk) {
-      fill = [0x992255, 0.8];
-    } else if (!isZk && movAtk) {
-      fill = [0xaa7777, 0.8];
+      fill = DARKER_RED;
+    } else if (!isZk && notzkAtk) {
+      fill = RED;
+    } else if (isZk && zkAtk) {
+      fill = RED;
     } else if (move) {
-      fill = [0x7777bb, 0.8];
+      fill = BLUE;
     } else {
-      fill = [0x222266, 0.4];
+      fill = BASE;
       stroke = [0, 0];
     }
 

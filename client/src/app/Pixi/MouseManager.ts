@@ -189,7 +189,8 @@ export class MouseManager {
       for (let i = 0; i < deployIdxs.length; i++) {
         const loc = deployIdxs[i];
         for (const piece of this.manager.shipManager.ships) {
-          if (compareBoardCoords(piece.coords, loc)) deployIdxs.splice(i--, 1);
+          if (piece.isAlive() && compareBoardCoords(piece.coords, loc))
+            deployIdxs.splice(i--, 1);
         }
       }
     }
