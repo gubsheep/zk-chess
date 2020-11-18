@@ -13,6 +13,7 @@ import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
 import { ShipManager } from '../app/Pixi/Ships/ShipManager';
 import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
 import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
+import { GameOver } from '../app/Pixi/UI/GameOver';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -28,7 +29,8 @@ export enum GameZIndex {
   Ships,
   UI,
   Shop,
-  MAX = Shop,
+  GameOver,
+  MAX = GameOver,
 }
 
 // this guy should only have to think about game objects and how they interact
@@ -137,6 +139,7 @@ export class PixiManager {
     this.addObject(new ResourceBars(this));
     this.addObject(new StagedShip(this));
     this.addObject(new Shop(this));
+    this.addObject(new GameOver(this));
 
     // initialize loop
     this.loop();
