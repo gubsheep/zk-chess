@@ -2,7 +2,7 @@ import { GameZIndex, PixiManager } from '../../../api/PixiManager';
 import { PixiObject } from '../PixiObject';
 import * as PIXI from 'pixi.js';
 import { CanvasCoords } from '../@PixiTypes';
-import { TextObject } from '../Utils/Text';
+import { TextObject } from '../Utils/TextObject';
 import { BASELINE_TEXT, BASELINE_ICONS, ICONS } from '../Utils/TextureLoader';
 
 const LABEL_WIDTH = 32; // width of 'Gold:'

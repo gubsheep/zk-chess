@@ -1,8 +1,11 @@
+import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { CanvasCoords } from '../@PixiTypes';
-import { TextObject, TextAlign } from './Text';
+import { PixiObject } from '../PixiObject';
+import { CHAR_H } from './FontLoader';
+import { TextObject, TextAlign } from './TextObject';
 
-export class LinkObject extends TextObject {
+export class LinkObject extends PixiObject {
   mousedown: boolean;
   mouseover: boolean;
 
@@ -10,13 +13,17 @@ export class LinkObject extends TextObject {
 
   enabled: boolean;
 
+  text: TextObject;
+
   constructor(
     manager: PixiManager,
     text: string,
     align: TextAlign = TextAlign.Left,
     color: number = 0xffffff
   ) {
-    super(manager, text, align, color);
+    super(manager);
+    this.text = new TextObject(manager, text, align, color);
+    this.addChild(this.text);
 
     this.mousedown = false;
     this.mouseover = false;
@@ -24,6 +31,7 @@ export class LinkObject extends TextObject {
     this.realPos = { x: 0, y: 0 };
 
     this.setInteractive({
+      hitArea: this.getHitArea(),
       mouseover: this.onMouseOver,
       mousedown: this.onMouseDown,
       mouseout: this.onMouseOut,
@@ -31,6 +39,20 @@ export class LinkObject extends TextObject {
       mouseupoutside: this.onMouseUp,
       click: this.doClick,
     });
+  }
+
+  setText(text: string) {
+    this.text.setText(text);
+    this.setInteractive({ hitArea: this.getHitArea() });
+  }
+
+  private getHitArea(): PIXI.Rectangle {
+    return new PIXI.Rectangle(
+      this.text.align * this.text.width - 1,
+      -1,
+      this.text.width + 2,
+      CHAR_H + 2
+    );
   }
 
   onClick(): void {
@@ -67,7 +89,7 @@ export class LinkObject extends TextObject {
 
     const { x, y } = this.realPos;
     const delY = this.mousedown ? 1 : this.mouseover ? -1 : 0;
-    super.setPosition(this.enabled ? { x, y: y + delY } : { x, y });
+    this.text.setPosition(this.enabled ? { x, y: y + delY } : { x, y });
   }
 
   isEnabled(): boolean {

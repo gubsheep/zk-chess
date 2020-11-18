@@ -1,12 +1,13 @@
+import * as PIXI from 'pixi.js';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { PixiManager } from '../../../api/PixiManager';
-import { CanvasCoords } from '../@PixiTypes';
 import { PixiObject } from '../PixiObject';
+import { CHAR_H } from './FontLoader';
 
 export enum TextAlign {
-  Left,
-  Center,
-  Right,
+  Left = 0,
+  Center = -0.5,
+  Right = -1,
 }
 
 export class TextObject extends PixiObject {
@@ -45,9 +46,12 @@ export class TextObject extends PixiObject {
     this.update();
   }
 
+
   private update() {
     const { align, text, color, manager, object } = this;
     const { width, object: textObj } = manager.fontLoader(text);
+
+    this.width = width;
 
     for (const child of object.children) object.removeChild(child);
 
@@ -63,5 +67,3 @@ export class TextObject extends PixiObject {
     textObj.filters = [shader];
   }
 }
-
-

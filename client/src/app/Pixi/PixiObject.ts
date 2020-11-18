@@ -109,6 +109,7 @@ export class PixiObject {
     if (y !== undefined) this.object.y = y;
   }
 
+  // send null to cancel all listeners, otherwise you can keywise set hitarea and listeners
   setInteractive(props: InteractiveProps | null): void {
     if (props === null) {
       this.object.interactive = false;
@@ -116,14 +117,16 @@ export class PixiObject {
       return;
     } else {
       this.object.interactive = true;
-      const { hitArea } = props;
-      if (hitArea) this.object.hitArea = hitArea;
       const handlerKeys = Object.keys(PixiEvents) as PixiEvents[];
       for (const key of handlerKeys) {
         if (props[key]) this.object.on(key, props[key] as Function);
       }
     }
 
+    const { hitArea } = props;
+    if (hitArea) this.object.hitArea = hitArea;
+
+    // set debug: true to see the hitarea
     if (props.debug && props.hitArea) {
       const debugRect = objFromHitArea(props.hitArea);
       debugRect.zIndex = -999;

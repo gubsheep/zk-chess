@@ -21,7 +21,7 @@ export class Bubble extends PixiObject {
 
     this.object.addChild(this.closed, this.open);
 
-    this.setPosition({ x: 6, y: 3 });
+    this.setPosition({ x: 7, y: 4 });
   }
 
   private draw() {

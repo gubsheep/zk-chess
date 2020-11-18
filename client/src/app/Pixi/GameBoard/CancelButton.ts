@@ -1,7 +1,7 @@
 import { PixiManager } from '../../../api/PixiManager';
 import { ClickState } from '../MouseManager';
 import { LinkObject } from '../Utils/LinkObject';
-import { TextAlign } from '../Utils/Text';
+import { TextAlign } from '../Utils/TextObject';
 
 export class CancelButton extends LinkObject {
   constructor(manager: PixiManager) {

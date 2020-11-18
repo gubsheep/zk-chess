@@ -1,7 +1,7 @@
 import { PixiManager } from '../../../api/PixiManager';
 import { CHAR_H } from '../Utils/FontLoader';
 import { LinkObject } from '../Utils/LinkObject';
-import { TextAlign } from '../Utils/Text';
+import { TextAlign } from '../Utils/TextObject';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';
 

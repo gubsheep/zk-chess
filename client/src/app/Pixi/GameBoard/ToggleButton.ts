@@ -3,7 +3,7 @@ import { GameZIndex, PixiManager } from '../../../api/PixiManager';
 import { ClickState } from '../MouseManager';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';
-import { TextAlign } from '../Utils/Text';
+import { TextAlign } from '../Utils/TextObject';
 import { LinkObject } from '../Utils/LinkObject';
 
 class ToggleText extends LinkObject {

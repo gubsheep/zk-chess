@@ -5,7 +5,7 @@ import { CHAR_H, LINE_SPACING } from '../Utils/FontLoader';
 import { PixiObject } from '../PixiObject';
 import { GameGrid } from './GameGrid';
 import { GameBoardObject } from './GridObject';
-import { TextAlign } from '../Utils/Text';
+import { TextAlign } from '../Utils/TextObject';
 import { LinkObject } from '../Utils/LinkObject';
 import { ConfirmButton } from './ConfirmButton';
 import { MoveSubButton } from './MoveSubButton';

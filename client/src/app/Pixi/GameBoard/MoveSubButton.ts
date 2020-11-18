@@ -1,6 +1,6 @@
 import { PixiManager } from '../../../api/PixiManager';
 import { LinkObject } from '../Utils/LinkObject';
-import { TextAlign } from '../Utils/Text';
+import { TextAlign } from '../Utils/TextObject';
 
 export class MoveSubButton extends LinkObject {
   constructor(manager: PixiManager) {
