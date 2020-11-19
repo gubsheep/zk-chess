@@ -1,5 +1,6 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useState} from 'react';
+import {utils, Wallet} from 'ethers';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
@@ -7,6 +8,7 @@ import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
 import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
 import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
+import {useParams} from 'react-router-dom';
 import Game from './Game';
 import styled from 'styled-components';
 
@@ -30,20 +32,17 @@ const Aa = styled.a`
 `;
 
 export function LandingPage() {
+  console.log(useParams());
   const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
     null
   );
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
   const [gameIds, setGameIds] = useState<string[]>([]);
-  const [initState, setInitState] = useState<InitState>(InitState.NONE);
+  const [initState, setInitState] = useState<InitState>(
+    InitState.DISPLAY_ACCOUNTS
+  );
 
-  const startGame = async () => {
-    console.log('started game');
-
-    setInitState(InitState.DISPLAY_LOGIN_OPTIONS);
-  };
-
-  const displayAccounts = () => {
+  useEffect(() => {
     const ethConnection = EthereumAccountManager.getInstance();
     ethConnection.addAccount(
       '0x044C7963E9A89D4F8B64AB23E02E97B2E00DD57FCB60F316AC69B77135003AEF'
@@ -55,8 +54,7 @@ export function LandingPage() {
       '0x67195c963ff445314e667112ab22f4a7404bad7f9746564eb409b9bb8c6aed32'
     );
     setKnownAddrs(ethConnection.getKnownAccounts());
-    setInitState(InitState.DISPLAY_ACCOUNTS);
-  };
+  }, []);
 
   const selectAccount = (id: EthAddress) => async () => {
     const ethConnection = EthereumAccountManager.getInstance();
@@ -74,6 +72,43 @@ export function LandingPage() {
     } catch (e) {
       console.error(e);
       setInitState(InitState.DISPLAY_ACCOUNTS);
+    }
+  };
+
+  const newAccount = async () => {
+    const ethConnection = EthereumAccountManager.getInstance();
+
+    const newWallet = Wallet.createRandom();
+    const newSKey = newWallet.privateKey;
+    const newAddr = address(newWallet.address);
+    try {
+      ethConnection.addAccount(newSKey);
+      ethConnection.setAccount(newAddr);
+      terminalEmitter.println(
+        `Created new burner wallet with address ${newAddr}.`
+      );
+      terminalEmitter.println(
+        'NOTE: BURNER WALLETS ARE STORED IN BROWSER LOCAL STORAGE.',
+        TerminalTextStyle.White
+      );
+      terminalEmitter.println(
+        'They are relatively insecure and you should avoid storing substantial funds in them.'
+      );
+      terminalEmitter.println(
+        'Also, clearing browser local storage/cache will render your burner wallets inaccessible, unless you export your private keys.'
+      );
+      terminalEmitter.println(
+        'Press any key to continue.',
+        TerminalTextStyle.White
+      );
+
+      await getUserInput();
+      initState = InitState.ACCOUNT_SET;
+    } catch (e) {
+      terminalEmitter.println(
+        'An unknown error occurred. please try again.',
+        TerminalTextStyle.Red
+      );
     }
   };
 
@@ -125,19 +160,7 @@ export function LandingPage() {
     setInitState(InitState.WAITING_FOR_PLAYERS);
   };
 
-  if (initState === InitState.NONE) {
-    return (
-      <div>
-        <Aa onClick={startGame}>start game!</Aa>
-      </div>
-    );
-  } else if (initState === InitState.DISPLAY_LOGIN_OPTIONS) {
-    return (
-      <div>
-        <Aa onClick={displayAccounts}>display accounts</Aa>
-      </div>
-    );
-  } else if (initState === InitState.DISPLAY_ACCOUNTS) {
+  if (initState === InitState.DISPLAY_ACCOUNTS) {
     return (
       <div>
         {knownAddrs.map((addr) => (
@@ -145,6 +168,9 @@ export function LandingPage() {
             <Aa onClick={selectAccount(addr)}>{addr}</Aa>
           </p>
         ))}
+        <p>
+          <Aa onClick={newAccount}>Create new account</Aa>
+        </p>
       </div>
     );
   } else if (initState === InitState.FETCHING_ETH_DATA) {
