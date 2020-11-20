@@ -1,6 +1,6 @@
-import React, {useEffect} from 'react';
+import React, {ChangeEvent, useEffect, useRef} from 'react';
 import {useState} from 'react';
-import {utils, Wallet} from 'ethers';
+import {Wallet} from 'ethers';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
@@ -11,13 +11,21 @@ import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
 import {useParams} from 'react-router-dom';
 import Game from './Game';
 import styled from 'styled-components';
+import {address} from '../utils/CheckedTypeUtils';
+import {
+  getGameIdForTable,
+  isAddressWhitelisted,
+  setGameIdForTable,
+  submitWhitelistKey,
+} from '../api/UtilityServerAPI';
 
 enum InitState {
   NONE,
   DISPLAY_LOGIN_OPTIONS,
   DISPLAY_ACCOUNTS,
+  ASK_WHITELIST_KEY,
   FETCHING_ETH_DATA,
-  FETCHED_ETH_DATA,
+  NO_GAME_AT_TABLE,
   DISPLAY_GAMES,
   GAME_SELECTED,
   WAITING_FOR_PLAYERS,
@@ -32,15 +40,18 @@ const Aa = styled.a`
 `;
 
 export function LandingPage() {
-  console.log(useParams());
-  const [gameManager, setGameManager] = useState<AbstractGameManager | null>(
-    null
-  );
+  const {tableId} = useParams<{tableId: string}>();
+  let gameManagerRef = useRef<AbstractGameManager | null>();
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
   const [gameIds, setGameIds] = useState<string[]>([]);
   const [initState, setInitState] = useState<InitState>(
     InitState.DISPLAY_ACCOUNTS
   );
+  const [wlKey, setWlKey] = useState<string>('');
+
+  const onWlKeyChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setWlKey(e.target.value);
+  };
 
   useEffect(() => {
     const ethConnection = EthereumAccountManager.getInstance();
@@ -56,19 +67,62 @@ export function LandingPage() {
     setKnownAddrs(ethConnection.getKnownAccounts());
   }, []);
 
+  const selectGame = (id: string) => async () => {
+    const gameManager = gameManagerRef.current;
+    if (!gameManager) {
+      console.log('no game manager');
+      return;
+    }
+    console.log('there is a game manager');
+    try {
+      await gameManager.setGame(id);
+      const {
+        myAddress,
+        player1,
+        player2,
+        gameStatus,
+      } = gameManager.getGameState();
+      if (gameStatus === GameStatus.WAITING_FOR_PLAYERS) {
+        if (player1.address === myAddress || player2.address === myAddress) {
+          // i'm in the game, but game hasn't started
+          setInitState(InitState.WAITING_FOR_PLAYERS);
+        } else {
+          // i'm not in the game yet, game is waiting for players, i can join
+          setInitState(InitState.GAME_SELECTED);
+        }
+      } else {
+        if (player1.address === myAddress || player2.address === myAddress) {
+          // game has started, i'm in the game
+          setInitState(InitState.COMPLETE);
+        }
+        // game has started but i'm not in it. don't change initstate
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const onAccountSelected = async (addr: EthAddress) => {
+    setInitState(InitState.FETCHING_ETH_DATA);
+    const gameManager = await GameManager.create();
+    gameManagerRef.current = gameManager;
+    setGameIds(gameManager.getAllGameIds());
+    gameManager.on(ContractEvent.CreatedGame, () => {
+      setGameIds((gameManager as GameManager).getAllGameIds());
+    });
+    const isWhitelisted = await isAddressWhitelisted(addr);
+    if (isWhitelisted) {
+      onWhitelistConfirmed();
+    } else {
+      setInitState(InitState.ASK_WHITELIST_KEY);
+    }
+  };
+
   const selectAccount = (id: EthAddress) => async () => {
     const ethConnection = EthereumAccountManager.getInstance();
     ethConnection.setAccount(id);
     try {
-      setInitState(InitState.FETCHING_ETH_DATA);
-      let newGameManager: AbstractGameManager;
-      newGameManager = await GameManager.create();
-      setGameManager(newGameManager);
-      setGameIds(newGameManager.getAllGameIds());
-      newGameManager.on(ContractEvent.CreatedGame, () => {
-        setGameIds(newGameManager.getAllGameIds());
-      });
-      setInitState(InitState.DISPLAY_GAMES);
+      await onAccountSelected(id);
     } catch (e) {
       console.error(e);
       setInitState(InitState.DISPLAY_ACCOUNTS);
@@ -78,78 +132,63 @@ export function LandingPage() {
   const newAccount = async () => {
     const ethConnection = EthereumAccountManager.getInstance();
 
-    const newWallet = Wallet.createRandom();
-    const newSKey = newWallet.privateKey;
-    const newAddr = address(newWallet.address);
     try {
+      const newWallet = Wallet.createRandom();
+      const newSKey = newWallet.privateKey;
+      const newAddr = address(newWallet.address);
       ethConnection.addAccount(newSKey);
       ethConnection.setAccount(newAddr);
-      terminalEmitter.println(
-        `Created new burner wallet with address ${newAddr}.`
-      );
-      terminalEmitter.println(
-        'NOTE: BURNER WALLETS ARE STORED IN BROWSER LOCAL STORAGE.',
-        TerminalTextStyle.White
-      );
-      terminalEmitter.println(
-        'They are relatively insecure and you should avoid storing substantial funds in them.'
-      );
-      terminalEmitter.println(
-        'Also, clearing browser local storage/cache will render your burner wallets inaccessible, unless you export your private keys.'
-      );
-      terminalEmitter.println(
-        'Press any key to continue.',
-        TerminalTextStyle.White
-      );
-
-      await getUserInput();
-      initState = InitState.ACCOUNT_SET;
+      await onAccountSelected(newAddr);
     } catch (e) {
-      terminalEmitter.println(
-        'An unknown error occurred. please try again.',
-        TerminalTextStyle.Red
-      );
+      console.error(e);
+      setInitState(InitState.DISPLAY_ACCOUNTS);
     }
   };
 
-  const selectGame = (id: string) => async () => {
-    if (!gameManager) {
-      return;
-    }
-    await gameManager.setGame(id);
-    const {
-      myAddress,
-      player1,
-      player2,
-      gameStatus,
-    } = gameManager.getGameState();
-    if (gameStatus === GameStatus.WAITING_FOR_PLAYERS) {
-      if (player1.address === myAddress || player2.address === myAddress) {
-        // i'm in the game, but game hasn't started
-        setInitState(InitState.WAITING_FOR_PLAYERS);
-      } else {
-        // i'm not in the game yet, game is waiting for players, i can join
-        setInitState(InitState.GAME_SELECTED);
-      }
+  const enterWhitelistKey = async () => {
+    const ethConnection = EthereumAccountManager.getInstance();
+    const txHash = await submitWhitelistKey(wlKey, ethConnection.getAddress());
+    if (txHash) {
+      onWhitelistConfirmed();
     } else {
-      if (player1.address === myAddress || player2.address === myAddress) {
-        // game has started, i'm in the game
-        setInitState(InitState.COMPLETE);
-      }
-      // game has started but i'm not in it. don't change initstate
+      setWlKey('');
+      setInitState(InitState.ASK_WHITELIST_KEY);
     }
   };
 
+  const onWhitelistConfirmed = async () => {
+    const gameId = await getGameIdForTable(tableId);
+    if (gameId) {
+      selectGame(gameId)();
+    } else if (tableId) {
+      setInitState(InitState.NO_GAME_AT_TABLE);
+    } else {
+      setInitState(InitState.DISPLAY_GAMES);
+    }
+  };
+
+  // creates a fresh new game and ties it to this table
   const createGame = async () => {
     console.log('create game clicked');
+    const gameManager = gameManagerRef.current;
     if (!gameManager) {
       console.log('no game manager');
       return;
     }
-    await gameManager.createGame();
+    const newGameId = Math.floor(Math.random() * 1000000).toString();
+    await gameManager.createGame(newGameId);
+    if (tableId) {
+      await setGameIdForTable(tableId, newGameId);
+    }
+    gameManager.on(GameManagerEvent.CreatedGame, (gameId) => {
+      if (gameId === newGameId) {
+        selectGame(gameId)();
+      }
+    });
   };
 
   const joinGame = async () => {
+    const gameManager = gameManagerRef.current;
     if (!gameManager) {
       return;
     }
@@ -179,6 +218,13 @@ export function LandingPage() {
         <p>Fetching data...</p>
       </div>
     );
+  } else if (initState === InitState.ASK_WHITELIST_KEY) {
+    return (
+      <div>
+        <input type='text' value={wlKey} onChange={onWlKeyChange} />
+        <Aa onClick={enterWhitelistKey}>go</Aa>
+      </div>
+    );
   } else if (initState === InitState.DISPLAY_GAMES) {
     return (
       <div>
@@ -188,6 +234,14 @@ export function LandingPage() {
             <Aa onClick={selectGame(id)}>{id}</Aa>
           </p>
         ))}
+        <p>
+          <Aa onClick={createGame}>New Game</Aa>
+        </p>
+      </div>
+    );
+  } else if (initState === InitState.NO_GAME_AT_TABLE) {
+    return (
+      <div>
         <p>
           <Aa onClick={createGame}>New Game</Aa>
         </p>
@@ -205,8 +259,8 @@ export function LandingPage() {
         <p>Waiting for players...</p>
       </div>
     );
-  } else if (initState === InitState.COMPLETE && gameManager) {
-    return <Game gameManager={gameManager} />;
+  } else if (initState === InitState.COMPLETE && gameManagerRef.current) {
+    return <Game gameManager={gameManagerRef.current} />;
   }
   return <div></div>;
 }

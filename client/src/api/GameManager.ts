@@ -105,7 +105,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     contractsAPI.on(ContractsAPIEvent.CreatedGame, async (gameId: number) => {
       console.log('created game');
       await this.refreshGameIdList();
-      this.emit(GameManagerEvent.CreatedGame, gameId);
+      this.emit(GameManagerEvent.CreatedGame, gameId.toString());
     });
     contractsAPI.on(ContractsAPIEvent.GameStart, async () => {
       console.log('game started');
@@ -388,10 +388,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   async setGame(gameId: string): Promise<void> {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-      this.refreshInterval = null;
-    }
     await this.contractsAPI.setGame(gameId);
     const contractGameState = await this.contractsAPI.getGameState();
     LocalStorageManager.addGame(
@@ -399,18 +395,20 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       contractGameState.gameAddress
     );
     this.gameState = new GameState(contractGameState);
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
     this.refreshInterval = setInterval(() => {
       this.refreshGameState();
     }, 5000);
   }
 
-  createGame(): Promise<void> {
+  createGame(gameId: string): Promise<void> {
     const unsubmittedCreateGame: UnsubmittedCreateGame = {
       txIntentId: getRandomTxIntentId(),
-      gameId: Math.floor(Math.random() * 1000000),
+      gameId,
       type: EthTxType.CREATE_GAME,
     };
-    console.log('creating game');
     this.contractsAPI.onTxInit(unsubmittedCreateGame);
     try {
       this.contractsAPI.createGame(unsubmittedCreateGame);
