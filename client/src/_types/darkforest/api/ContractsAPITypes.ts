@@ -105,7 +105,13 @@ export type GhostAttackArgs = [
   ]
 ];
 
-export type RawGameInfo = {
+export type GameMetadata = {
+  gameId: string;
+  NROWS: number;
+  NCOLS: number;
+};
+
+export type RawGameMetadata = {
   0: EthersBN;
   gameId?: EthersBN;
 
@@ -114,30 +120,44 @@ export type RawGameInfo = {
 
   2: number;
   NCOLS?: number;
+};
 
-  3: number;
+export type RawGameInfo = {
+  0: number;
   turnNumber?: number;
 
-  4: number;
+  1: number;
   sequenceNumber?: number;
 
-  5: number;
+  2: number;
   gameState?: number;
 
-  6: string;
+  3: string;
   player1?: string;
 
-  7: string;
+  4: string;
   player2?: string;
 
-  8: number;
+  5: number;
   player1Mana?: number;
 
-  9: number;
+  6: number;
   player2Mana?: number;
 
+  7: boolean;
+  player1HasDrawn?: boolean;
+
+  8: boolean;
+  player2HasDrawn?: boolean;
+
+  9: EthersBN;
+  player1HandCommit?: EthersBN;
+
   10: EthersBN;
-  lastActionTimestamp?: EthersBN;
+  player2HandCommit?: EthersBN;
+
+  11: EthersBN;
+  lastTurnTimestamp?: EthersBN;
 };
 
 export type RawDefaults = {

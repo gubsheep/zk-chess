@@ -144,6 +144,10 @@ export type ChessGameContractData = {
   player2: Player;
   player1Mana: number;
   player2Mana: number;
+  player1HasDrawn: boolean;
+  player2HasDrawn: boolean;
+  player1HandCommit: string;
+  player2HandCommit: string;
 
   pieces: ContractPiece[];
   objectives: Objective[];
@@ -152,7 +156,7 @@ export type ChessGameContractData = {
   turnNumber: number;
   sequenceNumber: number;
   gameStatus: GameStatus;
-  lastActionTimestamp: number;
+  lastTurnTimestamp: number;
 };
 
 export type ChessGame = {
@@ -165,9 +169,12 @@ export type ChessGame = {
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
-
   player1Mana: number;
   player2Mana: number;
+  player1HasDrawn: boolean;
+  player2HasDrawn: boolean;
+  player1HandCommit: string;
+  player2HandCommit: string;
 
   pieces: Piece[];
   objectives: Objective[];
@@ -177,7 +184,7 @@ export type ChessGame = {
   turnNumber: number;
   sequenceNumber: number;
   gameStatus: GameStatus;
-  lastActionTimestamp: number;
+  lastTurnTimestamp: number;
 };
 
 export interface SnarkJSProof {

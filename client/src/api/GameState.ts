@@ -37,6 +37,10 @@ export class GameState {
 
   player1Mana: number;
   player2Mana: number;
+  player1HasDrawn: boolean;
+  player2HasDrawn: boolean;
+  player1HandCommit: string;
+  player2HandCommit: string;
 
   pieces: Piece[];
   objectives: Objective[];
@@ -47,7 +51,7 @@ export class GameState {
   turnNumber: number;
   sequenceNumber: number;
   gameStatus: GameStatus;
-  lastActionTimestamp: number;
+  lastTurnTimestamp: number;
 
   constructor(game: ChessGameContractData) {
     this.gameActions = [];
@@ -65,12 +69,16 @@ export class GameState {
     this.player2 = contractData.player2;
     this.player1Mana = contractData.player1Mana;
     this.player2Mana = contractData.player2Mana;
+    this.player1HasDrawn = contractData.player1HasDrawn;
+    this.player2HasDrawn = contractData.player2HasDrawn;
+    this.player1HandCommit = contractData.player1HandCommit;
+    this.player2HandCommit = contractData.player2HandCommit;
     this.objectives = contractData.objectives;
     this.defaults = contractData.defaults;
     this.turnNumber = contractData.turnNumber;
     this.sequenceNumber = contractData.sequenceNumber;
     this.gameStatus = contractData.gameStatus;
-    this.lastActionTimestamp = contractData.lastActionTimestamp;
+    this.lastTurnTimestamp = contractData.lastTurnTimestamp;
 
     this.pieces = [];
     this.pieceById = new Map<number, Piece>();
@@ -149,6 +157,10 @@ export class GameState {
       player2: this.player2,
       player1Mana: this.player1Mana,
       player2Mana: this.player2Mana,
+      player1HasDrawn: this.player1HasDrawn,
+      player2HasDrawn: this.player2HasDrawn,
+      player1HandCommit: this.player1HandCommit,
+      player2HandCommit: this.player2HandCommit,
       pieces: this.pieces,
       objectives: this.objectives,
       pieceById: this.pieceById,
@@ -156,7 +168,7 @@ export class GameState {
       turnNumber: this.turnNumber,
       sequenceNumber: this.sequenceNumber,
       gameStatus: this.gameStatus,
-      lastActionTimestamp: this.lastActionTimestamp,
+      lastTurnTimestamp: this.lastTurnTimestamp,
     });
   }
 
@@ -315,6 +327,10 @@ export class GameState {
       state1.player2.address !== state2.player2.address ||
       state1.player1Mana !== state2.player1Mana ||
       state1.player2Mana !== state2.player2Mana ||
+      state1.player1HasDrawn !== state2.player1HasDrawn ||
+      state1.player2HasDrawn !== state2.player2HasDrawn ||
+      state1.player1HandCommit !== state2.player1HandCommit ||
+      state1.player2HandCommit !== state2.player2HandCommit ||
       state1.sequenceNumber !== state2.sequenceNumber ||
       state1.turnNumber !== state2.turnNumber
     ) {

@@ -29,7 +29,13 @@ contract ZKChessGame is Initializable {
     uint8 public player1Mana;
     uint8 public player2Mana;
 
-    uint256 public lastActionTimestamp;
+    bool public player1HasDrawn;
+    bool public player2HasDrawn;
+
+    uint256 public player1HandCommit;
+    uint256 public player2HandCommit;
+
+    uint256 public lastTurnTimestamp;
 
     // mapping from turn # -> piece # -> has acted
     mapping(uint8 => mapping(uint8 => bool)) public hasMoved;
@@ -86,11 +92,13 @@ contract ZKChessGame is Initializable {
     /// GETTERS ///
     ///////////////
 
+    function getMetadata() public view returns (GameMetadata memory ret) {
+        ret = GameMetadata({gameId: gameId, NROWS: NROWS, NCOLS: NCOLS});
+        return ret;
+    }
+
     function getInfo() public view returns (GameInfo memory ret) {
         ret = GameInfo({
-            gameId: gameId,
-            NROWS: NROWS,
-            NCOLS: NCOLS,
             turnNumber: turnNumber,
             sequenceNumber: sequenceNumber,
             gameState: gameState,
@@ -98,7 +106,11 @@ contract ZKChessGame is Initializable {
             player2: player2,
             player1Mana: player1Mana,
             player2Mana: player2Mana,
-            lastActionTimestamp: lastActionTimestamp
+            player1HasDrawn: player1HasDrawn,
+            player2HasDrawn: player2HasDrawn,
+            player1HandCommit: player1HandCommit,
+            player2HandCommit: player2HandCommit,
+            lastTurnTimestamp: lastTurnTimestamp
         });
         return ret;
     }
@@ -162,7 +174,6 @@ contract ZKChessGame is Initializable {
     //////////////////////
 
     function joinGame() public {
-        lastActionTimestamp = block.timestamp;
         require(
             gameState == GameState.WAITING_FOR_PLAYERS,
             "Game already started"
@@ -196,11 +207,11 @@ contract ZKChessGame is Initializable {
         gameState = GameState.P1_TO_MOVE;
         turnNumber = 1;
         player1Mana = turnNumber;
+        lastTurnTimestamp = block.timestamp;
         emit GameStart(player1, player2);
     }
 
     function doSummon(Summon memory summon) public {
-        lastActionTimestamp = block.timestamp;
         checkAction(summon.turnNumber, summon.sequenceNumber);
         require(!pieces[summon.pieceId].initialized, "piece ID already in use");
 
@@ -300,7 +311,6 @@ contract ZKChessGame is Initializable {
     }
 
     function doMove(Move memory move) public {
-        lastActionTimestamp = block.timestamp;
         checkAction(move.turnNumber, move.sequenceNumber);
         Piece storage piece = pieces[move.pieceId];
         uint8 originRow = piece.row;
@@ -346,7 +356,6 @@ contract ZKChessGame is Initializable {
     }
 
     function doAttack(Attack memory attack) public {
-        lastActionTimestamp = block.timestamp;
         checkAction(attack.turnNumber, attack.sequenceNumber);
         require(
             ZKChessUtils.checkAttack(
@@ -384,7 +393,7 @@ contract ZKChessGame is Initializable {
     }
 
     function endTurn(uint8 _turnNumber, uint8 _sequenceNumber) public {
-        lastActionTimestamp = block.timestamp;
+        lastTurnTimestamp = block.timestamp;
         checkAction(_turnNumber, _sequenceNumber);
         if (msg.sender == player1) {
             // change to p2's turn

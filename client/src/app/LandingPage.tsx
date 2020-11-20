@@ -98,6 +98,7 @@ export function LandingPage() {
         // game has started but i'm not in it. don't change initstate
       }
     } catch (e) {
+      setInitState(InitState.NO_GAME_AT_TABLE);
       console.error(e);
     }
   };

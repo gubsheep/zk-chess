@@ -31,6 +31,8 @@ import {
   UnsubmittedAttack,
   RawObjective,
   RawGameInfo,
+  GameMetadata,
+  RawGameMetadata,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -139,6 +141,8 @@ class ContractsAPI extends EventEmitter {
   private readonly txRequestExecutor: TxExecutor;
   private cachedStatDefaults: Record<PieceType, PieceStatDefaults> | null;
   private cachedObjectives: Objective[] | null;
+  private cachedGameMetadata: GameMetadata | null;
+
   private unminedTxs: Map<string, TxIntent>;
 
   private constructor(
@@ -154,6 +158,7 @@ class ContractsAPI extends EventEmitter {
     this.unminedTxs = new Map<string, TxIntent>();
     this.cachedStatDefaults = null;
     this.cachedObjectives = null;
+    this.cachedGameMetadata = null;
   }
 
   static async create(): Promise<ContractsAPI> {
@@ -282,24 +287,33 @@ class ContractsAPI extends EventEmitter {
     }
     const gameInfo: RawGameInfo = await contract.getInfo();
 
-    const gameId = gameInfo[0].toString();
-    const nRows = gameInfo[1];
-    const nCols = gameInfo[2];
-    const turnNumber = gameInfo[3];
-    const sequenceNumber = gameInfo[4];
-    const gameState = gameInfo[5];
-    const player1Addr = address(gameInfo[6]);
-    const player2Addr = address(gameInfo[7]);
-    const player1Mana = gameInfo[8];
-    const player2Mana = gameInfo[9];
-    const lastActionTimestamp = gameInfo[10].toNumber();
+    const turnNumber = gameInfo[0];
+    const sequenceNumber = gameInfo[1];
+    const gameState = gameInfo[2];
+    const player1Addr = address(gameInfo[3]);
+    const player2Addr = address(gameInfo[4]);
+    const player1Mana = gameInfo[5];
+    const player2Mana = gameInfo[6];
+    const player1HasDrawn = gameInfo[7];
+    const player2HasDrawn = gameInfo[8];
+    const player1HandCommit = gameInfo[9].toString();
+    const player2HandCommit = gameInfo[10].toString();
+    const lastTurnTimestamp = gameInfo[11].toNumber();
 
     const rawPieces: RawPiece[] = await contract.getPieces();
     const pieces: ContractPiece[] = rawPieces.map(this.rawPieceToPiece);
 
+    if (!this.cachedGameMetadata) {
+      const rawMetadata: RawGameMetadata = await contract.getMetadata();
+      this.cachedGameMetadata = {
+        gameId: rawMetadata[0].toString(),
+        NROWS: rawMetadata[1],
+        NCOLS: rawMetadata[2],
+      };
+    }
+
     if (!this.cachedObjectives) {
       const rawObjectives: RawObjective[] = await contract.getObjectives();
-
       this.cachedObjectives = rawObjectives.map(this.rawObjectiveToObjective);
     }
 
@@ -320,21 +334,25 @@ class ContractsAPI extends EventEmitter {
 
     return {
       gameAddress: address(contract.address),
-      gameId,
-      nRows,
-      nCols,
+      gameId: this.cachedGameMetadata.gameId,
+      nRows: this.cachedGameMetadata.NCOLS,
+      nCols: this.cachedGameMetadata.NCOLS,
       myAddress: this.account,
       player1: {address: player1Addr},
       player2: {address: player2Addr},
       player1Mana,
       player2Mana,
+      player1HasDrawn,
+      player2HasDrawn,
+      player1HandCommit,
+      player2HandCommit,
       pieces,
       objectives: this.cachedObjectives,
       defaults: this.cachedStatDefaults,
       turnNumber,
       sequenceNumber,
       gameStatus: gameState,
-      lastActionTimestamp,
+      lastTurnTimestamp,
     };
   }
 
