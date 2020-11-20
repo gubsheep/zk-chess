@@ -278,7 +278,7 @@ contract ZKChessGame is Initializable {
             commitment: summon.zkp.input[0],
             initialized: true,
             hp: defaultStats[summon.pieceType].hp,
-            initializedOnTurn: turnNumber,
+            atk: defaultStats[summon.pieceType].atk,
             lastMove: turnNumber,
             lastAttack: turnNumber
         });

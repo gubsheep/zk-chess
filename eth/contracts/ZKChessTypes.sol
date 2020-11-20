@@ -49,7 +49,7 @@ struct Piece {
     bool alive; // only for non-ghosts
     bool initialized;
     uint8 hp;
-    uint8 initializedOnTurn;
+    uint8 atk;
     uint256 commitment; // only for ghosts
     uint8 lastMove;
     uint8 lastAttack;

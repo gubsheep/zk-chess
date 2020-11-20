@@ -195,7 +195,7 @@ export type RawPiece = {
   hp?: number;
 
   8: number;
-  initializedOnTurn?: number;
+  atk?: number;
 
   9: EthersBN;
   commitment?: EthersBN;

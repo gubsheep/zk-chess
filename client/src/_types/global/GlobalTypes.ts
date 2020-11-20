@@ -70,7 +70,7 @@ type PartialPiece = GameObject & {
   pieceType: PieceType;
   alive: boolean;
   hp: number;
-  initializedOnTurn: number;
+  atk: number;
   lastMove: number;
   lastAttack: number;
 };
@@ -79,7 +79,6 @@ export type AbstractPiece = PartialPiece & {
   mvRange: number;
   atkMinRange: number;
   atkMaxRange: number;
-  atk: number;
   kamikaze: boolean;
 };
 

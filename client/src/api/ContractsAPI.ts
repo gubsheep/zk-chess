@@ -581,7 +581,7 @@ class ContractsAPI extends EventEmitter {
         alive: rawPiece[5],
         commitment: rawPiece[9].toString(),
         hp: rawPiece[7],
-        initializedOnTurn: rawPiece[8],
+        atk: rawPiece[8],
         lastMove: rawPiece[10],
         lastAttack: rawPiece[11],
       };
@@ -593,7 +593,7 @@ class ContractsAPI extends EventEmitter {
         alive: rawPiece[5],
         location: [rawPiece[4], rawPiece[3]],
         hp: rawPiece[7],
-        initializedOnTurn: rawPiece[8],
+        atk: rawPiece[8],
         lastMove: rawPiece[10],
         lastAttack: rawPiece[11],
       };

@@ -53,7 +53,7 @@ library ZKChessUtils {
         defaultStats[PieceType.MOTHERSHIP_00] = PieceDefaultStats({
             pieceType: PieceType.MOTHERSHIP_00,
             mvRange: 0,
-            atkMinRange: 2,
+            atkMinRange: 0,
             atkMaxRange: 2,
             hp: 20,
             atk: 2,
@@ -142,7 +142,7 @@ library ZKChessUtils {
             commitment: 0,
             initialized: true,
             hp: defaultStats[PieceType.MOTHERSHIP_00].hp,
-            initializedOnTurn: 0,
+            atk: defaultStats[PieceType.MOTHERSHIP_00].atk,
             lastMove: 0,
             lastAttack: 0
         });
@@ -158,7 +158,7 @@ library ZKChessUtils {
             commitment: 0,
             initialized: true,
             hp: defaultStats[PieceType.MOTHERSHIP_00].hp,
-            initializedOnTurn: 0,
+            atk: defaultStats[PieceType.MOTHERSHIP_00].atk,
             lastMove: 0,
             lastAttack: 0
         });

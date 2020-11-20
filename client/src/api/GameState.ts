@@ -22,7 +22,7 @@ import {
   ZKPiece,
 } from '../_types/global/GlobalTypes';
 import _ from 'lodash';
-import { LocalStorageManager } from './LocalStorageManager';
+import {LocalStorageManager} from './LocalStorageManager';
 
 export class GameState {
   gameAddress: EthAddress;
@@ -273,13 +273,12 @@ export class GameState {
       pieceType,
       alive: true,
       hp: defaults.hp,
-      initializedOnTurn: this.turnNumber,
+      atk: defaults.atk,
       lastMove: this.turnNumber,
       lastAttack: this.turnNumber,
       mvRange: defaults.mvRange,
       atkMinRange: defaults.atkMinRange,
       atkMaxRange: defaults.atkMaxRange,
-      atk: defaults.atk,
       kamikaze: defaults.kamikaze,
     };
     if (defaults.isZk) {
@@ -361,7 +360,6 @@ export class GameState {
       p1.pieceType !== p2.pieceType ||
       p1.alive !== p2.alive ||
       p1.hp !== p2.hp ||
-      p1.initializedOnTurn !== p2.initializedOnTurn ||
       p1.lastMove !== p2.lastMove ||
       p1.lastAttack !== p2.lastAttack ||
       p1.mvRange !== p2.mvRange ||
