@@ -160,6 +160,20 @@ export type RawGameInfo = {
   lastTurnTimestamp?: EthersBN;
 };
 
+export type RawCardPrototype = {
+  0: number;
+  id?: number;
+
+  1: number;
+  atkBuff?: number;
+
+  2: number;
+  damage?: number;
+
+  3: number;
+  heal?: number;
+};
+
 export type RawDefaults = {
   0: number;
   pieceType?: number;

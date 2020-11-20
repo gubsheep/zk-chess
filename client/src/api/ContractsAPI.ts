@@ -8,6 +8,7 @@ import {
   ContractPiece,
   PieceStatDefaults,
   Objective,
+  CardPrototype,
 } from '../_types/global/GlobalTypes';
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
 // in particular, the below is bad!
@@ -33,6 +34,7 @@ import {
   RawGameInfo,
   GameMetadata,
   RawGameMetadata,
+  RawCardPrototype,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -141,6 +143,7 @@ class ContractsAPI extends EventEmitter {
   private readonly txRequestExecutor: TxExecutor;
   private cachedStatDefaults: Record<PieceType, PieceStatDefaults> | null;
   private cachedObjectives: Objective[] | null;
+  private cachedCardPrototypes: CardPrototype[] | null;
   private cachedGameMetadata: GameMetadata | null;
 
   private unminedTxs: Map<string, TxIntent>;
@@ -159,6 +162,7 @@ class ContractsAPI extends EventEmitter {
     this.cachedStatDefaults = null;
     this.cachedObjectives = null;
     this.cachedGameMetadata = null;
+    this.cachedCardPrototypes = null;
   }
 
   static async create(): Promise<ContractsAPI> {
@@ -312,6 +316,16 @@ class ContractsAPI extends EventEmitter {
       };
     }
 
+    if (!this.cachedCardPrototypes) {
+      const rawCards: RawCardPrototype[] = await contract.getCards();
+      this.cachedCardPrototypes = rawCards.map((rawCard) => ({
+        id: rawCard[0],
+        atkBuff: rawCard[1],
+        damage: rawCard[2],
+        heal: rawCard[3],
+      }));
+    }
+
     if (!this.cachedObjectives) {
       const rawObjectives: RawObjective[] = await contract.getObjectives();
       this.cachedObjectives = rawObjectives.map(this.rawObjectiveToObjective);
@@ -347,6 +361,7 @@ class ContractsAPI extends EventEmitter {
       player1HandCommit,
       player2HandCommit,
       pieces,
+      cardPrototypes: this.cachedCardPrototypes,
       objectives: this.cachedObjectives,
       defaults: this.cachedStatDefaults,
       turnNumber,
@@ -368,6 +383,7 @@ class ContractsAPI extends EventEmitter {
     );
     this.cachedObjectives = null;
     this.cachedStatDefaults = null;
+    this.cachedGameMetadata = null;
     this.removeGameContractListeners();
     this.gameContract = gameContract;
     this.setupGameContractListeners();

@@ -4,6 +4,7 @@ const rawExec = util.promisify(require("child_process").exec);
 
 const ZKChessGame = artifacts.require("ZKChessGame");
 const ZKChessGameFactory = artifacts.require("ZKChessGameFactory");
+const ZKChessInit = artifacts.require("ZKChessInit");
 const ZKChessUtils = artifacts.require("ZKChessUtils");
 const Verifier = artifacts.require("Verifier");
 const Hasher = artifacts.require("Hasher");
@@ -35,6 +36,10 @@ module.exports = async function (deployer, network, accounts) {
   const verifier = await Verifier.deployed();
   await ZKChessUtils.link(Verifier, verifier.address);
   await ZKChessGame.link(Verifier, verifier.address);
+
+  await deployer.deploy(ZKChessInit);
+  const zkChessInit = await ZKChessInit.deployed();
+  await ZKChessGame.link(ZKChessInit, zkChessInit.address);
 
   await deployer.deploy(ZKChessUtils);
   const zkChessUtils = await ZKChessUtils.deployed();

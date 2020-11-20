@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
 import "./ZKChessTypes.sol";
+import "./ZKChessInit.sol";
 import "./ZKChessUtils.sol";
 import "./Verifier.sol";
 
@@ -17,9 +18,10 @@ contract ZKChessGame is Initializable {
     GameState public gameState;
     uint8[][] public boardPieces; // board[row][col]
 
-    uint8[] public pieceIds;
     Objective[] public objectives;
+    uint8[] public pieceIds;
     mapping(uint8 => Piece) public pieces;
+    CardPrototype[] public cards;
 
     mapping(PieceType => PieceDefaultStats) public defaultStats;
 
@@ -53,8 +55,9 @@ contract ZKChessGame is Initializable {
         }
 
         // initialize pieces
-        ZKChessUtils.initializeDefaults(defaultStats);
-        ZKChessUtils.initializeObjectives(objectives);
+        ZKChessInit.initializeDefaults(defaultStats);
+        ZKChessInit.initializeObjectives(objectives);
+        ZKChessInit.initializeCards(cards);
     }
 
     //////////////
@@ -144,6 +147,14 @@ contract ZKChessGame is Initializable {
         return ret;
     }
 
+    function getCards() public view returns (CardPrototype[] memory ret) {
+        ret = new CardPrototype[](cards.length);
+        for (uint8 i = 0; i < cards.length; i++) {
+            ret[i] = cards[i];
+        }
+        return ret;
+    }
+
     //////////////
     /// Helper ///
     //////////////
@@ -195,7 +206,7 @@ contract ZKChessGame is Initializable {
         }
 
         // set pieces
-        ZKChessUtils.initializePieces(
+        ZKChessInit.initializeMotherships(
             player1,
             player2,
             pieces,
@@ -215,68 +226,21 @@ contract ZKChessGame is Initializable {
         checkAction(summon.turnNumber, summon.sequenceNumber);
         require(!pieces[summon.pieceId].initialized, "piece ID already in use");
 
-        // PORT tile
-        uint8 homeRow;
-        uint8 homeCol;
-        if (msg.sender == player1) {
-            homeRow = pieces[1].row;
-            homeCol = pieces[1].col;
-        } else {
-            homeRow = pieces[2].row;
-            homeCol = pieces[2].col;
-        }
-
-        // MANA checks
-        if (msg.sender == player1) {
-            require(
-                player1Mana >= defaultStats[summon.pieceType].cost,
-                "not enough mana"
-            );
-            player1Mana -= defaultStats[summon.pieceType].cost;
-        } else {
-            require(
-                player2Mana >= defaultStats[summon.pieceType].cost,
-                "not enough mana"
-            );
-            player2Mana -= defaultStats[summon.pieceType].cost;
-        }
-
-        // validity checks
-        if (!defaultStats[summon.pieceType].isZk) {
-            require(summon.row < NROWS && summon.col < NCOLS, "not in bounds");
-            // if visible piece, can't summon on existing piece
-            uint8 pieceIdAtSummonTile = boardPieces[summon.row][summon.col];
-            Piece storage pieceAtSummonTile = pieces[pieceIdAtSummonTile];
-            require(!pieceAtSummonTile.alive, "can't summon there");
-            // must summon adjacent to the PORT tile
-            require(
-                ZKChessUtils.taxiDist(
-                    summon.row,
-                    summon.col,
-                    homeRow,
-                    homeCol
-                ) == 1,
-                "can't summon there"
-            );
-        } else {
-            require(
-                summon.zkp.input[1] == homeRow &&
-                    summon.zkp.input[2] == homeCol,
-                "bad ZKP"
-            );
-            require(summon.zkp.input[3] == 1, "bad ZKP");
-            require(summon.zkp.input[4] == NROWS, "bad ZKP");
-            require(summon.zkp.input[5] == NCOLS, "bad ZKP");
-            require(
-                Verifier.verifyDist1Proof(
-                    summon.zkp.a,
-                    summon.zkp.b,
-                    summon.zkp.c,
-                    summon.zkp.input
-                ),
-                "bad ZKP"
-            );
-        }
+        uint8 availableMana = msg.sender == player1 ? player1Mana : player2Mana;
+        uint8 homePieceId = msg.sender == player1 ? 1 : 2;
+        require(
+            ZKChessUtils.checkSummon(
+                summon,
+                homePieceId,
+                availableMana,
+                defaultStats,
+                boardPieces,
+                pieces,
+                NROWS,
+                NCOLS
+            ),
+            "invalid summon"
+        );
 
         // create piece
         pieces[summon.pieceId] = Piece({
@@ -299,6 +263,12 @@ contract ZKChessGame is Initializable {
         // in the future this should be tracked in its own field
         hasMoved[summon.turnNumber][summon.pieceId] = true;
         hasAttacked[summon.turnNumber][summon.pieceId] = true;
+
+        if (msg.sender == player1) {
+            player1Mana -= defaultStats[summon.pieceType].cost;
+        } else if (msg.sender == player2) {
+            player2Mana -= defaultStats[summon.pieceType].cost;
+        }
         emit DidSummon(
             msg.sender,
             summon.pieceId,

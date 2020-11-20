@@ -47,6 +47,13 @@ struct PieceDefaultStats {
     bool kamikaze;
 }
 
+struct CardPrototype {
+    uint8 id;
+    uint8 atkBuff;
+    uint8 damage;
+    uint8 heal;
+}
+
 struct Piece {
     uint8 id;
     PieceType pieceType;

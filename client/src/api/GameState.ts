@@ -1,6 +1,7 @@
 import {
   AbstractPiece,
   BoardLocation,
+  CardPrototype,
   ChessGame,
   ChessGameContractData,
   EthAddress,
@@ -44,6 +45,7 @@ export class GameState {
 
   pieces: Piece[];
   objectives: Objective[];
+  cardPrototypes: CardPrototype[];
   pieceById: Map<number, Piece>;
   defaults: Record<PieceType, PieceStatDefaults>;
   gameActions: GameAction[];
@@ -73,6 +75,7 @@ export class GameState {
     this.player2HasDrawn = contractData.player2HasDrawn;
     this.player1HandCommit = contractData.player1HandCommit;
     this.player2HandCommit = contractData.player2HandCommit;
+    this.cardPrototypes = contractData.cardPrototypes;
     this.objectives = contractData.objectives;
     this.defaults = contractData.defaults;
     this.turnNumber = contractData.turnNumber;
@@ -162,6 +165,7 @@ export class GameState {
       player1HandCommit: this.player1HandCommit,
       player2HandCommit: this.player2HandCommit,
       pieces: this.pieces,
+      cardPrototypes: this.cardPrototypes,
       objectives: this.objectives,
       pieceById: this.pieceById,
       defaults: this.defaults,

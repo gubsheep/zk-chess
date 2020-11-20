@@ -53,6 +53,13 @@ export enum Color {
 
 export type Objective = Locatable;
 
+export type CardPrototype = {
+  id: number;
+  atkBuff: number;
+  damage: number;
+  heal: number;
+};
+
 export type PieceStatDefaults = {
   pieceType: PieceType;
   mvRange: number;
@@ -151,6 +158,7 @@ export type ChessGameContractData = {
 
   pieces: ContractPiece[];
   objectives: Objective[];
+  cardPrototypes: CardPrototype[];
   defaults: Record<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
@@ -178,6 +186,7 @@ export type ChessGame = {
 
   pieces: Piece[];
   objectives: Objective[];
+  cardPrototypes: CardPrototype[];
   pieceById: Map<number, Piece>;
   defaults: Record<PieceType, PieceStatDefaults>;
 

@@ -47,126 +47,6 @@ library ZKChessUtils {
         return ret;
     }
 
-    function initializeDefaults(
-        mapping(PieceType => PieceDefaultStats) storage defaultStats
-    ) public {
-        defaultStats[PieceType.MOTHERSHIP_00] = PieceDefaultStats({
-            pieceType: PieceType.MOTHERSHIP_00,
-            mvRange: 0,
-            atkMinRange: 0,
-            atkMaxRange: 2,
-            hp: 20,
-            atk: 2,
-            isZk: false,
-            cost: 100,
-            kamikaze: false
-        });
-        defaultStats[PieceType.CRUISER_01] = PieceDefaultStats({
-            pieceType: PieceType.CRUISER_01,
-            mvRange: 2,
-            atkMinRange: 1,
-            atkMaxRange: 1,
-            hp: 3,
-            atk: 2,
-            isZk: false,
-            cost: 1,
-            kamikaze: false
-        });
-        defaultStats[PieceType.FRIGATE_02] = PieceDefaultStats({
-            pieceType: PieceType.FRIGATE_02,
-            mvRange: 2,
-            atkMinRange: 2,
-            atkMaxRange: 2,
-            hp: 3,
-            atk: 2,
-            isZk: false,
-            cost: 2,
-            kamikaze: false
-        });
-        defaultStats[PieceType.CORVETTE_03] = PieceDefaultStats({
-            pieceType: PieceType.CORVETTE_03,
-            mvRange: 4,
-            atkMinRange: 1,
-            atkMaxRange: 1,
-            hp: 3,
-            atk: 2,
-            isZk: false,
-            cost: 3,
-            kamikaze: false
-        });
-        defaultStats[PieceType.SUBMARINE_04] = PieceDefaultStats({
-            pieceType: PieceType.SUBMARINE_04,
-            mvRange: 1,
-            atkMinRange: 0,
-            atkMaxRange: 0,
-            hp: 1,
-            atk: 3,
-            isZk: true,
-            cost: 4,
-            kamikaze: true
-        });
-        defaultStats[PieceType.WARSHIP_05] = PieceDefaultStats({
-            pieceType: PieceType.WARSHIP_05,
-            mvRange: 1,
-            atkMinRange: 2,
-            atkMaxRange: 3,
-            hp: 2,
-            atk: 3,
-            isZk: false,
-            cost: 5,
-            kamikaze: false
-        });
-    }
-
-    function initializeObjectives(Objective[] storage objectives) public {
-        objectives.push(Objective({row: 0, col: 3}));
-        objectives.push(Objective({row: 2, col: 4}));
-        objectives.push(Objective({row: 4, col: 3}));
-    }
-
-    function initializePieces(
-        address player1,
-        address player2,
-        mapping(uint8 => Piece) storage pieces,
-        uint8[] storage pieceIds,
-        uint8[][] storage boardPieces,
-        mapping(PieceType => PieceDefaultStats) storage defaultStats
-    ) public {
-        pieces[1] = Piece({
-            id: 1,
-            pieceType: PieceType.MOTHERSHIP_00,
-            owner: player1,
-            row: 2,
-            col: 0,
-            alive: true,
-            commitment: 0,
-            initialized: true,
-            hp: defaultStats[PieceType.MOTHERSHIP_00].hp,
-            atk: defaultStats[PieceType.MOTHERSHIP_00].atk,
-            lastMove: 0,
-            lastAttack: 0
-        });
-        pieceIds.push(1);
-        boardPieces[2][0] = 1;
-        pieces[2] = Piece({
-            id: 2,
-            pieceType: PieceType.MOTHERSHIP_00,
-            owner: player2,
-            row: 2,
-            col: 6,
-            alive: true,
-            commitment: 0,
-            initialized: true,
-            hp: defaultStats[PieceType.MOTHERSHIP_00].hp,
-            atk: defaultStats[PieceType.MOTHERSHIP_00].atk,
-            lastMove: 0,
-            lastAttack: 0
-        });
-        pieceIds.push(2);
-        boardPieces[2][6] = 2;
-        return;
-    }
-
     function checkAction(
         uint8 claimedTurnNumber,
         uint8 turnNumber,
@@ -193,6 +73,58 @@ library ZKChessUtils {
             claimedSequenceNumber == sequenceNumber,
             "Wrong sequence number"
         );
+        return true;
+    }
+
+    function checkSummon(
+        Summon memory summon,
+        uint8 homePieceId,
+        uint8 availableMana,
+        mapping(PieceType => PieceDefaultStats) storage defaultStats,
+        uint8[][] storage boardPieces,
+        mapping(uint8 => Piece) storage pieces,
+        uint8 NROWS,
+        uint8 NCOLS
+    ) public view returns (bool) {
+        uint8 homeRow = pieces[homePieceId].row;
+        uint8 homeCol = pieces[homePieceId].col;
+
+        // MANA checks
+        require(
+            availableMana >= defaultStats[summon.pieceType].cost,
+            "not enough mana"
+        );
+
+        if (!defaultStats[summon.pieceType].isZk) {
+            require(summon.row < NROWS && summon.col < NCOLS, "not in bounds");
+            // if visible piece, can't summon on existing piece
+            uint8 pieceIdAtSummonTile = boardPieces[summon.row][summon.col];
+            Piece storage pieceAtSummonTile = pieces[pieceIdAtSummonTile];
+            require(!pieceAtSummonTile.alive, "can't summon there");
+            // must summon adjacent to the PORT tile
+            require(
+                taxiDist(summon.row, summon.col, homeRow, homeCol) == 1,
+                "can't summon there"
+            );
+        } else {
+            require(
+                summon.zkp.input[1] == homeRow &&
+                    summon.zkp.input[2] == homeCol,
+                "bad ZKP"
+            );
+            require(summon.zkp.input[3] == 1, "bad ZKP");
+            require(summon.zkp.input[4] == NROWS, "bad ZKP");
+            require(summon.zkp.input[5] == NCOLS, "bad ZKP");
+            require(
+                Verifier.verifyDist1Proof(
+                    summon.zkp.a,
+                    summon.zkp.b,
+                    summon.zkp.c,
+                    summon.zkp.input
+                ),
+                "bad ZKP"
+            );
+        }
         return true;
     }
 
