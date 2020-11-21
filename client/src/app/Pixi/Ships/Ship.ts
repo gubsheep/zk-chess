@@ -123,11 +123,14 @@ export class Ship extends PieceObject {
     // check if is hoverable
     const {
       api,
-      mouseManager: { clickState, attackIdxs, moveAttackIdxs },
+      mouseManager: { clickState, attackIdxs, moveAttackIdxs, selectedShip },
     } = this.manager;
     if (clickState === ClickState.None) {
       this.setHoverable(!api.hasAttacked(this));
-    } else if (clickState === ClickState.Acting) {
+    } else if (
+      clickState === ClickState.Acting &&
+      selectedShip?.isZk() === false
+    ) {
       if (api.ownedByMe(this)) this.setHoverable(!api.hasAttacked(this));
       else {
         // in attack range
