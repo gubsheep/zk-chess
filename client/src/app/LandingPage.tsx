@@ -1,24 +1,24 @@
-import React, { ChangeEvent, useEffect, useRef } from 'react';
-import { useState } from 'react';
-import { Wallet } from 'ethers';
+import React, {ChangeEvent, useEffect, useRef} from 'react';
+import {useState} from 'react';
+import {Wallet} from 'ethers';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
-import { ContractEvent } from '../_types/darkforest/api/ContractsAPITypes';
-import { EthAddress, GameStatus } from '../_types/global/GlobalTypes';
-import { useParams } from 'react-router-dom';
+import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
+import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
+import {useParams} from 'react-router-dom';
 import Game from './Game';
 import styled from 'styled-components';
-import { address } from '../utils/CheckedTypeUtils';
+import {address} from '../utils/CheckedTypeUtils';
 import {
   getGameIdForTable,
   isAddressWhitelisted,
   setGameIdForTable,
   submitWhitelistKey,
 } from '../api/UtilityServerAPI';
-import { isBrave } from '../utils/Utils';
+import {isBrave} from '../utils/Utils';
 
 enum InitState {
   NONE,
@@ -41,7 +41,7 @@ const Aa = styled.a`
 `;
 
 export function LandingPage() {
-  const { tableId } = useParams<{ tableId: string }>();
+  const {tableId} = useParams<{tableId: string}>();
   let gameManagerRef = useRef<AbstractGameManager | null>();
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
   const [gameIds, setGameIds] = useState<string[]>([]);
@@ -92,13 +92,14 @@ export function LandingPage() {
           setInitState(InitState.GAME_SELECTED);
         }
       } else {
-        if (player1.address === myAddress || player2.address === myAddress) {
-          // game has started, i'm in the game
-          setInitState(InitState.COMPLETE);
-        }
+        //if (player1.address === myAddress || player2.address === myAddress) {
+        // game has started, i'm in the game
+        setInitState(InitState.COMPLETE);
+        //}
         // game has started but i'm not in it. don't change initstate
       }
     } catch (e) {
+      setInitState(InitState.NO_GAME_AT_TABLE);
       console.error(e);
     }
   };
@@ -216,7 +217,6 @@ export function LandingPage() {
         <p>
           <Aa onClick={newAccount}>Create new account</Aa>
         </p>
-        <br />
         {brave && (
           <p>
             Looks like you're using Brave. Please make sure you turn off Brave
