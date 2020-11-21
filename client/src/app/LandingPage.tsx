@@ -18,6 +18,7 @@ import {
   setGameIdForTable,
   submitWhitelistKey,
 } from '../api/UtilityServerAPI';
+import {isBrave} from '../utils/Utils';
 
 enum InitState {
   NONE,
@@ -91,13 +92,14 @@ export function LandingPage() {
           setInitState(InitState.GAME_SELECTED);
         }
       } else {
-        if (player1.address === myAddress || player2.address === myAddress) {
-          // game has started, i'm in the game
-          setInitState(InitState.COMPLETE);
-        }
+        //if (player1.address === myAddress || player2.address === myAddress) {
+        // game has started, i'm in the game
+        setInitState(InitState.COMPLETE);
+        //}
         // game has started but i'm not in it. don't change initstate
       }
     } catch (e) {
+      setInitState(InitState.NO_GAME_AT_TABLE);
       console.error(e);
     }
   };
@@ -199,6 +201,11 @@ export function LandingPage() {
     setInitState(InitState.WAITING_FOR_PLAYERS);
   };
 
+  const [brave, setBrave] = useState<boolean>(false);
+  (async () => {
+    setBrave(await isBrave());
+  })();
+
   if (initState === InitState.DISPLAY_ACCOUNTS) {
     return (
       <div>
@@ -210,6 +217,12 @@ export function LandingPage() {
         <p>
           <Aa onClick={newAccount}>Create new account</Aa>
         </p>
+        {brave && (
+          <p>
+            Looks like you're using Brave. Please make sure you turn off Brave
+            Shield, or the game may not work!
+          </p>
+        )}
       </div>
     );
   } else if (initState === InitState.FETCHING_ETH_DATA) {
