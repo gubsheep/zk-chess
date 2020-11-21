@@ -86,12 +86,13 @@ library ZKChessInit {
     }
 
     function initializeCards(CardPrototype[] storage cards) public {
-        cards.push(CardPrototype({id: 0, atkBuff: 1, damage: 0, heal: 0}));
-        cards.push(CardPrototype({id: 1, atkBuff: 2, damage: 0, heal: 0}));
-        cards.push(CardPrototype({id: 2, atkBuff: 0, damage: 1, heal: 0}));
-        cards.push(CardPrototype({id: 3, atkBuff: 0, damage: 2, heal: 0}));
-        cards.push(CardPrototype({id: 4, atkBuff: 0, damage: 0, heal: 1}));
-        cards.push(CardPrototype({id: 5, atkBuff: 0, damage: 0, heal: 2}));
+        cards.push(CardPrototype({id: 0, atkBuff: 0, damage: 0, heal: 0}));
+        cards.push(CardPrototype({id: 1, atkBuff: 1, damage: 0, heal: 0}));
+        cards.push(CardPrototype({id: 2, atkBuff: 2, damage: 0, heal: 0}));
+        cards.push(CardPrototype({id: 3, atkBuff: 0, damage: 1, heal: 0}));
+        cards.push(CardPrototype({id: 4, atkBuff: 0, damage: 2, heal: 0}));
+        cards.push(CardPrototype({id: 5, atkBuff: 0, damage: 0, heal: 1}));
+        cards.push(CardPrototype({id: 6, atkBuff: 0, damage: 0, heal: 2}));
     }
 
     function initializeMotherships(

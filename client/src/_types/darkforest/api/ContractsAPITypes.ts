@@ -1,6 +1,6 @@
 import {BigNumber as EthersBN} from 'ethers';
 import {getRandomTxIntentId} from '../../../utils/Utils';
-import {BoardLocation, PieceType} from '../../global/GlobalTypes';
+import {BoardLocation, EthAddress, PieceType} from '../../global/GlobalTypes';
 
 // TODO write these types
 export type ContractCallArgs = Array<unknown>;
@@ -26,6 +26,7 @@ export enum ContractEvent {
   CreatedGame = 'CreatedGame',
 
   GameStart = 'GameStart',
+  DidCardDraw = 'DidCardDraw', // args: (player: string, sequenceNumber: number)
   DidSummon = 'DidSummon', // args: (player: string, pieceId: number, sequenceNumber: number, pieceType: number, atRow: number, atCol: number)
   DidMove = 'DidMove', // args: (sequenceNumber: number, pieceId: number, fromRow: number, fromCol: number, toRow: number, toCol: number)
   DidAttack = 'DidAttack', // args: (sequenceNumber: number, attackerId: number, attackedId: number, attackerHp: number, attackedHp: number)
@@ -39,6 +40,7 @@ export enum ContractsAPIEvent {
   CreatedGame = 'CreatedGame', // args: (gameId: EthersBN)
 
   GameStart = 'GameStart', // args: ()
+  DidCardDraw = 'DidCardDraw', // args: (player: string, sequenceNumber: number)
   DidSummon = 'DidSummon', // args: (player: string, sequenceNumber: number, pieceType: number, atRow: number, atCol: number)
   DidMove = 'DidMove', // args: (sequenceNumber: number, pieceId: number, fromRow: number, fromCol: number, toRow: number, toCol: number)
   DidAttack = 'DidAttack', // args: (sequenceNumber: number, attackerId: number, attackedId: number, attackerHp: number, attackedHp: number)
@@ -109,6 +111,10 @@ export type GameMetadata = {
   gameId: string;
   NROWS: number;
   NCOLS: number;
+  player1: EthAddress;
+  player2: EthAddress;
+  player1SeedCommit: string;
+  player2SeedCommit: string;
 };
 
 export type RawGameMetadata = {
@@ -120,6 +126,18 @@ export type RawGameMetadata = {
 
   2: number;
   NCOLS?: number;
+
+  3: string;
+  player1?: string;
+
+  4: string;
+  player2?: string;
+
+  5: EthersBN;
+  player1SeedCommit?: EthersBN;
+
+  6: EthersBN;
+  player2SeedCommit?: EthersBN;
 };
 
 export type RawGameInfo = {
@@ -132,31 +150,25 @@ export type RawGameInfo = {
   2: number;
   gameState?: number;
 
-  3: string;
-  player1?: string;
-
-  4: string;
-  player2?: string;
-
-  5: number;
+  3: number;
   player1Mana?: number;
 
-  6: number;
+  4: number;
   player2Mana?: number;
 
-  7: boolean;
+  5: boolean;
   player1HasDrawn?: boolean;
 
-  8: boolean;
+  6: boolean;
   player2HasDrawn?: boolean;
 
-  9: EthersBN;
+  7: EthersBN;
   player1HandCommit?: EthersBN;
 
-  10: EthersBN;
+  8: EthersBN;
   player2HandCommit?: EthersBN;
 
-  11: EthersBN;
+  9: EthersBN;
   lastTurnTimestamp?: EthersBN;
 };
 
@@ -280,6 +292,7 @@ export type SubmtitedCreateGame = UnsubmittedCreateGame & SubmittedTx;
 
 export type UnsubmittedJoin = TxIntent & {
   type: EthTxType.JOIN_GAME;
+  seedCommit: string;
 };
 
 export type SubmittedJoin = UnsubmittedJoin & SubmittedTx;

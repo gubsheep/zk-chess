@@ -4,17 +4,17 @@ import {
   ChessGameContractData,
   EthAddress,
   PieceType,
-  Piece,
   ContractPiece,
   PieceStatDefaults,
   Objective,
   CardPrototype,
+  GameStatus,
 } from '../_types/global/GlobalTypes';
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
 // in particular, the below is bad!
 // import {TransactionReceipt, Provider, TransactionResponse, Web3Provider} from "ethers/providers";
 import {Contract, providers, BigNumber as EthersBN} from 'ethers';
-import _, {reject} from 'lodash';
+import _ from 'lodash';
 
 import {address, emptyAddress} from '../utils/CheckedTypeUtils';
 import {
@@ -207,6 +207,9 @@ class ContractsAPI extends EventEmitter {
       this.gameContract.on(ContractEvent.GameStart, () => {
         this.emit(ContractsAPIEvent.GameStart);
       });
+      this.gameContract.on(ContractEvent.DidCardDraw, (...args) => {
+        this.emit(ContractsAPIEvent.DidCardDraw, ...args);
+      });
       this.gameContract.on(ContractEvent.DidSummon, (...args) => {
         this.emit(ContractsAPIEvent.DidSummon, ...args);
       });
@@ -294,25 +297,32 @@ class ContractsAPI extends EventEmitter {
     const turnNumber = gameInfo[0];
     const sequenceNumber = gameInfo[1];
     const gameState = gameInfo[2];
-    const player1Addr = address(gameInfo[3]);
-    const player2Addr = address(gameInfo[4]);
-    const player1Mana = gameInfo[5];
-    const player2Mana = gameInfo[6];
-    const player1HasDrawn = gameInfo[7];
-    const player2HasDrawn = gameInfo[8];
-    const player1HandCommit = gameInfo[9].toString();
-    const player2HandCommit = gameInfo[10].toString();
-    const lastTurnTimestamp = gameInfo[11].toNumber();
+    const player1Mana = gameInfo[3];
+    const player2Mana = gameInfo[4];
+    const player1HasDrawn = gameInfo[5];
+    const player2HasDrawn = gameInfo[6];
+    const player1HandCommit = gameInfo[7].toString();
+    const player2HandCommit = gameInfo[8].toString();
+    const lastTurnTimestamp = gameInfo[9].toNumber();
 
     const rawPieces: RawPiece[] = await contract.getPieces();
     const pieces: ContractPiece[] = rawPieces.map(this.rawPieceToPiece);
 
-    if (!this.cachedGameMetadata) {
+    if (
+      !this.cachedGameMetadata ||
+      gameState === GameStatus.WAITING_FOR_PLAYERS ||
+      address(this.cachedGameMetadata.player2) === emptyAddress
+    ) {
+      // we don't yet have 2 players / game hasn't started
       const rawMetadata: RawGameMetadata = await contract.getMetadata();
       this.cachedGameMetadata = {
         gameId: rawMetadata[0].toString(),
         NROWS: rawMetadata[1],
         NCOLS: rawMetadata[2],
+        player1: address(rawMetadata[3]),
+        player2: address(rawMetadata[4]),
+        player1SeedCommit: rawMetadata[5].toString(),
+        player2SeedCommit: rawMetadata[6].toString(),
       };
     }
 
@@ -349,11 +359,11 @@ class ContractsAPI extends EventEmitter {
     return {
       gameAddress: address(contract.address),
       gameId: this.cachedGameMetadata.gameId,
-      nRows: this.cachedGameMetadata.NCOLS,
+      nRows: this.cachedGameMetadata.NROWS,
       nCols: this.cachedGameMetadata.NCOLS,
       myAddress: this.account,
-      player1: {address: player1Addr},
-      player2: {address: player2Addr},
+      player1: {address: this.cachedGameMetadata.player1},
+      player2: {address: this.cachedGameMetadata.player2},
       player1Mana,
       player2Mana,
       player1HasDrawn,
@@ -434,7 +444,7 @@ class ContractsAPI extends EventEmitter {
           txIntentId: action.txIntentId,
           contract: this.gameContract,
           method: 'joinGame',
-          args: [],
+          args: [action.seedCommit],
           overrides,
         }
       );
@@ -513,6 +523,8 @@ class ContractsAPI extends EventEmitter {
               action.pieceId,
               action.isZk ? [] : action.moveToRow,
               action.isZk ? [] : action.moveToCol,
+              // TODO: this is bad, because if an action is fired while this is awaiting
+              // then the later action will end up getting executed first
               await action.zkp,
             ],
           ],

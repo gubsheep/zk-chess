@@ -18,14 +18,16 @@ struct GameMetadata {
     uint256 gameId;
     uint8 NROWS;
     uint8 NCOLS;
+    address player1;
+    address player2;
+    uint256 player1SeedCommit;
+    uint256 player2SeedCommit;
 }
 
 struct GameInfo {
     uint8 turnNumber;
     uint16 sequenceNumber;
     GameState gameState;
-    address player1;
-    address player2;
     uint8 player1Mana;
     uint8 player2Mana;
     bool player1HasDrawn;
@@ -74,6 +76,13 @@ struct Objective {
     uint8 col;
 }
 
+struct CardDrawZKP {
+    uint256[2] a;
+    uint256[2][2] b;
+    uint256[2] c;
+    uint256[4] input; // seedcommit, new handcommit, old handcommit, lastTurnTimestamp
+}
+
 struct SummonZKP {
     uint256[2] a;
     uint256[2][2] b;
@@ -93,6 +102,12 @@ struct AttackZKP {
     uint256[2][2] b;
     uint256[2] c;
     uint256[6] input; // commitment, attacking x, attacking y, dist, nrows, ncols
+}
+
+struct CardDraw {
+    uint8 turnNumber;
+    uint16 sequenceNumber;
+    CardDrawZKP zkp;
 }
 
 struct Summon {

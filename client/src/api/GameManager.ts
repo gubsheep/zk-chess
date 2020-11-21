@@ -16,6 +16,8 @@ import {
   AttackAction,
   EndTurnAction,
   isLocatable,
+  CardDrawAction,
+  isCardDrawAction,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -116,6 +118,19 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       }
       this.emit(GameManagerEvent.GameStart, this.getGameState());
     });
+    contractsAPI.on(
+      ContractsAPIEvent.DidCardDraw,
+      async (player: string, sequenceNumber: number) => {
+        if (!this.gameState) throw new Error('no game set');
+        const action: CardDrawAction = {
+          sequenceNumber,
+          actionType: GameActionType.CARD_DRAW,
+          fromLocalData: false,
+          player: address(player),
+        };
+        this.gameState.addGameAction(action);
+      }
+    );
     contractsAPI.on(
       ContractsAPIEvent.DidSummon,
       async (
@@ -289,6 +304,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         ) {
           this.gameState.gameActionFailed(txIntent.sequenceNumber);
         }
+        await this.refreshGameState();
         this.emit(GameManagerEvent.TxSubmitFailed, txIntent, error);
       }
     );
@@ -310,6 +326,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         ) {
           this.gameState.gameActionFailed(txIntent.sequenceNumber);
         }
+        await this.refreshGameState();
         this.emit(GameManagerEvent.TxReverted, txIntent, error);
       }
     );
@@ -419,9 +436,18 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   joinGame(): Promise<void> {
+    if (!this.gameState) throw new Error('no game set');
+    const {myAddress, gameAddress} = this.gameState.getGameState();
+    let seed = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
+    try {
+      seed = LocalStorageManager.getSeedCommitment(myAddress, gameAddress);
+    } catch {
+      LocalStorageManager.saveSeedCommitment(seed, myAddress, gameAddress);
+    }
     const unsubmittedJoin: UnsubmittedJoin = {
       txIntentId: getRandomTxIntentId(),
       type: EthTxType.JOIN_GAME,
+      seedCommit: mimcHash(seed).toString(),
     };
     this.contractsAPI.onTxInit(unsubmittedJoin);
     try {
@@ -465,7 +491,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         gameState.nCols
       );
       const commitment = mimcHash(at[1], at[0], newSalt).toString();
-      LocalStorageManager.saveCommitment(
+      LocalStorageManager.saveLocCommitment(
         commitment,
         at,
         newSalt,
@@ -526,7 +552,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         gameState.nCols
       );
       const commitment = mimcHash(to[1], to[0], newSalt).toString();
-      LocalStorageManager.saveCommitment(
+      LocalStorageManager.saveLocCommitment(
         commitment,
         to,
         newSalt,
@@ -589,7 +615,9 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   endTurn(): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
+    console.log(this.gameState.sequenceNumber);
     const gameState = this.gameState.getLatestState();
+    console.log(this.gameState.getActions());
     const unsubmittedEndTurn: UnsubmittedEndTurn = {
       txIntentId: getRandomTxIntentId(),
       type: EthTxType.END_TURN,
@@ -597,6 +625,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       sequenceNumber: gameState.sequenceNumber,
     };
     this.contractsAPI.onTxInit(unsubmittedEndTurn);
+    console.log(gameState.sequenceNumber);
     try {
       this.contractsAPI.endTurn(unsubmittedEndTurn);
     } catch (e) {

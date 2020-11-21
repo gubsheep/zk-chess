@@ -1,6 +1,7 @@
 import {
   AbstractPiece,
   BoardLocation,
+  CardHand,
   CardPrototype,
   ChessGame,
   ChessGameContractData,
@@ -8,6 +9,7 @@ import {
   GameAction,
   GameStatus,
   isAttackAction,
+  isCardDrawAction,
   isEndTurnAction,
   isLocatable,
   isMoveAction,
@@ -24,6 +26,7 @@ import {
 } from '../_types/global/GlobalTypes';
 import _ from 'lodash';
 import {LocalStorageManager} from './LocalStorageManager';
+import {STARTING_HAND_COMMIT} from '../utils/constants';
 
 export class GameState {
   gameAddress: EthAddress;
@@ -42,6 +45,7 @@ export class GameState {
   player2HasDrawn: boolean;
   player1HandCommit: string;
   player2HandCommit: string;
+  myHand: CardHand;
 
   pieces: Piece[];
   objectives: Objective[];
@@ -83,6 +87,24 @@ export class GameState {
     this.gameStatus = contractData.gameStatus;
     this.lastTurnTimestamp = contractData.lastTurnTimestamp;
 
+    // throws if can't find commitment
+    const handCommit =
+      this.myAddress === this.player1.address
+        ? this.player1HandCommit
+        : this.player2HandCommit;
+    if (handCommit === STARTING_HAND_COMMIT) {
+      this.myHand = {
+        cards: [0, 0, 0],
+        salt: '0',
+      };
+    } else {
+      this.myHand = LocalStorageManager.getHandCommitment(
+        handCommit,
+        this.myAddress,
+        this.gameAddress
+      );
+    }
+
     this.pieces = [];
     this.pieceById = new Map<number, Piece>();
 
@@ -101,7 +123,7 @@ export class GameState {
       if (isZKPiece(piece)) {
         const commitment = piece.commitment;
         try {
-          const [location, salt] = LocalStorageManager.getCommitment(
+          const [location, salt] = LocalStorageManager.getLocCommitment(
             commitment,
             this.myAddress,
             this.gameAddress
@@ -113,7 +135,7 @@ export class GameState {
           };
           piece = knownPiece;
         } catch {
-          // that location is unknown to us
+          // that location is unknown to us, so don't do anything
         }
       }
       this.pieces.push(piece);
@@ -156,6 +178,7 @@ export class GameState {
       nRows: this.nRows,
       nCols: this.nCols,
       myAddress: this.myAddress,
+      myHand: this.myHand,
       player1: this.player1,
       player2: this.player2,
       player1Mana: this.player1Mana,
@@ -190,6 +213,16 @@ export class GameState {
 
   public applyAction(gameState: ChessGame, action: GameAction): ChessGame {
     // modifies gameState
+    if (isCardDrawAction(action)) {
+      if (action.player === gameState.player1.address) {
+        gameState.player1HasDrawn = true;
+      } else {
+        gameState.player2HasDrawn = true;
+      }
+
+      if (action.player === gameState.myAddress && action.hand) {
+      }
+    }
     if (isSummonAction(action)) {
       const [piece, cost] = this.defaultPiece(
         action.pieceId,

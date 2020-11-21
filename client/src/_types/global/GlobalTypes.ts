@@ -53,6 +53,11 @@ export enum Color {
 
 export type Objective = Locatable;
 
+export type CardHand = {
+  cards: [number, number, number];
+  salt: string;
+};
+
 export type CardPrototype = {
   id: number;
   atkBuff: number;
@@ -183,6 +188,7 @@ export type ChessGame = {
   player2HasDrawn: boolean;
   player1HandCommit: string;
   player2HandCommit: string;
+  myHand: CardHand;
 
   pieces: Piece[];
   objectives: Objective[];
@@ -219,6 +225,7 @@ export interface Player {
 export type PlayerMap = Map<string, Player>;
 
 export enum GameActionType {
+  CARD_DRAW,
   SUMMON,
   MOVE,
   ATTACK,
@@ -229,6 +236,16 @@ export interface GameAction {
   sequenceNumber: number;
   actionType: GameActionType;
   fromLocalData: boolean; // prioritize GameActions generated locally, they have more data
+}
+
+export interface CardDrawAction extends GameAction {
+  actionType: GameActionType.CARD_DRAW;
+  player: EthAddress;
+  hand?: CardHand;
+}
+
+export function isCardDrawAction(action: GameAction): action is CardDrawAction {
+  return action.actionType === GameActionType.CARD_DRAW;
 }
 
 export interface SummonAction extends GameAction {

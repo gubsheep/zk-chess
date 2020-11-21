@@ -86,6 +86,7 @@ library ZKChessUtils {
         uint8 NROWS,
         uint8 NCOLS
     ) public view returns (bool) {
+        require(!pieces[summon.pieceId].initialized, "piece ID already in use");
         uint8 homeRow = pieces[homePieceId].row;
         uint8 homeCol = pieces[homePieceId].col;
 
@@ -110,11 +111,11 @@ library ZKChessUtils {
             require(
                 summon.zkp.input[1] == homeRow &&
                     summon.zkp.input[2] == homeCol,
-                "bad ZKP"
+                "bad port coords"
             );
-            require(summon.zkp.input[3] == 1, "bad ZKP");
-            require(summon.zkp.input[4] == NROWS, "bad ZKP");
-            require(summon.zkp.input[5] == NCOLS, "bad ZKP");
+            require(summon.zkp.input[3] == 1, "not adjacent to port");
+            require(summon.zkp.input[4] == NROWS, "wrong nrows");
+            require(summon.zkp.input[5] == NCOLS, "wrong ncols");
             require(
                 Verifier.verifyDist1Proof(
                     summon.zkp.a,
@@ -126,6 +127,39 @@ library ZKChessUtils {
             );
         }
         return true;
+    }
+
+    function executeSummon(
+        Summon memory summon,
+        uint8[][] storage boardPieces,
+        uint8[] storage pieceIds,
+        mapping(uint8 => Piece) storage pieces,
+        mapping(PieceType => PieceDefaultStats) storage defaultStats,
+        mapping(uint8 => mapping(uint8 => bool)) storage hasMoved,
+        mapping(uint8 => mapping(uint8 => bool)) storage hasAttacked,
+        uint8 turnNumber
+    ) public {
+        // create piece
+        pieces[summon.pieceId] = Piece({
+            id: summon.pieceId,
+            pieceType: summon.pieceType,
+            owner: msg.sender,
+            row: summon.row,
+            col: summon.col,
+            alive: true,
+            commitment: summon.zkp.input[0],
+            initialized: true,
+            hp: defaultStats[summon.pieceType].hp,
+            atk: defaultStats[summon.pieceType].atk,
+            lastMove: turnNumber,
+            lastAttack: turnNumber
+        });
+        pieceIds.push(summon.pieceId);
+        boardPieces[summon.row][summon.col] = summon.pieceId;
+        // if piece has just been made, can't use it yet
+        // in the future this should be tracked in its own field
+        hasMoved[summon.turnNumber][summon.pieceId] = true;
+        hasAttacked[summon.turnNumber][summon.pieceId] = true;
     }
 
     function isValidMove(
@@ -185,6 +219,38 @@ library ZKChessUtils {
         return !pieces[1].alive || !pieces[2].alive;
     }
 
+    function checkCardDraw(
+        CardDraw memory cardDraw,
+        address player1,
+        address player2,
+        uint256 seedCommit,
+        uint256 oldHandCommit,
+        bool player1HasDrawn,
+        bool player2HasDrawn,
+        uint256 lastTurnTimestamp
+    ) public view returns (bool) {
+        if (msg.sender == player1) {
+            require(!player1HasDrawn, "already drew a card!");
+        } else {
+            require(!player2HasDrawn, "already drew a card!");
+        }
+        require(cardDraw.zkp.input[0] == seedCommit, "wrong seed commit");
+        require(cardDraw.zkp.input[2] == oldHandCommit, "wrong hand commit");
+        require(cardDraw.zkp.input[3] == lastTurnTimestamp, "wrong timestamp");
+        /*
+        require(
+            Verifier.verifyPermutationZKP(
+                move.zkp.a,
+                move.zkp.b,
+                move.zkp.c,
+                move.zkp.input
+            ),
+            "bad ZKP"
+        );
+        */
+        return true;
+    }
+
     function checkMove(
         Move memory move,
         mapping(uint8 => Piece) storage pieces,
@@ -238,6 +304,30 @@ library ZKChessUtils {
             );
         }
         return true;
+    }
+
+    function executeMove(
+        Move memory move,
+        mapping(uint8 => Piece) storage pieces,
+        uint8[][] storage boardPieces,
+        mapping(PieceType => PieceDefaultStats) storage defaultStats,
+        mapping(uint8 => mapping(uint8 => bool)) storage hasMoved
+    ) public {
+        Piece storage piece = pieces[move.pieceId];
+        if (defaultStats[piece.pieceType].isZk) {
+            piece.commitment = move.zkp.input[1];
+        } else {
+            uint8[] memory moveToRow = move.moveToRow;
+            uint8[] memory moveToCol = move.moveToCol;
+            uint8 toRow = moveToRow[moveToRow.length - 1];
+            uint8 toCol = moveToCol[moveToCol.length - 1];
+            boardPieces[piece.row][piece.col] = 0;
+            boardPieces[toRow][toCol] = piece.id;
+            piece.row = toRow;
+            piece.col = toCol;
+        }
+        hasMoved[move.turnNumber][piece.id] = true;
+        piece.lastMove = move.turnNumber;
     }
 
     function checkAttack(
