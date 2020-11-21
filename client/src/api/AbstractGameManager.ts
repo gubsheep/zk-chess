@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -33,7 +33,7 @@ export default interface AbstractGameManager extends EventEmitter {
   refreshGameState(): Promise<void>;
   setGame(gameId: string): Promise<void>;
 
-  createGame(): Promise<void>;
+  createGame(gameId: string): Promise<void>;
   joinGame(): Promise<void>;
 
   summonPiece(pieceType: PieceType, at: BoardLocation): Promise<void>;

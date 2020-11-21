@@ -239,7 +239,7 @@ export type SubmittedTx = TxIntent & {
 
 export type UnsubmittedCreateGame = TxIntent & {
   type: EthTxType.CREATE_GAME;
-  gameId: number;
+  gameId: string;
 };
 
 export type SubmtitedCreateGame = UnsubmittedCreateGame & SubmittedTx;

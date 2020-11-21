@@ -5,10 +5,10 @@ import {LandingPage} from './LandingPage';
 
 export default function App() {
   return (
-    <Router>
+    <Router basename='/battleship'>
       <Switch>
-        <Route path='/' exact component={LandingPage} />
-        <Route path='/:tableId' />
+        <Route path='/:tableId' component={LandingPage} />
+        <Route path='/' component={LandingPage} />
       </Switch>
     </Router>
   );
