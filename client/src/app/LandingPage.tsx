@@ -1,23 +1,24 @@
-import React, {ChangeEvent, useEffect, useRef} from 'react';
-import {useState} from 'react';
-import {Wallet} from 'ethers';
+import React, { ChangeEvent, useEffect, useRef } from 'react';
+import { useState } from 'react';
+import { Wallet } from 'ethers';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
-import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
-import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
-import {useParams} from 'react-router-dom';
+import { ContractEvent } from '../_types/darkforest/api/ContractsAPITypes';
+import { EthAddress, GameStatus } from '../_types/global/GlobalTypes';
+import { useParams } from 'react-router-dom';
 import Game from './Game';
 import styled from 'styled-components';
-import {address} from '../utils/CheckedTypeUtils';
+import { address } from '../utils/CheckedTypeUtils';
 import {
   getGameIdForTable,
   isAddressWhitelisted,
   setGameIdForTable,
   submitWhitelistKey,
 } from '../api/UtilityServerAPI';
+import { isBrave } from '../utils/Utils';
 
 enum InitState {
   NONE,
@@ -40,7 +41,7 @@ const Aa = styled.a`
 `;
 
 export function LandingPage() {
-  const {tableId} = useParams<{tableId: string}>();
+  const { tableId } = useParams<{ tableId: string }>();
   let gameManagerRef = useRef<AbstractGameManager | null>();
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
   const [gameIds, setGameIds] = useState<string[]>([]);
@@ -199,6 +200,11 @@ export function LandingPage() {
     setInitState(InitState.WAITING_FOR_PLAYERS);
   };
 
+  const [brave, setBrave] = useState<boolean>(false);
+  (async () => {
+    setBrave(await isBrave());
+  })();
+
   if (initState === InitState.DISPLAY_ACCOUNTS) {
     return (
       <div>
@@ -210,6 +216,13 @@ export function LandingPage() {
         <p>
           <Aa onClick={newAccount}>Create new account</Aa>
         </p>
+        <br />
+        {brave && (
+          <p>
+            Looks like you're using Brave. Please make sure you turn off Brave
+            Shield, or the game may not work!
+          </p>
+        )}
       </div>
     );
   } else if (initState === InitState.FETCHING_ETH_DATA) {

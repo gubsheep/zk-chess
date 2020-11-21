@@ -238,7 +238,7 @@ export class GameAPI {
     if (address === player1.address) return PlayerColor.Red;
     else if (address === player2.address) return PlayerColor.Blue;
     else {
-      console.error('error getting color');
+      // console.error('error getting color');
       return PlayerColor.Red;
     }
   }
