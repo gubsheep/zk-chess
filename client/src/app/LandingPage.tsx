@@ -18,6 +18,7 @@ import {
   setGameIdForTable,
   submitWhitelistKey,
 } from '../api/UtilityServerAPI';
+import {isBrave} from '../utils/Utils';
 
 enum InitState {
   NONE,
@@ -200,6 +201,11 @@ export function LandingPage() {
     setInitState(InitState.WAITING_FOR_PLAYERS);
   };
 
+  const [brave, setBrave] = useState<boolean>(false);
+  (async () => {
+    setBrave(await isBrave());
+  })();
+
   if (initState === InitState.DISPLAY_ACCOUNTS) {
     return (
       <div>
@@ -211,6 +217,12 @@ export function LandingPage() {
         <p>
           <Aa onClick={newAccount}>Create new account</Aa>
         </p>
+        {brave && (
+          <p>
+            Looks like you're using Brave. Please make sure you turn off Brave
+            Shield, or the game may not work!
+          </p>
+        )}
       </div>
     );
   } else if (initState === InitState.FETCHING_ETH_DATA) {
