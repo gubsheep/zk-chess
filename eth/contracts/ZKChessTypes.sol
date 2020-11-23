@@ -37,6 +37,14 @@ struct GameInfo {
     uint256 lastTurnTimestamp;
 }
 
+struct Player {
+    address addr;
+    uint8 mana;
+    bool hasDrawn;
+    uint256 seedCommit;
+    uint256 handCommit;
+}
+
 struct PieceDefaultStats {
     PieceType pieceType;
     uint8 mvRange;
@@ -83,6 +91,13 @@ struct CardDrawZKP {
     uint256[4] input; // seedcommit, new handcommit, old handcommit, lastTurnTimestamp
 }
 
+struct CardPlayZKP {
+    uint256[2] a;
+    uint256[2][2] b;
+    uint256[2] c;
+    uint256[3] input; // old handcommit, new handcommit, played card ID
+}
+
 struct SummonZKP {
     uint256[2] a;
     uint256[2][2] b;
@@ -107,6 +122,13 @@ struct AttackZKP {
 struct CardDraw {
     uint8 turnNumber;
     uint16 sequenceNumber;
+    CardDrawZKP zkp;
+}
+
+struct CardPlay {
+    uint8 turnNumber;
+    uint16 sequenceNumber;
+    uint8 pieceId;
     CardDrawZKP zkp;
 }
 

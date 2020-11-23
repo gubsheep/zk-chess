@@ -2,31 +2,13 @@
 pragma solidity ^0.6.7;
 pragma experimental ABIEncoderV2;
 
-import "./Hasher.sol";
 import "./ZKChessTypes.sol";
 import "./Verifier.sol";
 import "hardhat/console.sol";
 
-library ZKChessUtils {
-    function hashTriple(
-        uint256 val1,
-        uint256 val2,
-        uint256 val3,
-        uint256 FIELD_SIZE
-    ) public pure returns (uint256) {
-        uint256 R = 0;
-        uint256 C = 0;
-
-        R = addmod(R, val1, FIELD_SIZE);
-        (R, C) = Hasher.MiMCSponge(R, C, 0);
-        R = addmod(R, val2, FIELD_SIZE);
-        (R, C) = Hasher.MiMCSponge(R, C, 0);
-        R = addmod(R, val3, FIELD_SIZE);
-        (R, C) = Hasher.MiMCSponge(R, C, 0);
-
-        return R;
-    }
-
+library ZKChessChecks {
+    // this function is in both ZKCActions and ZKCChecks bc if we try to
+    // call it from another library, we'll get stack too deep error >:(
     function taxiDist(
         uint8 row1,
         uint8 col1,
@@ -52,19 +34,19 @@ library ZKChessUtils {
         uint8 turnNumber,
         uint16 claimedSequenceNumber,
         uint16 sequenceNumber,
-        address player1,
-        address player2,
+        Player storage player1,
+        Player storage player2,
         GameState gameState
     ) public view returns (bool) {
         require(
-            msg.sender == player1 || msg.sender == player2,
+            msg.sender == player1.addr || msg.sender == player2.addr,
             "Not registered for this game"
         );
         require(gameState != GameState.COMPLETE, "Game is ended");
-        if (msg.sender == player1) {
+        if (msg.sender == player1.addr) {
             require(gameState == GameState.P1_TO_MOVE, "Not p1's turn");
         }
-        if (msg.sender == player2) {
+        if (msg.sender == player2.addr) {
             require(gameState == GameState.P2_TO_MOVE, "Not p2's turn");
         }
         require(claimedTurnNumber == turnNumber, "Wrong turn number");
@@ -129,39 +111,6 @@ library ZKChessUtils {
         return true;
     }
 
-    function executeSummon(
-        Summon memory summon,
-        uint8[][] storage boardPieces,
-        uint8[] storage pieceIds,
-        mapping(uint8 => Piece) storage pieces,
-        mapping(PieceType => PieceDefaultStats) storage defaultStats,
-        mapping(uint8 => mapping(uint8 => bool)) storage hasMoved,
-        mapping(uint8 => mapping(uint8 => bool)) storage hasAttacked,
-        uint8 turnNumber
-    ) public {
-        // create piece
-        pieces[summon.pieceId] = Piece({
-            id: summon.pieceId,
-            pieceType: summon.pieceType,
-            owner: msg.sender,
-            row: summon.row,
-            col: summon.col,
-            alive: true,
-            commitment: summon.zkp.input[0],
-            initialized: true,
-            hp: defaultStats[summon.pieceType].hp,
-            atk: defaultStats[summon.pieceType].atk,
-            lastMove: turnNumber,
-            lastAttack: turnNumber
-        });
-        pieceIds.push(summon.pieceId);
-        boardPieces[summon.row][summon.col] = summon.pieceId;
-        // if piece has just been made, can't use it yet
-        // in the future this should be tracked in its own field
-        hasMoved[summon.turnNumber][summon.pieceId] = true;
-        hasAttacked[summon.turnNumber][summon.pieceId] = true;
-    }
-
     function isValidMove(
         Piece memory piece,
         uint8[] memory toRow,
@@ -207,45 +156,6 @@ library ZKChessUtils {
             currentRow = nextRow;
             currentCol = nextCol;
         }
-        return true;
-    }
-
-    function gameShouldBeCompleted(mapping(uint8 => Piece) storage pieces)
-        public
-        view
-        returns (bool)
-    {
-        // check if game is over: at least one player has no pieces left
-        return !pieces[1].alive || !pieces[2].alive;
-    }
-
-    function checkCardDraw(
-        CardDraw memory cardDraw,
-        address player1,
-        address player2,
-        uint256 seedCommit,
-        uint256 oldHandCommit,
-        bool player1HasDrawn,
-        bool player2HasDrawn,
-        uint256 lastTurnTimestamp
-    ) public view returns (bool) {
-        if (msg.sender == player1) {
-            require(!player1HasDrawn, "already drew a card!");
-        } else {
-            require(!player2HasDrawn, "already drew a card!");
-        }
-        require(cardDraw.zkp.input[0] == seedCommit, "wrong seed commit");
-        require(cardDraw.zkp.input[1] == oldHandCommit, "wrong hand commit");
-        require(cardDraw.zkp.input[3] == lastTurnTimestamp, "wrong timestamp");
-        require(
-            Verifier.verifyCardDrawProof(
-                cardDraw.zkp.a,
-                cardDraw.zkp.b,
-                cardDraw.zkp.c,
-                cardDraw.zkp.input
-            ),
-            "bad ZKP"
-        );
         return true;
     }
 
@@ -304,30 +214,6 @@ library ZKChessUtils {
         return true;
     }
 
-    function executeMove(
-        Move memory move,
-        mapping(uint8 => Piece) storage pieces,
-        uint8[][] storage boardPieces,
-        mapping(PieceType => PieceDefaultStats) storage defaultStats,
-        mapping(uint8 => mapping(uint8 => bool)) storage hasMoved
-    ) public {
-        Piece storage piece = pieces[move.pieceId];
-        if (defaultStats[piece.pieceType].isZk) {
-            piece.commitment = move.zkp.input[1];
-        } else {
-            uint8[] memory moveToRow = move.moveToRow;
-            uint8[] memory moveToCol = move.moveToCol;
-            uint8 toRow = moveToRow[moveToRow.length - 1];
-            uint8 toCol = moveToCol[moveToCol.length - 1];
-            boardPieces[piece.row][piece.col] = 0;
-            boardPieces[toRow][toCol] = piece.id;
-            piece.row = toRow;
-            piece.col = toCol;
-        }
-        hasMoved[move.turnNumber][piece.id] = true;
-        piece.lastMove = move.turnNumber;
-    }
-
     function checkAttack(
         Attack memory attack,
         mapping(uint8 => Piece) storage pieces,
@@ -352,7 +238,6 @@ library ZKChessUtils {
             !defaultStats[attacked.pieceType].isZk,
             "can't attack submarines"
         );
-        console.log(attacked.id);
         require(attacked.alive, "attacked piece doesn't exist");
 
         if (defaultStats[piece.pieceType].isZk) {
@@ -394,58 +279,5 @@ library ZKChessUtils {
             );
         }
         return true;
-    }
-
-    function executeAttack(
-        Attack memory attack,
-        mapping(uint8 => Piece) storage pieces,
-        uint8[][] storage boardPieces,
-        mapping(PieceType => PieceDefaultStats) storage defaultStats,
-        mapping(uint8 => mapping(uint8 => bool)) storage hasAttacked
-    ) public {
-        Piece storage piece = pieces[attack.pieceId];
-        Piece storage attacked = pieces[attack.attackedId];
-        // update attacked piece
-        uint8 dmg = defaultStats[piece.pieceType].atk;
-        if (dmg >= attacked.hp) {
-            attacked.hp = 0;
-            attacked.alive = false;
-            boardPieces[attacked.row][attacked.col] = 0;
-        } else {
-            attacked.hp -= dmg;
-        }
-
-        // update attacking piece
-        uint8 selfDmg = 0;
-        if (!defaultStats[piece.pieceType].isZk) {
-            uint8 distance = taxiDist(
-                piece.row,
-                piece.col,
-                attacked.row,
-                attacked.col
-            );
-            if (
-                distance >= defaultStats[attacked.pieceType].atkMinRange &&
-                distance <= defaultStats[attacked.pieceType].atkMaxRange
-            ) {
-                selfDmg += defaultStats[piece.pieceType].atk;
-            }
-        }
-        if (defaultStats[piece.pieceType].kamikaze) {
-            selfDmg = piece.hp;
-        }
-
-        if (selfDmg >= piece.hp) {
-            piece.hp = 0;
-            piece.alive = false;
-            if (!defaultStats[piece.pieceType].isZk) {
-                boardPieces[piece.row][piece.col] = 0;
-            }
-        } else {
-            piece.hp -= selfDmg;
-        }
-
-        hasAttacked[attack.turnNumber][piece.id] = true;
-        piece.lastAttack = attack.turnNumber;
     }
 }

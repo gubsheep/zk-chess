@@ -4,8 +4,8 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
 import "./ZKChessTypes.sol";
 import "./ZKChessInit.sol";
-import "./ZKChessUtils.sol";
-import "./Verifier.sol";
+import "./ZKChessChecks.sol";
+import "./ZKChessActions.sol";
 
 contract ZKChessGame is Initializable {
     uint8 public constant NROWS = 5;
@@ -25,20 +25,8 @@ contract ZKChessGame is Initializable {
 
     mapping(PieceType => PieceDefaultStats) public defaultStats;
 
-    address public player1;
-    address public player2;
-
-    uint256 public player1SeedCommit;
-    uint256 public player2SeedCommit;
-
-    uint8 public player1Mana;
-    uint8 public player2Mana;
-
-    bool public player1HasDrawn;
-    bool public player2HasDrawn;
-
-    uint256 public player1HandCommit;
-    uint256 public player2HandCommit;
+    Player public player1;
+    Player public player2;
 
     uint256 public lastTurnTimestamp;
 
@@ -57,8 +45,10 @@ contract ZKChessGame is Initializable {
             }
         }
 
-        player1HandCommit = 16227963524034219233279650312501310147918176407385833422019760797222680144279;
-        player2HandCommit = 16227963524034219233279650312501310147918176407385833422019760797222680144279;
+        player1
+            .handCommit = 16227963524034219233279650312501310147918176407385833422019760797222680144279;
+        player2
+            .handCommit = 16227963524034219233279650312501310147918176407385833422019760797222680144279;
 
         // initialize pieces
         ZKChessInit.initializeDefaults(defaultStats);
@@ -71,9 +61,15 @@ contract ZKChessGame is Initializable {
     //////////////
 
     event GameStart(address p1, address p2);
-    event DidCardDraw(address player, uint16 sequenceNumber);
+    event DidCardDraw(address playerAddr, uint16 sequenceNumber);
+    event DidCardPlay(
+        address playerAddr,
+        uint8 pieceId,
+        uint8 cardId,
+        uint16 sequenceNumber
+    );
     event DidSummon(
-        address player,
+        address playerAddr,
         uint8 pieceId,
         uint16 sequenceNumber,
         PieceType pieceType,
@@ -95,7 +91,11 @@ contract ZKChessGame is Initializable {
         uint8 attackerHp,
         uint8 attackedHp
     );
-    event DidEndTurn(address player, uint8 turnNumber, uint16 sequenceNumber);
+    event DidEndTurn(
+        address playerAddr,
+        uint8 turnNumber,
+        uint16 sequenceNumber
+    );
     event GameFinished();
 
     ///////////////
@@ -107,10 +107,10 @@ contract ZKChessGame is Initializable {
             gameId: gameId,
             NROWS: NROWS,
             NCOLS: NCOLS,
-            player1: player1,
-            player2: player2,
-            player1SeedCommit: player1SeedCommit,
-            player2SeedCommit: player2SeedCommit
+            player1: player1.addr,
+            player2: player2.addr,
+            player1SeedCommit: player1.seedCommit,
+            player2SeedCommit: player2.seedCommit
         });
         return ret;
     }
@@ -120,12 +120,12 @@ contract ZKChessGame is Initializable {
             turnNumber: turnNumber,
             sequenceNumber: sequenceNumber,
             gameState: gameState,
-            player1Mana: player1Mana,
-            player2Mana: player2Mana,
-            player1HasDrawn: player1HasDrawn,
-            player2HasDrawn: player2HasDrawn,
-            player1HandCommit: player1HandCommit,
-            player2HandCommit: player2HandCommit,
+            player1Mana: player1.mana,
+            player2Mana: player2.mana,
+            player1HasDrawn: player1.hasDrawn,
+            player2HasDrawn: player2.hasDrawn,
+            player1HandCommit: player1.handCommit,
+            player2HandCommit: player2.handCommit,
             lastTurnTimestamp: lastTurnTimestamp
         });
         return ret;
@@ -178,7 +178,7 @@ contract ZKChessGame is Initializable {
         returns (bool)
     {
         return
-            ZKChessUtils.checkAction(
+            ZKChessChecks.checkAction(
                 _turnNumber,
                 turnNumber,
                 _sequenceNumber,
@@ -190,7 +190,7 @@ contract ZKChessGame is Initializable {
     }
 
     function gameShouldBeCompleted() public view returns (bool) {
-        return ZKChessUtils.gameShouldBeCompleted(pieces);
+        return ZKChessActions.gameShouldBeCompleted(pieces);
     }
 
     //////////////////////
@@ -202,30 +202,30 @@ contract ZKChessGame is Initializable {
             gameState == GameState.WAITING_FOR_PLAYERS,
             "Game already started"
         );
-        if (player1 == address(0)) {
+        if (player1.addr == address(0)) {
             // first player to join game
-            player1 = msg.sender;
-            player1SeedCommit = seedCommit;
+            player1.addr = msg.sender;
+            player1.seedCommit = seedCommit;
             return;
         }
         // another player has joined. game is ready to start
 
-        require(msg.sender != player1, "can't join game twice");
+        require(msg.sender != player1.addr, "can't join game twice");
         // randomize player order
         if (block.timestamp % 2 == 0) {
-            player2 = msg.sender;
-            player2SeedCommit = seedCommit;
+            player2.addr = msg.sender;
+            player2.seedCommit = seedCommit;
         } else {
-            player2 = player1;
-            player2SeedCommit = player1SeedCommit;
-            player1 = msg.sender;
-            player1SeedCommit = seedCommit;
+            player2.addr = player1.addr;
+            player2.seedCommit = player1.seedCommit;
+            player1.addr = msg.sender;
+            player1.seedCommit = seedCommit;
         }
 
         // set pieces
         ZKChessInit.initializeMotherships(
-            player1,
-            player2,
+            player1.addr,
+            player2.addr,
             pieces,
             pieceIds,
             boardPieces,
@@ -234,50 +234,73 @@ contract ZKChessGame is Initializable {
 
         gameState = GameState.P1_TO_MOVE;
         turnNumber = 1;
-        player1Mana = turnNumber;
+        player1.mana = turnNumber;
         lastTurnTimestamp = block.timestamp;
-        emit GameStart(player1, player2);
+        emit GameStart(player1.addr, player2.addr);
     }
 
     function doCardDraw(CardDraw memory cardDraw) public {
         checkAction(cardDraw.turnNumber, cardDraw.sequenceNumber);
-        uint256 seedCommit = msg.sender == player1
-            ? player1SeedCommit
-            : player2SeedCommit;
-        uint256 oldHandCommit = msg.sender == player1
-            ? player1HandCommit
-            : player2HandCommit;
         require(
-            ZKChessUtils.checkCardDraw(
+            ZKChessActions.checkCardDraw(
                 cardDraw,
                 player1,
                 player2,
-                seedCommit,
-                oldHandCommit,
-                player1HasDrawn,
-                player2HasDrawn,
                 lastTurnTimestamp
             ),
             "not valid card draw"
         );
-        if (msg.sender == player1) {
-            player1HandCommit = cardDraw.zkp.input[2];
-            player1HasDrawn = true;
+        if (msg.sender == player1.addr) {
+            player1.handCommit = cardDraw.zkp.input[2];
+            player1.hasDrawn = true;
         } else {
-            player2HandCommit = cardDraw.zkp.input[2];
-            player2HasDrawn = true;
+            player2.handCommit = cardDraw.zkp.input[2];
+            player2.hasDrawn = true;
         }
         emit DidCardDraw(msg.sender, sequenceNumber);
         sequenceNumber++;
     }
 
+    function doCardPlay(CardPlay memory cardPlay) public {
+        checkAction(cardPlay.turnNumber, cardPlay.sequenceNumber);
+        require(
+            ZKChessActions.checkCardPlay(cardPlay, player1, player2, pieces),
+            "not valid card play"
+        );
+
+        ZKChessActions.executeCardPlay(
+            cardPlay,
+            pieces,
+            boardPieces,
+            defaultStats,
+            player1,
+            player2,
+            cards
+        );
+
+        emit DidCardPlay(
+            msg.sender,
+            cardPlay.pieceId,
+            uint8(cardPlay.zkp.input[2]),
+            sequenceNumber
+        );
+        sequenceNumber++;
+
+        if (gameShouldBeCompleted()) {
+            gameState = GameState.COMPLETE;
+            emit GameFinished();
+        }
+    }
+
     function doSummon(Summon memory summon) public {
         checkAction(summon.turnNumber, summon.sequenceNumber);
 
-        uint8 availableMana = msg.sender == player1 ? player1Mana : player2Mana;
-        uint8 homePieceId = msg.sender == player1 ? 1 : 2;
+        uint8 availableMana = msg.sender == player1.addr
+            ? player1.mana
+            : player2.mana;
+        uint8 homePieceId = msg.sender == player1.addr ? 1 : 2;
         require(
-            ZKChessUtils.checkSummon(
+            ZKChessChecks.checkSummon(
                 summon,
                 homePieceId,
                 availableMana,
@@ -290,8 +313,10 @@ contract ZKChessGame is Initializable {
             "invalid summon"
         );
 
-        ZKChessUtils.executeSummon(
+        ZKChessActions.executeSummon(
             summon,
+            player1,
+            player2,
             boardPieces,
             pieceIds,
             pieces,
@@ -301,11 +326,6 @@ contract ZKChessGame is Initializable {
             turnNumber
         );
 
-        if (msg.sender == player1) {
-            player1Mana -= defaultStats[summon.pieceType].cost;
-        } else if (msg.sender == player2) {
-            player2Mana -= defaultStats[summon.pieceType].cost;
-        }
         emit DidSummon(
             msg.sender,
             summon.pieceId,
@@ -324,7 +344,7 @@ contract ZKChessGame is Initializable {
         uint8 originCol = piece.col;
 
         require(
-            ZKChessUtils.checkMove(
+            ZKChessChecks.checkMove(
                 move,
                 pieces,
                 defaultStats,
@@ -337,7 +357,7 @@ contract ZKChessGame is Initializable {
             "move failed"
         );
 
-        ZKChessUtils.executeMove(
+        ZKChessActions.executeMove(
             move,
             pieces,
             boardPieces,
@@ -358,7 +378,7 @@ contract ZKChessGame is Initializable {
     function doAttack(Attack memory attack) public {
         checkAction(attack.turnNumber, attack.sequenceNumber);
         require(
-            ZKChessUtils.checkAttack(
+            ZKChessChecks.checkAttack(
                 attack,
                 pieces,
                 defaultStats,
@@ -369,7 +389,7 @@ contract ZKChessGame is Initializable {
             "invalid attack"
         );
 
-        ZKChessUtils.executeAttack(
+        ZKChessActions.executeAttack(
             attack,
             pieces,
             boardPieces,
@@ -395,48 +415,24 @@ contract ZKChessGame is Initializable {
     function endTurn(uint8 _turnNumber, uint8 _sequenceNumber) public {
         lastTurnTimestamp = block.timestamp;
         checkAction(_turnNumber, _sequenceNumber);
-        if (msg.sender == player1) {
-            // change to p2's turn
-            player1Mana = 0;
-            player2Mana = turnNumber;
-            if (player2Mana > 8) {
-                player2Mana = 8;
-            }
-            for (uint8 i = 0; i < objectives.length; i++) {
-                uint8 row = objectives[i].row;
-                uint8 col = objectives[i].col;
-                Piece storage occupyingPiece = pieces[boardPieces[row][col]];
-                if (occupyingPiece.alive && occupyingPiece.owner == player2) {
-                    player2Mana++;
-                }
-            }
+        // change value vars
+        if (msg.sender == player1.addr) {
             gameState = GameState.P2_TO_MOVE;
         } else {
-            // change to p1's turn
             turnNumber++;
-            player1HasDrawn = false;
-            player2HasDrawn = false;
-            player2Mana = 0;
-            player1Mana = turnNumber;
-            if (player1Mana > 8) {
-                player1Mana = 8;
-            }
-            for (uint8 i = 0; i < objectives.length; i++) {
-                uint8 row = objectives[i].row;
-                uint8 col = objectives[i].col;
-                Piece storage occupyingPiece = pieces[boardPieces[row][col]];
-                if (occupyingPiece.alive && occupyingPiece.owner == player1) {
-                    player1Mana++;
-                }
-            }
             gameState = GameState.P1_TO_MOVE;
         }
+        // change ref vars
+        ZKChessActions.executeEndTurn(
+            player1,
+            player2,
+            objectives,
+            pieces,
+            boardPieces,
+            turnNumber
+        );
+
         emit DidEndTurn(msg.sender, _turnNumber, _sequenceNumber);
         sequenceNumber++;
-
-        if (gameShouldBeCompleted()) {
-            gameState = GameState.COMPLETE;
-            emit GameFinished();
-        }
     }
 }

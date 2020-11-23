@@ -5,10 +5,9 @@ const rawExec = util.promisify(require("child_process").exec);
 const ZKChessGame = artifacts.require("ZKChessGame");
 const ZKChessGameFactory = artifacts.require("ZKChessGameFactory");
 const ZKChessInit = artifacts.require("ZKChessInit");
-const ZKChessUtils = artifacts.require("ZKChessUtils");
+const ZKChessChecks = artifacts.require("ZKChessChecks");
+const ZKChessActions = artifacts.require("ZKChessActions");
 const Verifier = artifacts.require("Verifier");
-const Hasher = artifacts.require("Hasher");
-const genContract = require("circomlib/src/mimcsponge_gencontract.js");
 
 const exec = async (command) => {
   const { error, stdout, stderr } = await rawExec(command);
@@ -25,25 +24,22 @@ const exec = async (command) => {
 };
 
 module.exports = async function (deployer, network, accounts) {
-  const SEED = "mimcsponge";
-  Hasher.abi = genContract.abi;
-  Hasher.bytecode = genContract.createCode(SEED, 220);
-  await deployer.deploy(Hasher);
-  const hasher = await Hasher.deployed();
-  await ZKChessUtils.link(Hasher, hasher.address);
-
   await deployer.deploy(Verifier);
   const verifier = await Verifier.deployed();
-  await ZKChessUtils.link(Verifier, verifier.address);
-  await ZKChessGame.link(Verifier, verifier.address);
+  await ZKChessChecks.link(Verifier, verifier.address);
+  await ZKChessActions.link(Verifier, verifier.address);
 
   await deployer.deploy(ZKChessInit);
   const zkChessInit = await ZKChessInit.deployed();
   await ZKChessGame.link(ZKChessInit, zkChessInit.address);
 
-  await deployer.deploy(ZKChessUtils);
-  const zkChessUtils = await ZKChessUtils.deployed();
-  await ZKChessGame.link(ZKChessUtils, zkChessUtils.address);
+  await deployer.deploy(ZKChessChecks);
+  const zkChessChecks = await ZKChessChecks.deployed();
+  await ZKChessGame.link(ZKChessChecks, zkChessChecks.address);
+
+  await deployer.deploy(ZKChessActions);
+  const zkChessActions = await ZKChessActions.deployed();
+  await ZKChessGame.link(ZKChessActions, zkChessActions.address);
 
   await deployer.deploy(ZKChessGame);
   const coreContract = await ZKChessGame.deployed();

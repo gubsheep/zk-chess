@@ -2,7 +2,6 @@
 pragma solidity ^0.6.7;
 pragma experimental ABIEncoderV2;
 
-import "./Hasher.sol";
 import "./ZKChessTypes.sol";
 import "./Verifier.sol";
 import "hardhat/console.sol";
@@ -96,8 +95,8 @@ library ZKChessInit {
     }
 
     function initializeMotherships(
-        address player1,
-        address player2,
+        address player1Addr,
+        address player2Addr,
         mapping(uint8 => Piece) storage pieces,
         uint8[] storage pieceIds,
         uint8[][] storage boardPieces,
@@ -106,7 +105,7 @@ library ZKChessInit {
         pieces[1] = Piece({
             id: 1,
             pieceType: PieceType.MOTHERSHIP_00,
-            owner: player1,
+            owner: player1Addr,
             row: 2,
             col: 0,
             alive: true,
@@ -122,7 +121,7 @@ library ZKChessInit {
         pieces[2] = Piece({
             id: 2,
             pieceType: PieceType.MOTHERSHIP_00,
-            owner: player2,
+            owner: player2Addr,
             row: 2,
             col: 6,
             alive: true,
