@@ -24,6 +24,7 @@ import {
   taxiCab,
 } from '../app/Pixi/Utils/PixiUtils';
 import { playerShader } from '../app/Pixi/Utils/Shaders';
+import { TransactionManager } from '../app/PixiAppComponents/TransactionList';
 
 export class GameAPI {
   private pixiManager: PixiManager;
@@ -52,6 +53,8 @@ export class GameAPI {
       GameManagerEvent.StateRewinded,
       this.stateAdvanced
     );
+
+    TransactionManager.initialize(gameManager);
   }
 
   // event listeners
@@ -65,7 +68,7 @@ export class GameAPI {
     const { shipManager } = this.pixiManager;
 
     shipManager.clear();
-    const { pieces, myAddress, player1, player2 } = this.gameState;
+    const { pieces, myAddress, player1 } = this.gameState;
     for (const piece of pieces) {
       if (isVisiblePiece(piece)) {
         const ship = new Ship(this.pixiManager, piece);

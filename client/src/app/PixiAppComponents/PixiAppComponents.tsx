@@ -1,4 +1,8 @@
+import React from 'react';
 import styled from 'styled-components';
+import { Help } from './Help';
+import { PieceList } from './PieceList';
+import { TransactionList } from './TransactionList';
 
 export const StyledPixiApp = styled.div`
   width: 100%;
@@ -93,19 +97,63 @@ export const Toolbar = styled.div`
   flex-direction: row;
   justify-content: flex-start;
 
-  & > span {
-    padding: 0 2em;
-    line-height: 2em; // height of bar
-    border-right: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid #655;
+  border-left: none;
+  border-right: none;
+`;
 
-    text-align: center;
+export enum TabState {
+  Transactions,
+  Help,
+  PieceList,
+}
+
+const StyledTab = styled.span<{ active: boolean }>`
+  padding: 0 2em;
+  line-height: 2em; // height of bar
+  border-right: 1px solid rgba(255, 255, 255, 0.5);
+
+  text-align: center;
+
+  ${({ active }) => active && 'color: white; background: #a87 !important;'};
+
+  transition: color 0.2s, background 0.2s;
+
+  &:hover {
+    cursor: pointer;
+    color: white;
+    background: #855;
   }
 `;
 
-export const TextBody = styled.div`
+export type TabHook = [TabState, (s: TabState) => void];
+export function Tab({ hook, id }: { hook: TabHook; id: TabState }) {
+  const [tabState, setTabState] = hook;
+  const text = ['TRANSACTIONS', 'HELP', 'PIECE LIST'][id];
+
+  return (
+    <StyledTab active={tabState === id} onClick={() => setTabState(id)}>
+      {text}
+    </StyledTab>
+  );
+}
+
+const StyledTextBody = styled.div`
   background: #2a2a2a;
   padding: 3em;
   padding-top: ${MBOTTOM + MTOP + 20}px;
 
   min-height: 30em;
 `;
+
+export function TextBody({ hook }: { hook: TabHook }) {
+  const [tabState] = hook;
+
+  return (
+    <StyledTextBody>
+      {tabState === TabState.Transactions && <TransactionList />}
+      {tabState === TabState.Help && <Help />}
+      {tabState === TabState.PieceList && <PieceList />}
+    </StyledTextBody>
+  );
+}

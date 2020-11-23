@@ -8,8 +8,10 @@ import {
   StyledTable,
   CanvasWrapper,
   Toolbar,
+  TabState,
+  Tab,
   TextBody,
-} from './PixiAppComponents';
+} from './PixiAppComponents/PixiAppComponents';
 
 export default function PixiApp({
   gameManager,
@@ -46,6 +48,8 @@ export default function PixiApp({
     'Colors and styles shamelessly copied from https://www.lexaloffle.com/pico-8.php. Thanks, Lexaloffle!'
   );
 
+  const tabHook = useState<TabState>(TabState.Transactions);
+
   return (
     <StyledPixiApp>
       <GameWrapper>
@@ -80,17 +84,12 @@ export default function PixiApp({
           />
         </StyledTable>
         <Toolbar>
-          <span>TRANSACTIONS</span>
-          <span>HELP</span>
-          <span>PIECE LIST</span>
+          <Tab hook={tabHook} id={TabState.Transactions} />
+          <Tab hook={tabHook} id={TabState.Help} />
+          <Tab hook={tabHook} id={TabState.PieceList} />
         </Toolbar>
       </GameWrapper>
-      <TextBody>
-        asldfjklaf
-        asdflkjasdfkasdjf
-        asdfklasdjflaksjdf
-
-      </TextBody>
+      <TextBody hook={tabHook} />
     </StyledPixiApp>
   );
 }
