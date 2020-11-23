@@ -86,7 +86,6 @@ class SnarkArgsHelper {
         salt2: newSalt,
         z: oldHand.cards[playedCardIdx].toString(),
       };
-      /*
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
         '/battleship/public/circuits/play/circuit.wasm',
@@ -95,21 +94,7 @@ class SnarkArgsHelper {
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
         snarkProof.publicSignals
-      ) as CardDrawArgs;
-      */
-      const ret = Promise.resolve([
-        ['0', '0'],
-        [
-          ['0', '0'],
-          ['0', '0'],
-        ],
-        ['0', '0'],
-        [
-          mimcHash(...oldHand.cards, oldHand.salt).toString(),
-          mimcHash(...newCards, newSalt).toString(),
-          oldHand.cards[playedCardIdx].toString(),
-        ],
-      ] as CardPlayArgs);
+      ) as CardPlayArgs;
       return ret;
     } catch (e) {
       console.error(e);

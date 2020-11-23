@@ -104,7 +104,7 @@ template Main() {
     permutation.b[1] <== x;
     permutation.b[2] <== y;
     permutation.b[3] <== z;
-    permutation.x <== drawSalt;
+    permutation.x <== oldCommit; // janky and probably theoretically insecure fiat-shamir-like thing
 }
 
 component main = Main();
