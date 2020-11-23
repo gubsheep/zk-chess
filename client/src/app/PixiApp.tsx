@@ -1,16 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PixiManager } from '../api/PixiManager';
-import styled from 'styled-components';
 import AbstractGameManager from '../api/AbstractGameManager';
-
-const StyledPixiApp = styled.div`
-  canvas {
-    image-rendering: -moz-crisp-edges;
-    image-rendering: -webkit-crisp-edges;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-  }
-`;
+import {
+  StyledPixiApp,
+  GameWrapper,
+  TV,
+  StyledTable,
+  CanvasWrapper,
+  Toolbar,
+  TextBody,
+} from './PixiAppComponents';
 
 export default function PixiApp({
   gameManager,
@@ -23,8 +22,8 @@ export default function PixiApp({
   // note: gather is about 1000 x 800, gba is 240 x 160, NES is 256 x 240
   // const width = 360;
   // const height = 240;
-  const width = 480;
-  const height = 320;
+  const width = 360; // 480 * 2 = 960
+  const height = 320; // 320 * 2 = 640
   const scale = 2;
 
   useEffect(() => {
@@ -38,17 +37,60 @@ export default function PixiApp({
     );
   }, [canvasRef, gameManager]);
 
+  const dimObj = {
+    width: `${scale * width}px`,
+    height: `${scale * height}px`,
+  };
+
+  console.log(
+    'Colors and styles shamelessly copied from https://www.lexaloffle.com/pico-8.php. Thanks, Lexaloffle!'
+  );
+
   return (
     <StyledPixiApp>
-      <canvas
-        ref={canvasRef}
-        width={width}
-        height={height}
-        style={{
-          width: `${scale * width}px`,
-          height: `${scale * height}px`,
-        }}
-      ></canvas>
+      <GameWrapper>
+        <TV>
+          <div className='wrapper img'>
+            <img
+              src={'public/assets/tv.png'}
+              width={461 * scale}
+              height={436 * scale}
+            />
+          </div>
+          <div className='wrapper canvas'>
+            <CanvasWrapper style={dimObj}>
+              <canvas
+                ref={canvasRef}
+                width={width}
+                height={height}
+                style={dimObj}
+              ></canvas>
+            </CanvasWrapper>
+          </div>
+        </TV>
+        <StyledTable>
+          <img
+            src={'public/assets/bgbar.png'}
+            width={scale * 842}
+            height={scale * 128}
+            style={{
+              width: scale * 842 + 'px',
+              height: scale * 128 + 'px',
+            }}
+          />
+        </StyledTable>
+        <Toolbar>
+          <span>TRANSACTIONS</span>
+          <span>HELP</span>
+          <span>PIECE LIST</span>
+        </Toolbar>
+      </GameWrapper>
+      <TextBody>
+        asldfjklaf
+        asdflkjasdfkasdjf
+        asdfklasdjflaksjdf
+
+      </TextBody>
     </StyledPixiApp>
   );
 }
