@@ -92,10 +92,10 @@ export function LandingPage() {
           setInitState(InitState.GAME_SELECTED);
         }
       } else {
-        //if (player1.address === myAddress || player2.address === myAddress) {
+        // if (player1.address === myAddress || player2.address === myAddress) {
         // game has started, i'm in the game
         setInitState(InitState.COMPLETE);
-        //}
+        // }
         // game has started but i'm not in it. don't change initstate
       }
     } catch (e) {
