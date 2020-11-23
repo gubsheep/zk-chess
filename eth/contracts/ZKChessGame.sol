@@ -261,10 +261,10 @@ contract ZKChessGame is Initializable {
             "not valid card draw"
         );
         if (msg.sender == player1) {
-            player1HandCommit = cardDraw.zkp.input[1];
+            player1HandCommit = cardDraw.zkp.input[2];
             player1HasDrawn = true;
         } else {
-            player2HandCommit = cardDraw.zkp.input[1];
+            player2HandCommit = cardDraw.zkp.input[2];
             player2HasDrawn = true;
         }
         emit DidCardDraw(msg.sender, sequenceNumber);

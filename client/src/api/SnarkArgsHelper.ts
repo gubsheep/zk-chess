@@ -48,9 +48,8 @@ class SnarkArgsHelper {
         seed: seed.toString(),
         salt1: oldHand.salt,
         salt2: newSalt,
-        stateHash: lastTurnTimestamp.toString(),
+        drawSalt: lastTurnTimestamp.toString(),
       };
-      /*
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
         '/battleship/public/circuits/draw/circuit.wasm',
@@ -60,22 +59,6 @@ class SnarkArgsHelper {
         snarkProof.proof,
         snarkProof.publicSignals
       ) as CardDrawArgs;
-      */
-      const ret = Promise.resolve([
-        ['0', '0'], // proofA
-        [
-          // proofB
-          ['0', '0'],
-          ['0', '0'],
-        ],
-        ['0', '0'], // proofC
-        [
-          mimcHash(seed).toString(), // seed commit
-          mimcHash(...newCards, newSalt).toString(), // new hand commit
-          mimcHash(...oldHand.cards, oldHand.salt).toString(), // old hand commit
-          lastTurnTimestamp.toString(), // last turn timestamp
-        ],
-      ] as CardDrawArgs);
       return ret;
     } catch (e) {
       console.error(e);

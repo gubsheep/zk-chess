@@ -123,7 +123,8 @@ export class GameState {
           this.gameAddress
         );
         this.drawnCard =
-          mimcHash(mySeed, this.lastTurnTimestamp).mod(6).toJSNumber() + 1;
+          mimcHash(mySeed, this.lastTurnTimestamp).mod(32).mod(6).toJSNumber() +
+          1;
       }
     }
 

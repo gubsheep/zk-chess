@@ -235,19 +235,17 @@ library ZKChessUtils {
             require(!player2HasDrawn, "already drew a card!");
         }
         require(cardDraw.zkp.input[0] == seedCommit, "wrong seed commit");
-        require(cardDraw.zkp.input[2] == oldHandCommit, "wrong hand commit");
+        require(cardDraw.zkp.input[1] == oldHandCommit, "wrong hand commit");
         require(cardDraw.zkp.input[3] == lastTurnTimestamp, "wrong timestamp");
-        /*
         require(
-            Verifier.verifyPermutationZKP(
-                move.zkp.a,
-                move.zkp.b,
-                move.zkp.c,
-                move.zkp.input
+            Verifier.verifyCardDrawProof(
+                cardDraw.zkp.a,
+                cardDraw.zkp.b,
+                cardDraw.zkp.c,
+                cardDraw.zkp.input
             ),
             "bad ZKP"
         );
-        */
         return true;
     }
 
