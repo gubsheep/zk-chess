@@ -71,6 +71,7 @@ export class InitOverlay extends PixiObject {
     if (state === InitState.NotJoined) this.join.setActive(true);
     else if (state === InitState.WaitingForPlayers)
       this.awaiting.setActive(true);
-    /* gamestarted */ else this.setActive(false);
+
+    this.object.visible = state !== InitState.GameStarted;
   }
 }

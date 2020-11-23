@@ -20,6 +20,7 @@ import GameManager from './GameManager';
 import { getGameIdForTable, setGameIdForTable } from './UtilityServerAPI';
 import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
 import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
+import { Abandoned } from '../app/Pixi/UI/Abandoned';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -144,9 +145,7 @@ export class PixiManager {
 
     if (!gameId) {
       console.log('creating table');
-      const newGameId = Math.floor(Math.random() * 1000000).toString();
-      await gameManager.createGame(newGameId);
-      await setGameIdForTable(this.tableId, newGameId);
+      await this.api.newGame();
     }
 
     const trueId = await getGameIdForTable(this.tableId);
@@ -167,6 +166,7 @@ export class PixiManager {
       this.addObject(new StagedShip(this));
       this.addObject(new Shop(this));
       this.addObject(new GameOver(this));
+      this.addObject(new Abandoned(this));
     } else {
       console.error('could not get game id');
     }

@@ -25,6 +25,7 @@ import {
 } from '../app/Pixi/Utils/PixiUtils';
 import { playerShader } from '../app/Pixi/Utils/Shaders';
 import { TransactionManager } from '../app/PixiAppComponents/TransactionList';
+import { setGameIdForTable } from './UtilityServerAPI';
 
 export enum InitState {
   NotJoined,
@@ -116,6 +117,14 @@ export class GameAPI {
   }
 
   // callable
+  async newGame(): Promise<void> {
+    const newGameId = Math.floor(Math.random() * 1000000).toString();
+    await this.gameManager.createGame(newGameId);
+    await setGameIdForTable(this.pixiManager.tableId, newGameId);
+    await this.gameManager.setGame(newGameId);
+    this.stateAdvanced();
+  }
+
   joinGame(): void {
     this.gameManager.joinGame();
     this.didJoin = true;
