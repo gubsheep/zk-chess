@@ -15,6 +15,7 @@ import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
 import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
 import { GameOver } from '../app/Pixi/UI/GameOver';
 import { GameInitUI } from '../app/Pixi/GameInitUI/GameInitUI';
+import { TableNumber } from '../app/Pixi/UI/TableNumber';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -147,6 +148,7 @@ export class PixiManager {
 
     // set up background
     this.addObject(new Background(this));
+    this.addObject(new TableNumber(this));
 
     this.initUI();
 

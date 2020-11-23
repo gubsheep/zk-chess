@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { Player } from '../../../_types/global/GlobalTypes';
 import { PlayerType } from '../@PixiTypes';
-import { PixiObject } from '../PixiObject';
+import { PixiObject, Wrapper } from '../PixiObject';
 import { UI } from '../Utils/TextureLoader';
 
 const cache = PIXI.utils.TextureCache;
@@ -25,7 +25,10 @@ class PlayerButton extends PixiObject {
     this.parent = parent;
     this.type = type;
 
-    this.sprite = new PIXI.Sprite(cache[textures[type]]);
+    const sprite = new PIXI.Sprite(cache[textures[type]]);
+    sprite.pivot.x = sprite.width / 2;
+    sprite.x = sprite.width / 2;
+    this.sprite = sprite;
 
     this.boat = new PIXI.Sprite(cache[UI.BOAT]);
     this.boat.x = -this.boat.width - 15;
@@ -38,7 +41,18 @@ class PlayerButton extends PixiObject {
   loop() {
     super.loop();
 
-    this.boat.visible = this.parent.selected === this.type;
+    if (this.parent.selected === this.type) {
+      this.sprite.rotation = 0.2 * Math.sin(this.lifetime / 15);
+
+      const scale = 1 + 0.1 * Math.sin(this.lifetime / 20);
+      this.sprite.scale.set(scale, scale);
+      this.boat.visible = true;
+    } else {
+      this.sprite.rotation = 0;
+      this.sprite.scale.set(1, 1);
+
+      this.boat.visible = false;
+    }
   }
 
   private onMouseOver() {
@@ -73,7 +87,7 @@ export class PlayerButtons extends PixiObject {
   positionSelf() {
     this.setPosition({
       x: Math.floor(60),
-      y: Math.floor(120),
+      y: Math.floor(130),
     });
   }
 }
