@@ -39,6 +39,9 @@ export const UI = {
   SETSAIL: imgUri('ui/setsail.png'),
   SPECTATE: imgUri('ui/spectate.png'),
   TITLE: imgUri('ui/title.png'),
+  ABANDONED: imgUri('ui/abandoned.png'),
+  CREATE: imgUri('ui/create.png'),
+  JOIN: imgUri('ui/join.png'),
 };
 
 const textures = [

@@ -15,8 +15,8 @@ export class SetSail extends PixiObject {
 
     const cache = PIXI.utils.TextureCache;
     this.title = new PIXI.Sprite(cache[UI.SETSAIL]);
-    this.title.pivot.x = this.title.width / 2;
-    this.title.pivot.y = this.title.height / 2;
+    this.title.pivot.x = Math.floor(this.title.width / 2);
+    this.title.pivot.y = Math.floor(this.title.height / 2);
 
     this.object.addChild(this.title);
 
@@ -61,7 +61,7 @@ export class SetSail extends PixiObject {
       this.title.rotation = 0.2 * Math.sin(this.lifetime / 15);
 
       const scale = 1 + 0.1 * Math.sin(this.lifetime / 20);
-      this.title.position.set(scale, scale);
+      this.title.scale.set(scale, scale);
     } else {
       this.title.rotation = 0;
       this.title.scale.set(1, 1);
