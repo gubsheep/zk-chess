@@ -53,6 +53,18 @@ export enum Color {
 
 export type Objective = Locatable;
 
+export type CardHand = {
+  cards: [number, number, number];
+  salt: string;
+};
+
+export type CardPrototype = {
+  id: number;
+  atkBuff: number;
+  damage: number;
+  heal: number;
+};
+
 export type PieceStatDefaults = {
   pieceType: PieceType;
   mvRange: number;
@@ -70,7 +82,7 @@ type PartialPiece = GameObject & {
   pieceType: PieceType;
   alive: boolean;
   hp: number;
-  initializedOnTurn: number;
+  atk: number;
   lastMove: number;
   lastAttack: number;
 };
@@ -79,7 +91,6 @@ export type AbstractPiece = PartialPiece & {
   mvRange: number;
   atkMinRange: number;
   atkMaxRange: number;
-  atk: number;
   kamikaze: boolean;
 };
 
@@ -145,15 +156,20 @@ export type ChessGameContractData = {
   player2: Player;
   player1Mana: number;
   player2Mana: number;
+  player1HasDrawn: boolean;
+  player2HasDrawn: boolean;
+  player1HandCommit: string;
+  player2HandCommit: string;
 
   pieces: ContractPiece[];
   objectives: Objective[];
+  cardPrototypes: CardPrototype[];
   defaults: Record<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
   sequenceNumber: number;
   gameStatus: GameStatus;
-  lastActionTimestamp: number;
+  lastTurnTimestamp: number;
 };
 
 export type ChessGame = {
@@ -166,19 +182,23 @@ export type ChessGame = {
   myAddress: EthAddress;
   player1: Player;
   player2: Player;
-
   player1Mana: number;
   player2Mana: number;
+  player1HasDrawn: boolean;
+  player2HasDrawn: boolean;
+  myHand: CardHand;
+  drawnCard: number | null;
 
   pieces: Piece[];
   objectives: Objective[];
+  cardPrototypes: CardPrototype[];
   pieceById: Map<number, Piece>;
   defaults: Record<PieceType, PieceStatDefaults>;
 
   turnNumber: number;
   sequenceNumber: number;
   gameStatus: GameStatus;
-  lastActionTimestamp: number;
+  lastTurnTimestamp: number;
 };
 
 export interface SnarkJSProof {
@@ -204,6 +224,8 @@ export interface Player {
 export type PlayerMap = Map<string, Player>;
 
 export enum GameActionType {
+  CARD_DRAW,
+  CARD_PLAY,
   SUMMON,
   MOVE,
   ATTACK,
@@ -214,6 +236,28 @@ export interface GameAction {
   sequenceNumber: number;
   actionType: GameActionType;
   fromLocalData: boolean; // prioritize GameActions generated locally, they have more data
+}
+
+export interface CardDrawAction extends GameAction {
+  actionType: GameActionType.CARD_DRAW;
+  player: EthAddress;
+  hand?: CardHand;
+}
+
+export function isCardDrawAction(action: GameAction): action is CardDrawAction {
+  return action.actionType === GameActionType.CARD_DRAW;
+}
+
+export interface CardPlayAction extends GameAction {
+  actionType: GameActionType.CARD_PLAY;
+  player: EthAddress;
+  card: number;
+  pieceId: number;
+  myHand?: CardHand;
+}
+
+export function isCardPlayAction(action: GameAction): action is CardPlayAction {
+  return action.actionType === GameActionType.CARD_PLAY;
 }
 
 export interface SummonAction extends GameAction {

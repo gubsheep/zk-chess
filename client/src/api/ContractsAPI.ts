@@ -4,16 +4,17 @@ import {
   ChessGameContractData,
   EthAddress,
   PieceType,
-  Piece,
   ContractPiece,
   PieceStatDefaults,
   Objective,
+  CardPrototype,
+  GameStatus,
 } from '../_types/global/GlobalTypes';
 // NOTE: DO NOT IMPORT FROM ETHERS SUBPATHS. see https://github.com/ethers-io/ethers.js/issues/349 (these imports trip up webpack)
 // in particular, the below is bad!
 // import {TransactionReceipt, Provider, TransactionResponse, Web3Provider} from "ethers/providers";
 import {Contract, providers, BigNumber as EthersBN} from 'ethers';
-import _, {reject} from 'lodash';
+import _ from 'lodash';
 
 import {address, emptyAddress} from '../utils/CheckedTypeUtils';
 import {
@@ -31,6 +32,11 @@ import {
   UnsubmittedAttack,
   RawObjective,
   RawGameInfo,
+  GameMetadata,
+  RawGameMetadata,
+  RawCardPrototype,
+  UnsubmittedCardDraw,
+  UnsubmittedCardPlay,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -139,6 +145,9 @@ class ContractsAPI extends EventEmitter {
   private readonly txRequestExecutor: TxExecutor;
   private cachedStatDefaults: Record<PieceType, PieceStatDefaults> | null;
   private cachedObjectives: Objective[] | null;
+  private cachedCardPrototypes: CardPrototype[] | null;
+  private cachedGameMetadata: GameMetadata | null;
+
   private unminedTxs: Map<string, TxIntent>;
 
   private constructor(
@@ -154,6 +163,8 @@ class ContractsAPI extends EventEmitter {
     this.unminedTxs = new Map<string, TxIntent>();
     this.cachedStatDefaults = null;
     this.cachedObjectives = null;
+    this.cachedGameMetadata = null;
+    this.cachedCardPrototypes = null;
   }
 
   static async create(): Promise<ContractsAPI> {
@@ -197,6 +208,12 @@ class ContractsAPI extends EventEmitter {
     if (this.gameContract) {
       this.gameContract.on(ContractEvent.GameStart, () => {
         this.emit(ContractsAPIEvent.GameStart);
+      });
+      this.gameContract.on(ContractEvent.DidCardDraw, (...args) => {
+        this.emit(ContractsAPIEvent.DidCardDraw, ...args);
+      });
+      this.gameContract.on(ContractEvent.DidCardPlay, (...args) => {
+        this.emit(ContractsAPIEvent.DidCardPlay, ...args);
       });
       this.gameContract.on(ContractEvent.DidSummon, (...args) => {
         this.emit(ContractsAPIEvent.DidSummon, ...args);
@@ -282,24 +299,50 @@ class ContractsAPI extends EventEmitter {
     }
     const gameInfo: RawGameInfo = await contract.getInfo();
 
-    const gameId = gameInfo[0].toString();
-    const nRows = gameInfo[1];
-    const nCols = gameInfo[2];
-    const turnNumber = gameInfo[3];
-    const sequenceNumber = gameInfo[4];
-    const gameState = gameInfo[5];
-    const player1Addr = address(gameInfo[6]);
-    const player2Addr = address(gameInfo[7]);
-    const player1Mana = gameInfo[8];
-    const player2Mana = gameInfo[9];
-    const lastActionTimestamp = gameInfo[10].toNumber();
+    const turnNumber = gameInfo[0];
+    const sequenceNumber = gameInfo[1];
+    const gameState = gameInfo[2];
+    const player1Mana = gameInfo[3];
+    const player2Mana = gameInfo[4];
+    const player1HasDrawn = gameInfo[5];
+    const player2HasDrawn = gameInfo[6];
+    const player1HandCommit = gameInfo[7].toString();
+    const player2HandCommit = gameInfo[8].toString();
+    const lastTurnTimestamp = gameInfo[9].toNumber();
 
     const rawPieces: RawPiece[] = await contract.getPieces();
     const pieces: ContractPiece[] = rawPieces.map(this.rawPieceToPiece);
 
+    if (
+      !this.cachedGameMetadata ||
+      gameState === GameStatus.WAITING_FOR_PLAYERS ||
+      address(this.cachedGameMetadata.player2) === emptyAddress
+    ) {
+      // we don't yet have 2 players / game hasn't started
+      const rawMetadata: RawGameMetadata = await contract.getMetadata();
+      this.cachedGameMetadata = {
+        gameId: rawMetadata[0].toString(),
+        NROWS: rawMetadata[1],
+        NCOLS: rawMetadata[2],
+        player1: address(rawMetadata[3]),
+        player2: address(rawMetadata[4]),
+        player1SeedCommit: rawMetadata[5].toString(),
+        player2SeedCommit: rawMetadata[6].toString(),
+      };
+    }
+
+    if (!this.cachedCardPrototypes) {
+      const rawCards: RawCardPrototype[] = await contract.getCards();
+      this.cachedCardPrototypes = rawCards.map((rawCard) => ({
+        id: rawCard[0],
+        atkBuff: rawCard[1],
+        damage: rawCard[2],
+        heal: rawCard[3],
+      }));
+    }
+
     if (!this.cachedObjectives) {
       const rawObjectives: RawObjective[] = await contract.getObjectives();
-
       this.cachedObjectives = rawObjectives.map(this.rawObjectiveToObjective);
     }
 
@@ -320,21 +363,26 @@ class ContractsAPI extends EventEmitter {
 
     return {
       gameAddress: address(contract.address),
-      gameId,
-      nRows,
-      nCols,
+      gameId: this.cachedGameMetadata.gameId,
+      nRows: this.cachedGameMetadata.NROWS,
+      nCols: this.cachedGameMetadata.NCOLS,
       myAddress: this.account,
-      player1: {address: player1Addr},
-      player2: {address: player2Addr},
+      player1: {address: this.cachedGameMetadata.player1},
+      player2: {address: this.cachedGameMetadata.player2},
       player1Mana,
       player2Mana,
+      player1HasDrawn,
+      player2HasDrawn,
+      player1HandCommit,
+      player2HandCommit,
       pieces,
+      cardPrototypes: this.cachedCardPrototypes,
       objectives: this.cachedObjectives,
       defaults: this.cachedStatDefaults,
       turnNumber,
       sequenceNumber,
       gameStatus: gameState,
-      lastActionTimestamp,
+      lastTurnTimestamp,
     };
   }
 
@@ -350,6 +398,7 @@ class ContractsAPI extends EventEmitter {
     );
     this.cachedObjectives = null;
     this.cachedStatDefaults = null;
+    this.cachedGameMetadata = null;
     this.removeGameContractListeners();
     this.gameContract = gameContract;
     this.setupGameContractListeners();
@@ -400,7 +449,76 @@ class ContractsAPI extends EventEmitter {
           txIntentId: action.txIntentId,
           contract: this.gameContract,
           method: 'joinGame',
-          args: [],
+          args: [action.seedCommit],
+          overrides,
+        }
+      );
+
+      if (tx.hash) {
+        this.onTxSubmit(action, tx.hash);
+      }
+      return tx.wait();
+    } catch (e) {
+      this.onTxSubmitFail(action, e);
+      throw e;
+    }
+  }
+
+  public async doCardDraw(
+    action: UnsubmittedCardDraw
+  ): Promise<providers.TransactionReceipt> {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
+    try {
+      const overrides: providers.TransactionRequest = {
+        gasPrice: 1000000000,
+        gasLimit: 2000000,
+      };
+      const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+        {
+          txIntentId: action.txIntentId,
+          contract: this.gameContract,
+          method: 'doCardDraw',
+          args: [[action.turnNumber, action.sequenceNumber, await action.zkp]],
+          overrides,
+        }
+      );
+
+      if (tx.hash) {
+        this.onTxSubmit(action, tx.hash);
+      }
+      return tx.wait();
+    } catch (e) {
+      this.onTxSubmitFail(action, e);
+      throw e;
+    }
+  }
+
+  public async doCardPlay(
+    action: UnsubmittedCardPlay
+  ): Promise<providers.TransactionReceipt> {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
+    try {
+      const overrides: providers.TransactionRequest = {
+        gasPrice: 1000000000,
+        gasLimit: 2000000,
+      };
+      const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+        {
+          txIntentId: action.txIntentId,
+          contract: this.gameContract,
+          method: 'doCardPlay',
+          args: [
+            [
+              action.turnNumber,
+              action.sequenceNumber,
+              action.pieceId,
+              await action.zkp,
+            ],
+          ],
           overrides,
         }
       );
@@ -479,6 +597,8 @@ class ContractsAPI extends EventEmitter {
               action.pieceId,
               action.isZk ? [] : action.moveToRow,
               action.isZk ? [] : action.moveToCol,
+              // TODO: this is bad, because if an action is fired while this is awaiting
+              // then the later action will end up getting executed first
               await action.zkp,
             ],
           ],
@@ -581,7 +701,7 @@ class ContractsAPI extends EventEmitter {
         alive: rawPiece[5],
         commitment: rawPiece[9].toString(),
         hp: rawPiece[7],
-        initializedOnTurn: rawPiece[8],
+        atk: rawPiece[8],
         lastMove: rawPiece[10],
         lastAttack: rawPiece[11],
       };
@@ -593,7 +713,7 @@ class ContractsAPI extends EventEmitter {
         alive: rawPiece[5],
         location: [rawPiece[4], rawPiece[3]],
         hp: rawPiece[7],
-        initializedOnTurn: rawPiece[8],
+        atk: rawPiece[8],
         lastMove: rawPiece[10],
         lastAttack: rawPiece[11],
       };

@@ -14,18 +14,35 @@ enum PieceType {
     WARSHIP_05
 }
 
-struct GameInfo {
+struct GameMetadata {
     uint256 gameId;
     uint8 NROWS;
     uint8 NCOLS;
+    address player1;
+    address player2;
+    uint256 player1SeedCommit;
+    uint256 player2SeedCommit;
+}
+
+struct GameInfo {
     uint8 turnNumber;
     uint16 sequenceNumber;
     GameState gameState;
-    address player1;
-    address player2;
     uint8 player1Mana;
     uint8 player2Mana;
-    uint256 lastActionTimestamp;
+    bool player1HasDrawn;
+    bool player2HasDrawn;
+    uint256 player1HandCommit;
+    uint256 player2HandCommit;
+    uint256 lastTurnTimestamp;
+}
+
+struct Player {
+    address addr;
+    uint8 mana;
+    bool hasDrawn;
+    uint256 seedCommit;
+    uint256 handCommit;
 }
 
 struct PieceDefaultStats {
@@ -40,6 +57,13 @@ struct PieceDefaultStats {
     bool kamikaze;
 }
 
+struct CardPrototype {
+    uint8 id;
+    uint8 atkBuff;
+    uint8 damage;
+    uint8 heal;
+}
+
 struct Piece {
     uint8 id;
     PieceType pieceType;
@@ -49,7 +73,7 @@ struct Piece {
     bool alive; // only for non-ghosts
     bool initialized;
     uint8 hp;
-    uint8 initializedOnTurn;
+    uint8 atk;
     uint256 commitment; // only for ghosts
     uint8 lastMove;
     uint8 lastAttack;
@@ -58,6 +82,20 @@ struct Piece {
 struct Objective {
     uint8 row;
     uint8 col;
+}
+
+struct CardDrawZKP {
+    uint256[2] a;
+    uint256[2][2] b;
+    uint256[2] c;
+    uint256[4] input; // seedcommit, new handcommit, old handcommit, lastTurnTimestamp
+}
+
+struct CardPlayZKP {
+    uint256[2] a;
+    uint256[2][2] b;
+    uint256[2] c;
+    uint256[3] input; // old handcommit, new handcommit, played card ID
 }
 
 struct SummonZKP {
@@ -79,6 +117,19 @@ struct AttackZKP {
     uint256[2][2] b;
     uint256[2] c;
     uint256[6] input; // commitment, attacking x, attacking y, dist, nrows, ncols
+}
+
+struct CardDraw {
+    uint8 turnNumber;
+    uint16 sequenceNumber;
+    CardDrawZKP zkp;
+}
+
+struct CardPlay {
+    uint8 turnNumber;
+    uint16 sequenceNumber;
+    uint8 pieceId;
+    CardPlayZKP zkp;
 }
 
 struct Summon {
