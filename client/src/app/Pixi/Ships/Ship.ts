@@ -4,10 +4,11 @@ import { VisiblePiece, PieceType } from '../../../_types/global/GlobalTypes';
 import { Wrapper } from '../PixiObject';
 import { PieceObject } from './PieceObject';
 import { BoardCoords, CanvasCoords } from '../@PixiTypes';
-import { boardCoordsFromLoc } from '../Utils/PixiUtils';
+import { boardCoordsFromLoc, idxsIncludes } from '../Utils/PixiUtils';
 import { StatIcon, StatType, STATICON_W } from '../Utils/StatIcon';
 import { SPRITE_W } from '../Utils/TextureLoader';
 import { ShipSprite } from './ShipSprite';
+import { ClickState } from '../MouseManager';
 
 const waterline = (type: PieceType): number => {
   if (type === PieceType.Submarine_04) return 32;
@@ -22,8 +23,6 @@ export class Ship extends PieceObject {
 
   atkObj: StatIcon;
   hpObj: StatIcon;
-
-  sprite: ShipSprite;
 
   waterline: PIXI.Graphics;
 
@@ -54,7 +53,7 @@ export class Ship extends PieceObject {
     });
 
     const mask = new PIXI.Graphics();
-    this.shipContainer.children[0].object.mask = mask;
+    this.sprite.object.mask = mask;
     this.mask = mask;
     this.updateMask();
 
@@ -72,6 +71,16 @@ export class Ship extends PieceObject {
     this.updateMask();
   }
 
+  setMaskEnabled(enabled: boolean) {
+    if (enabled) {
+      this.sprite.object.mask = this.mask;
+      this.waterline.visible = true;
+    } else {
+      this.sprite.object.mask = null;
+      this.waterline.visible = false;
+    }
+  }
+
   private updateMask() {
     const { x, y } = this.object.position;
     const mask = this.mask;
@@ -82,16 +91,26 @@ export class Ship extends PieceObject {
   }
 
   onMouseOver() {
+    super.onMouseOver();
     this.manager.mouseManager.setHoveringShip(this);
   }
 
   onMouseOut() {
+    super.onMouseOut();
     this.manager.mouseManager.setHoveringShip(null);
   }
 
   onClick() {
-    if (this.manager.api.isMyTurn())
-      this.manager.mouseManager.shipClicked(this);
+    const { api, mouseManager } = this.manager;
+    if (api.isMyTurn()) {
+      if (this.pieceData.id === api.getMyMothership().pieceData.id) {
+        const gold = api.getGold();
+        if (gold == 0) return;
+        mouseManager.buyShip(Math.min(gold, 5));
+      } else {
+        mouseManager.shipClicked(this);
+      }
+    }
   }
 
   loop() {
@@ -100,6 +119,36 @@ export class Ship extends PieceObject {
     const { hp, atk } = this.pieceData;
     this.atkObj.setValue(atk);
     this.hpObj.setValue(hp);
+
+    // check if is hoverable
+    const {
+      api,
+      mouseManager: { clickState, attackIdxs, moveAttackIdxs, selectedShip },
+    } = this.manager;
+    if (clickState === ClickState.None) {
+      this.setHoverable(!api.hasAttacked(this));
+    } else if (
+      clickState === ClickState.Acting &&
+      selectedShip?.isZk() === false
+    ) {
+      if (api.ownedByMe(this)) this.setHoverable(!api.hasAttacked(this));
+      else {
+        // in attack range
+        const idx = boardCoordsFromLoc(this.pieceData.location);
+        const attack = idxsIncludes(attackIdxs, idx);
+        const movAtk = idxsIncludes(
+          moveAttackIdxs.map((el) => el.attack),
+          idx
+        );
+        if (attack || movAtk) this.setHoverable(true);
+      }
+    }
+
+    if (this.isSelected()) {
+      this.setMaskEnabled(false);
+    } else {
+      this.setMaskEnabled(!this.hoverable || !this.hover);
+    }
 
     // bob
     this.bob();

@@ -24,6 +24,7 @@ import {
   taxiCab,
 } from '../app/Pixi/Utils/PixiUtils';
 import { playerShader } from '../app/Pixi/Utils/Shaders';
+import { TransactionManager } from '../app/PixiAppComponents/TransactionList';
 
 export class GameAPI {
   private pixiManager: PixiManager;
@@ -52,6 +53,8 @@ export class GameAPI {
       GameManagerEvent.StateRewinded,
       this.stateAdvanced
     );
+
+    TransactionManager.initialize(gameManager);
   }
 
   // event listeners
@@ -65,7 +68,7 @@ export class GameAPI {
     const { shipManager } = this.pixiManager;
 
     shipManager.clear();
-    const { pieces, myAddress, player1, player2 } = this.gameState;
+    const { pieces, myAddress, player1 } = this.gameState;
     for (const piece of pieces) {
       if (isVisiblePiece(piece)) {
         const ship = new Ship(this.pixiManager, piece);
@@ -222,8 +225,8 @@ export class GameAPI {
 
   getWinner(): PlayerColor | null {
     if (!this.gameOver()) return null;
-    if (this.p1Mothership.hp === 0) return PlayerColor.Red;
-    else if (this.p2Mothership.hp === 0) return PlayerColor.Blue;
+    if (this.p1Mothership.hp === 0) return PlayerColor.Blue;
+    else if (this.p2Mothership.hp === 0) return PlayerColor.Red;
 
     return null;
   }
@@ -238,7 +241,7 @@ export class GameAPI {
     if (address === player1.address) return PlayerColor.Red;
     else if (address === player2.address) return PlayerColor.Blue;
     else {
-      console.error('error getting color');
+      // console.error('error getting color');
       return PlayerColor.Red;
     }
   }

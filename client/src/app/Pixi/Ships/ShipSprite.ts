@@ -6,6 +6,7 @@ import { PixiObject } from '../PixiObject';
 import { playerShader } from '../Utils/Shaders';
 import { SHIPS, SPRITE_W } from '../Utils/TextureLoader';
 
+
 export class ShipSprite extends PixiObject {
   type: PieceType | null;
   color: PlayerColor | null;

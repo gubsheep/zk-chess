@@ -42,6 +42,7 @@ const Aa = styled.a`
 
 export function LandingPage() {
   const {tableId} = useParams<{tableId: string}>();
+
   let gameManagerRef = useRef<AbstractGameManager | null>();
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
   const [gameIds, setGameIds] = useState<string[]>([]);

@@ -189,7 +189,8 @@ export class MouseManager {
       for (let i = 0; i < deployIdxs.length; i++) {
         const loc = deployIdxs[i];
         for (const piece of this.manager.shipManager.ships) {
-          if (compareBoardCoords(piece.coords, loc)) deployIdxs.splice(i--, 1);
+          if (piece.isAlive() && compareBoardCoords(piece.coords, loc))
+            deployIdxs.splice(i--, 1);
         }
       }
     }
@@ -310,6 +311,7 @@ export class MouseManager {
       manager: { api },
       clickState,
       selectedShip,
+      deployType,
     } = this;
 
     if (this.showZk && clickState === ClickState.None) return;
@@ -318,20 +320,22 @@ export class MouseManager {
     //   return;
     // }
 
+    const deployingSub =
+      clickState === ClickState.Deploying &&
+      deployType === PieceType.Submarine_04;
+
     const subSelected =
       selectedShip && selectedShip.getType() === PieceType.Submarine_04;
 
     const type = ship.getType();
-    if (api.ownedByMe(ship) && !subSelected) {
+    if (api.ownedByMe(ship) && !subSelected && !deployingSub) {
       // clicked your own ship, time to move it
       if (type === PieceType.Mothership_00) return;
       if (api.hasAttacked(ship)) return;
 
-      if (clickState === ClickState.None || clickState === ClickState.Acting) {
-        // initiate ship actions
-        this.setSelected(ship);
-        return;
-      }
+      // initiate ship actions
+      this.setSelected(ship);
+      return;
     }
 
     // bubble the event
@@ -339,7 +343,7 @@ export class MouseManager {
   }
 
   subClicked(sub: Submarine) {
-    console.log('got a click from this sub: ' + sub.objectId);
+    console.log('got a click from this sub: ' + sub.objectId, sub.pieceData);
     const {
       manager: { api },
       clickState,
@@ -354,11 +358,9 @@ export class MouseManager {
 
     if (api.ownedByMe(sub)) {
       if (api.hasAttacked(sub)) return;
-      if (clickState === ClickState.None || clickState === ClickState.Acting) {
-        // initiate ship actions
-        this.setSelected(sub);
-        return;
-      }
+      // initiate ship actions
+      this.setSelected(sub);
+      return;
     }
 
     const coords = sub.getCoords();

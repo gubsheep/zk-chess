@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../../api/PixiManager';
-import { PixiObject } from '../PixiObject';
+import { PixiObject, Wrapper } from '../PixiObject';
+import { CHAR_H, LINE_SPACING } from '../Utils/FontLoader';
 import { TextObject } from '../Utils/TextObject';
 
 const GAMEOVER_W = 160;
@@ -18,10 +19,15 @@ export class GameOver extends PixiObject {
 
     const { api } = manager;
 
-    const text = new TextObject(
-      manager,
-      `Game Over!\n\nWinner: ${api.getWinner() || ''}\n\nThanks for playing!`
-    );
+    const text = new Wrapper(manager, new PIXI.Container());
+    const gameover = new TextObject(manager, 'Game Over!');
+    const winner = new TextObject(manager, `Winner: ${api.getWinner() || ''}`);
+    const thanks = new TextObject(manager, 'Thanks for playing!');
+    winner.setPosition({ y: 2 * (CHAR_H + LINE_SPACING) });
+    thanks.setPosition({ y: 4 * (CHAR_H + LINE_SPACING) });
+
+    text.addChild(gameover, winner, thanks);
+
     text.setPosition({ x: 5, y: 5 });
     this.object.addChild(modalBg, text.object);
 

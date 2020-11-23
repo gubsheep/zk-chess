@@ -39,10 +39,12 @@ export class Submarine extends PieceObject {
     });
   }
   onMouseOver() {
+    super.onMouseOver();
     this.manager.mouseManager.setHoveringSubmarine(this);
   }
 
   onMouseOut() {
+    super.onMouseOut();
     this.manager.mouseManager.setHoveringSubmarine(null);
   }
 
