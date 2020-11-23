@@ -6,6 +6,11 @@ export class GameBoardObject extends PixiObject {
   constructor(manager: PixiManager, grid: GameGrid) {
     super(manager);
 
+    if (manager.spectator) {
+      this.setActive(false);
+      return;
+    }
+
     this.positionGrid(grid.getWidth(), grid.getHeight());
   }
 

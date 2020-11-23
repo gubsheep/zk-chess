@@ -7,9 +7,9 @@ export enum PlayerColor {
   Blue = 'BLUE',
 }
 
-export enum PlayerType {
-  Player1 = 'Player1',
-  Player2 = 'Player2',
+export enum PlayerName {
+  Alice = 'Alice',
+  Bob = 'Bob',
   Spectator = 'Spectator',
 }
 

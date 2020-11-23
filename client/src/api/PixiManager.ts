@@ -11,14 +11,19 @@ import { Background } from '../app/Pixi/Utils/Background';
 import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
 import { ShipManager } from '../app/Pixi/Ships/ShipManager';
 import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
-import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
 import { GameOver } from '../app/Pixi/UI/GameOver';
 import { GameInitUI } from '../app/Pixi/GameInitUI/GameInitUI';
 import { TableNumber } from '../app/Pixi/UI/TableNumber';
 import { LandingPageManager } from '../app/Pixi/LandingPageManager';
+import { PlayerName } from '../app/Pixi/@PixiTypes';
+import GameManager from './GameManager';
+import { getGameIdForTable, setGameIdForTable } from './UtilityServerAPI';
+import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
+import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
+  tableId: string;
 };
 
 export enum GameZIndex {
@@ -61,9 +66,15 @@ export class PixiManager {
 
   landingManager: LandingPageManager;
 
+  tableId: string;
+
+  spectator: boolean = false;
+  playerName: PlayerName;
+
   private constructor(props: InitProps) {
-    const { canvas } = props;
+    const { canvas, tableId } = props;
     this.canvas = canvas;
+    this.tableId = tableId;
     const { width, height } = canvas;
 
     // set up app
@@ -98,10 +109,8 @@ export class PixiManager {
     this.objectiveManager = new ObjectiveManager(this);
     this.addObject(this.objectiveManager);
 
-
     this.mouseManager = new MouseManager(this);
-    // this.api = new GameAPI(this, gameManager);
-    this.landingManager = new LandingPageManager(this);
+    this.landingManager = new LandingPageManager(this, tableId);
 
     autoBind(this);
 
@@ -125,19 +134,42 @@ export class PixiManager {
     this.layers[obj.layer].addChild(obj.object);
   }
 
-  initGame() {
-    // set up grid
-    // this is definitely a bad way of doing it, but whatever TODO fix
-    this.gameBoard = new GameBoard(this);
-    this.addObject(this.gameBoard);
+  async initGame(player: PlayerName) {
+    if (player === PlayerName.Spectator) this.spectator = true;
 
-    this.api.syncShips();
-    this.api.syncObjectives();
+    this.playerName = player;
 
-    this.addObject(new ResourceBars(this));
-    this.addObject(new StagedShip(this));
-    this.addObject(new Shop(this));
-    this.addObject(new GameOver(this));
+    const gameManager = await GameManager.create();
+    const gameId = await getGameIdForTable(this.tableId);
+
+    if (!gameId) {
+      console.log('creating table');
+      const newGameId = Math.floor(Math.random() * 1000000).toString();
+      await gameManager.createGame(newGameId);
+      await setGameIdForTable(this.tableId, newGameId);
+    }
+
+    const trueId = await getGameIdForTable(this.tableId);
+
+    if (trueId) {
+      await gameManager.setGame(trueId);
+      this.api = new GameAPI(this, gameManager);
+
+      this.gameBoard = new GameBoard(this);
+      this.addObject(this.gameBoard);
+
+      this.addObject(new InitOverlay(this));
+
+      this.api.syncShips();
+      this.api.syncObjectives();
+
+      this.addObject(new ResourceBars(this));
+      this.addObject(new StagedShip(this));
+      this.addObject(new Shop(this));
+      this.addObject(new GameOver(this));
+    } else {
+      console.error('could not get game id');
+    }
   }
 
   private initUI() {

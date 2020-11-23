@@ -1,16 +1,14 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
-import { Player } from '../../../_types/global/GlobalTypes';
-import { PlayerType } from '../@PixiTypes';
-import { InitState } from '../LandingPageManager';
+import { PlayerName } from '../@PixiTypes';
 import { PixiObject, Wrapper } from '../PixiObject';
 import { UI } from '../Utils/TextureLoader';
 
 const cache = PIXI.utils.TextureCache;
 
-const textures: Record<PlayerType, string> = {
-  Player1: UI.P1,
-  Player2: UI.P2,
+const textures: Record<PlayerName, string> = {
+  Alice: UI.P1,
+  Bob: UI.P2,
   Spectator: UI.SPECTATE,
 };
 
@@ -19,9 +17,9 @@ class PlayerButton extends PixiObject {
   sprite: PIXI.Sprite;
   parent: PlayerButtons;
 
-  type: PlayerType;
+  type: PlayerName;
 
-  constructor(manager: PixiManager, type: PlayerType, parent: PlayerButtons) {
+  constructor(manager: PixiManager, type: PlayerName, parent: PlayerButtons) {
     super(manager);
     this.parent = parent;
     this.type = type;
@@ -41,10 +39,6 @@ class PlayerButton extends PixiObject {
 
   loop() {
     super.loop();
-
-    this.setActive(
-      this.manager.landingManager.initState > InitState.CREATE_TABLE
-    );
 
     if (this.parent.selected === this.type) {
       this.sprite.rotation = 0.2 * Math.sin(this.lifetime / 15);
@@ -66,15 +60,15 @@ class PlayerButton extends PixiObject {
 }
 
 export class PlayerButtons extends PixiObject {
-  selected: PlayerType;
+  selected: PlayerName;
 
   constructor(manager: PixiManager) {
     super(manager);
-    this.selected = PlayerType.Player1;
+    this.selected = PlayerName.Alice;
 
-    const p1 = new PlayerButton(manager, PlayerType.Player1, this);
-    const p2 = new PlayerButton(manager, PlayerType.Player2, this);
-    const spec = new PlayerButton(manager, PlayerType.Spectator, this);
+    const p1 = new PlayerButton(manager, PlayerName.Alice, this);
+    const p2 = new PlayerButton(manager, PlayerName.Bob, this);
+    const spec = new PlayerButton(manager, PlayerName.Spectator, this);
 
     const offset = p1.object.height + 10;
 
@@ -85,7 +79,7 @@ export class PlayerButtons extends PixiObject {
     this.positionSelf();
   }
 
-  setSelected(type: PlayerType) {
+  setSelected(type: PlayerName) {
     this.selected = type;
   }
 

@@ -50,6 +50,11 @@ class ResourceBar extends PixiObject {
   ) {
     super(manager, GameZIndex.UI);
 
+    if (manager.spectator) {
+      this.setActive(false);
+      return;
+    }
+
     const container = this.object;
 
     const labelObj = new TextObject(manager, label);

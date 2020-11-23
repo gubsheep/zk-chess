@@ -1,6 +1,5 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
-import { InitState } from '../LandingPageManager';
 import { PixiObject } from '../PixiObject';
 import { UI } from '../Utils/TextureLoader';
 
@@ -57,9 +56,6 @@ export class SetSail extends PixiObject {
 
   loop() {
     super.loop();
-    this.setActive(
-      this.manager.landingManager.initState > InitState.CREATE_TABLE
-    );
 
     if (this.hover) {
       this.title.rotation = 0.2 * Math.sin(this.lifetime / 15);

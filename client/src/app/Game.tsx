@@ -1,4 +1,5 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import PixiApp from './PixiApp';
 
@@ -7,10 +8,12 @@ const StyledGame = styled.div`
   height: 100%;
 `;
 
-export default function Game({}) {
+export default function Game() {
+  const { tableId } = useParams<{ tableId: string }>();
+
   return (
     <StyledGame>
-      <PixiApp />
+      <PixiApp tableId={tableId}/>
     </StyledGame>
   );
 }

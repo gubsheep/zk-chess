@@ -1,3 +1,4 @@
+import { InitState } from '../../../api/GameAPI';
 import { PixiManager, GameZIndex } from '../../../api/PixiManager';
 import { PieceType } from '../../../_types/global/GlobalTypes';
 import { PixiObject } from '../PixiObject';
@@ -35,5 +36,11 @@ export class Shop extends PixiObject {
 
   getWidth() {
     return NUM_SHIPS * CARD_W + (NUM_SHIPS - 1) * CARD_MARGIN;
+  }
+
+  loop() {
+    super.loop();
+    const { api } = this.manager;
+    this.object.visible = api.getInitState() === InitState.GameStarted;
   }
 }

@@ -16,11 +16,11 @@ export class GameInitUI extends PixiObject {
     this.addChild(this.playerButtons);
     this.addChild(new Title(manager));
     this.addChild(new SetSail(manager, this.initGame));
-    this.addChild(new CreateTable(manager));
+    // this.addChild(new CreateTable(manager));
   }
 
   private initGame() {
     this.setActive(false);
-    this.manager.initGame();
+    this.manager.landingManager.initGame(this.playerButtons.selected);
   }
 }

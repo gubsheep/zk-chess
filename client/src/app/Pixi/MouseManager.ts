@@ -5,6 +5,7 @@ import { BoardCoords, MoveAttack } from './@PixiTypes';
 import { compareBoardCoords, idxsIncludes } from './Utils/PixiUtils';
 import { Ship } from './Ships/Ship';
 import { Submarine } from './Ships/Submarine';
+import { InitState } from '../../api/GameAPI';
 
 export enum ClickState {
   None,
@@ -177,6 +178,8 @@ export class MouseManager {
     this.deployType = type;
 
     const mothership = this.manager.api.getMyMothership();
+    if (!mothership) return;
+
     const { row: my, col: mx } = mothership.coords;
     const deployIdxs = [
       { row: my + 1, col: mx },
@@ -248,7 +251,12 @@ export class MouseManager {
     }
   }
 
+  private shouldSkip(): boolean {
+    return this.manager.api.getInitState() !== InitState.GameStarted;
+  }
+
   cellClicked(idx: BoardCoords) {
+    if (this.shouldSkip()) return;
     console.log('got a click from this cell: ' + JSON.stringify(idx));
     // this.clearStaged();
     const { api } = this.manager;
@@ -305,6 +313,7 @@ export class MouseManager {
   }
 
   shipClicked(ship: Ship) {
+    if (this.shouldSkip()) return;
     console.log('got a click from this ship: ' + ship.objectId);
 
     const {
@@ -343,6 +352,8 @@ export class MouseManager {
   }
 
   subClicked(sub: Submarine) {
+    if (this.shouldSkip()) return;
+
     console.log('got a click from this sub: ' + sub.objectId, sub.pieceData);
     const {
       manager: { api },

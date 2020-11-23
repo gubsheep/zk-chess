@@ -1,10 +1,10 @@
 import * as stringify from 'json-stable-stringify';
-import {JsonRpcProvider, TransactionReceipt} from '@ethersproject/providers';
-import {providers, Contract, Wallet, utils, ContractInterface} from 'ethers';
-import {EthAddress} from '../_types/global/GlobalTypes';
-import {address} from '../utils/CheckedTypeUtils';
-import {EventEmitter} from 'events';
-import {XDAI_CHAIN_ID} from '../utils/constants';
+import { JsonRpcProvider, TransactionReceipt } from '@ethersproject/providers';
+import { providers, Contract, Wallet, utils, ContractInterface } from 'ethers';
+import { EthAddress } from '../_types/global/GlobalTypes';
+import { address } from '../utils/CheckedTypeUtils';
+import { EventEmitter } from 'events';
+import { XDAI_CHAIN_ID } from '../utils/constants';
 
 const isProd = process.env.NODE_ENV === 'production';
 // const isProd = true;
@@ -134,7 +134,8 @@ class EthereumAccountManager extends EventEmitter {
     }
   }
 
-  public addAccount(skey: string): void {
+  // returns public key
+  public addAccount(skey: string): EthAddress {
     // throws if invalid secret key
     const addr = address(utils.computeAddress(skey));
     if (!this.knownAddresses.includes(addr)) {
@@ -142,6 +143,7 @@ class EthereumAccountManager extends EventEmitter {
       this.knownAddresses.push(addr);
       localStorage.setItem('KNOWN_ADDRESSES', stringify(this.knownAddresses));
     }
+    return addr;
   }
 
   public getKnownAccounts(): EthAddress[] {

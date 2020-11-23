@@ -96,7 +96,7 @@ export class PieceObject extends PixiObject {
       api,
     } = this.manager;
 
-    if (this.pieceData.id === api.getMyMothership().pieceData.id) {
+    if (this.pieceData.id === api.getMyMothership()?.pieceData.id) {
       return clickState === ClickState.Deploying;
     } else {
       return selectedShip?.pieceData.id === this.pieceData.id;

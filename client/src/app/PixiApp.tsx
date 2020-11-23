@@ -12,7 +12,7 @@ import {
   TextBody,
 } from './PixiAppComponents/PixiAppComponents';
 
-export default function PixiApp() {
+export default function PixiApp({ tableId }: { tableId: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [pixiManager, setPixiManager] = useState<PixiManager | null>(null);
 
@@ -24,13 +24,15 @@ export default function PixiApp() {
   const scale = 2;
 
   useEffect(() => {
-    if (!canvasRef.current) {
+    if (!canvasRef.current || !tableId) {
       if (pixiManager) setPixiManager(PixiManager.destroy());
       return;
     }
 
-    setPixiManager(PixiManager.initialize({ canvas: canvasRef.current }));
-  }, [canvasRef]);
+    setPixiManager(
+      PixiManager.initialize({ canvas: canvasRef.current, tableId })
+    );
+  }, [canvasRef, tableId]);
 
   const dimObj = {
     width: `${scale * width}px`,
