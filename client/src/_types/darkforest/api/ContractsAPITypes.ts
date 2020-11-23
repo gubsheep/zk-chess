@@ -27,6 +27,7 @@ export enum ContractEvent {
 
   GameStart = 'GameStart',
   DidCardDraw = 'DidCardDraw', // args: (player: string, sequenceNumber: number)
+  DidCardPlay = 'DidCardPlay', // args: (player: string, pieceId: number, cardId: number, sequenceNumber: number)
   DidSummon = 'DidSummon', // args: (player: string, pieceId: number, sequenceNumber: number, pieceType: number, atRow: number, atCol: number)
   DidMove = 'DidMove', // args: (sequenceNumber: number, pieceId: number, fromRow: number, fromCol: number, toRow: number, toCol: number)
   DidAttack = 'DidAttack', // args: (sequenceNumber: number, attackerId: number, attackedId: number, attackerHp: number, attackedHp: number)
@@ -41,6 +42,7 @@ export enum ContractsAPIEvent {
 
   GameStart = 'GameStart', // args: ()
   DidCardDraw = 'DidCardDraw', // args: (player: string, sequenceNumber: number)
+  DidCardPlay = 'DidCardPlay', // args: (player: string, pieceId: number, cardId: number, sequenceNumber: number)
   DidSummon = 'DidSummon', // args: (player: string, sequenceNumber: number, pieceType: number, atRow: number, atCol: number)
   DidMove = 'DidMove', // args: (sequenceNumber: number, pieceId: number, fromRow: number, fromCol: number, toRow: number, toCol: number)
   DidAttack = 'DidAttack', // args: (sequenceNumber: number, attackerId: number, attackedId: number, attackerHp: number, attackedHp: number)
@@ -67,6 +69,21 @@ export type CardDrawArgs = [
     string, // new hand commit
     string, // old hand commit
     string // last turn timestamp
+  ]
+];
+
+export type CardPlayArgs = [
+  [string, string], // proofA
+  [
+    // proofB
+    [string, string],
+    [string, string]
+  ],
+  [string, string], // proofC
+  [
+    string, // old hand commit
+    string, // new hand commit
+    string // revealed card ID
   ]
 ];
 
@@ -281,6 +298,7 @@ export enum EthTxType {
   CREATE_GAME = 'CREATE_GAME',
   JOIN_GAME = 'JOIN_GAME',
   CARD_DRAW = 'CARD_DRAW',
+  CARD_PLAY = 'CARD_PLAY',
   SUMMON = 'SUMMON',
   MOVE = 'MOVE',
   ATTACK = 'ATTACK',
@@ -327,6 +345,20 @@ export function isCardDraw(
   txIntent: TxIntent
 ): txIntent is UnsubmittedCardDraw {
   return txIntent.type === EthTxType.CARD_DRAW;
+}
+
+export type UnsubmittedCardPlay = TxIntent & {
+  type: EthTxType.CARD_PLAY;
+  turnNumber: number;
+  sequenceNumber: number;
+  pieceId: number;
+  zkp: Promise<CardPlayArgs>;
+};
+
+export function isCardPlay(
+  txIntent: TxIntent
+): txIntent is UnsubmittedCardPlay {
+  return txIntent.type === EthTxType.CARD_PLAY;
 }
 
 export type UnsubmittedSummon = TxIntent & {

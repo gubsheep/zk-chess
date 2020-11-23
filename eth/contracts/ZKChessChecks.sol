@@ -58,6 +58,68 @@ library ZKChessChecks {
         return true;
     }
 
+    function checkCardDraw(
+        CardDraw memory cardDraw,
+        Player storage player1,
+        Player storage player2,
+        uint256 lastTurnTimestamp
+    ) public view returns (bool) {
+        if (msg.sender == player1.addr) {
+            require(!player1.hasDrawn, "already drew a card!");
+        } else {
+            require(!player2.hasDrawn, "already drew a card!");
+        }
+        uint256 seedCommit = (msg.sender == player1.addr)
+            ? player1.seedCommit
+            : player2.seedCommit;
+        uint256 oldHandCommit = (msg.sender == player1.addr)
+            ? player1.handCommit
+            : player2.handCommit;
+        require(cardDraw.zkp.input[0] == seedCommit, "wrong seed commit");
+        require(cardDraw.zkp.input[1] == oldHandCommit, "wrong hand commit");
+        require(cardDraw.zkp.input[3] == lastTurnTimestamp, "wrong timestamp");
+        require(
+            Verifier.verifyCardDrawProof(
+                cardDraw.zkp.a,
+                cardDraw.zkp.b,
+                cardDraw.zkp.c,
+                cardDraw.zkp.input
+            ),
+            "bad ZKP"
+        );
+        return true;
+    }
+
+    function checkCardPlay(
+        CardPlay memory cardPlay,
+        Player storage player1,
+        Player storage player2,
+        mapping(uint8 => Piece) storage pieces,
+        uint8 cardPlayCost
+    ) public view returns (bool) {
+        uint8 availableMana = (msg.sender == player1.addr)
+            ? player1.mana
+            : player2.mana;
+        uint256 oldHandCommit = (msg.sender == player1.addr)
+            ? player1.handCommit
+            : player2.handCommit;
+        require(availableMana >= cardPlayCost, "not enough mana");
+        require(pieces[cardPlay.pieceId].alive, "piece dead");
+        require(cardPlay.zkp.input[0] == oldHandCommit, "wrong hand commit");
+        /*
+        require(
+            Verifier.verifyCardPlayProof(
+                cardDraw.zkp.a,
+                cardDraw.zkp.b,
+                cardDraw.zkp.c,
+                cardDraw.zkp.input
+            ),
+            "bad ZKP"
+        );
+        */
+        return true;
+    }
+
     function checkSummon(
         Summon memory summon,
         uint8 homePieceId,

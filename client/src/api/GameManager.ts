@@ -18,6 +18,7 @@ import {
   isLocatable,
   CardDrawAction,
   isCardDrawAction,
+  CardPlayAction,
 } from '../_types/global/GlobalTypes';
 import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
@@ -33,12 +34,14 @@ import {
   EthTxType,
   isAttack,
   isCardDraw,
+  isCardPlay,
   isEndTurn,
   isMove,
   isSummon,
   SubmittedTx,
   TxIntent,
   UnsubmittedCardDraw,
+  UnsubmittedCardPlay,
   UnsubmittedCreateGame,
   UnsubmittedEndTurn,
   UnsubmittedJoin,
@@ -128,6 +131,26 @@ class GameManager extends EventEmitter implements AbstractGameManager {
           sequenceNumber,
           actionType: GameActionType.CARD_DRAW,
           fromLocalData: false,
+          player: address(player),
+        };
+        this.gameState.addGameAction(action);
+      }
+    );
+    contractsAPI.on(
+      ContractsAPIEvent.DidCardPlay,
+      async (
+        player: string,
+        pieceId: number,
+        cardId: number,
+        sequenceNumber: number
+      ) => {
+        if (!this.gameState) throw new Error('no game set');
+        const action: CardPlayAction = {
+          sequenceNumber,
+          actionType: GameActionType.CARD_PLAY,
+          fromLocalData: false,
+          pieceId,
+          card: cardId,
           player: address(player),
         };
         this.gameState.addGameAction(action);
@@ -232,7 +255,9 @@ class GameManager extends EventEmitter implements AbstractGameManager {
       async (txIntent: TxIntent, error: Error) => {
         if (
           this.gameState &&
-          (isSummon(txIntent) ||
+          (isCardDraw(txIntent) ||
+            isCardPlay(txIntent) ||
+            isSummon(txIntent) ||
             isMove(txIntent) ||
             isAttack(txIntent) ||
             isEndTurn(txIntent))
@@ -255,6 +280,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
         if (
           this.gameState &&
           (isCardDraw(txIntent) ||
+            isCardPlay(txIntent) ||
             isSummon(txIntent) ||
             isMove(txIntent) ||
             isAttack(txIntent) ||
@@ -277,6 +303,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   public destroy(): void {
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.CreatedGame);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.GameStart);
+    this.contractsAPI.removeAllListeners(ContractsAPIEvent.DidCardDraw);
+    this.contractsAPI.removeAllListeners(ContractsAPIEvent.DidCardPlay);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.DidSummon);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.DidMove);
     this.contractsAPI.removeAllListeners(ContractsAPIEvent.DidAttack);
@@ -446,6 +474,55 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     this.gameState.addGameAction(action);
     try {
       this.contractsAPI.doCardDraw(unsubmittedCardDraw);
+    } catch (e) {
+      console.error(e);
+    }
+    return Promise.resolve();
+  }
+
+  playCard(pieceId: number, handIdx: number): Promise<void> {
+    if (!this.gameState) throw new Error('no game set');
+    const gameState = this.gameState.getLatestState();
+    const newCards: [number, number, number] = [...gameState.myHand.cards];
+    newCards[handIdx] = 0;
+    const newSalt = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
+    const newHandCommit = mimcHash(...newCards, newSalt).toString();
+    LocalStorageManager.saveHandCommitment(
+      newHandCommit,
+      newCards as [number, number, number],
+      newSalt,
+      gameState.myAddress,
+      gameState.gameAddress
+    );
+    const zkp = this.snarkHelper.getPlayCardProof(
+      gameState.myHand,
+      handIdx,
+      newSalt
+    );
+    let unsubmittedCardPlay: UnsubmittedCardPlay = {
+      txIntentId: getRandomTxIntentId(),
+      type: EthTxType.CARD_PLAY,
+      turnNumber: gameState.turnNumber,
+      sequenceNumber: gameState.sequenceNumber,
+      pieceId,
+      zkp,
+    };
+    this.contractsAPI.onTxInit(unsubmittedCardPlay);
+    const action: CardPlayAction = {
+      sequenceNumber: unsubmittedCardPlay.sequenceNumber,
+      actionType: GameActionType.CARD_PLAY,
+      player: gameState.myAddress,
+      fromLocalData: true,
+      card: gameState.myHand.cards[handIdx],
+      pieceId,
+      myHand: {
+        cards: newCards,
+        salt: newSalt,
+      },
+    };
+    this.gameState.addGameAction(action);
+    try {
+      this.contractsAPI.doCardPlay(unsubmittedCardPlay);
     } catch (e) {
       console.error(e);
     }

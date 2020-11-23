@@ -129,7 +129,7 @@ struct CardPlay {
     uint8 turnNumber;
     uint16 sequenceNumber;
     uint8 pieceId;
-    CardDrawZKP zkp;
+    CardPlayZKP zkp;
 }
 
 struct Summon {

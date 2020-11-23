@@ -22,6 +22,7 @@ contract ZKChessGame is Initializable {
     uint8[] public pieceIds;
     mapping(uint8 => Piece) public pieces;
     CardPrototype[7] public cards;
+    uint8 cardPlayCost = 2;
 
     mapping(PieceType => PieceDefaultStats) public defaultStats;
 
@@ -242,7 +243,7 @@ contract ZKChessGame is Initializable {
     function doCardDraw(CardDraw memory cardDraw) public {
         checkAction(cardDraw.turnNumber, cardDraw.sequenceNumber);
         require(
-            ZKChessActions.checkCardDraw(
+            ZKChessChecks.checkCardDraw(
                 cardDraw,
                 player1,
                 player2,
@@ -264,7 +265,7 @@ contract ZKChessGame is Initializable {
     function doCardPlay(CardPlay memory cardPlay) public {
         checkAction(cardPlay.turnNumber, cardPlay.sequenceNumber);
         require(
-            ZKChessActions.checkCardPlay(cardPlay, player1, player2, pieces),
+            ZKChessChecks.checkCardPlay(cardPlay, player1, player2, pieces, cardPlayCost),
             "not valid card play"
         );
 
@@ -275,7 +276,8 @@ contract ZKChessGame is Initializable {
             defaultStats,
             player1,
             player2,
-            cards
+            cards,
+            cardPlayCost
         );
 
         emit DidCardPlay(

@@ -79,35 +79,6 @@ library ZKChessActions {
         return !pieces[1].alive || !pieces[2].alive;
     }
 
-    function checkCardPlay(
-        CardPlay memory cardPlay,
-        Player storage player1,
-        Player storage player2,
-        mapping(uint8 => Piece) storage pieces
-    ) public view returns (bool) {
-        uint8 availableMana = (msg.sender == player1.addr)
-            ? player1.mana
-            : player2.mana;
-        uint256 oldHandCommit = (msg.sender == player1.addr)
-            ? player1.handCommit
-            : player2.handCommit;
-        require(availableMana >= 3, "not enough mana");
-        require(pieces[cardPlay.pieceId].alive, "piece dead");
-        require(cardPlay.zkp.input[0] == oldHandCommit, "wrong hand commit");
-        /*
-        require(
-            Verifier.verifyCardPlayProof(
-                cardDraw.zkp.a,
-                cardDraw.zkp.b,
-                cardDraw.zkp.c,
-                cardDraw.zkp.input
-            ),
-            "bad ZKP"
-        );
-        */
-        return true;
-    }
-
     function executeCardPlay(
         CardPlay memory cardPlay,
         mapping(uint8 => Piece) storage pieces,
@@ -115,7 +86,8 @@ library ZKChessActions {
         mapping(PieceType => PieceDefaultStats) storage defaultStats,
         Player storage player1,
         Player storage player2,
-        CardPrototype[7] storage cards
+        CardPrototype[7] storage cards,
+        uint8 cardPlayCost
     ) public {
         Piece storage piece = pieces[cardPlay.pieceId];
         CardPrototype storage card = cards[cardPlay.zkp.input[2]];
@@ -135,38 +107,11 @@ library ZKChessActions {
         } else {
             player2.mana -= 3;
         }
-    }
-
-    function checkCardDraw(
-        CardDraw memory cardDraw,
-        Player storage player1,
-        Player storage player2,
-        uint256 lastTurnTimestamp
-    ) public view returns (bool) {
         if (msg.sender == player1.addr) {
-            require(!player1.hasDrawn, "already drew a card!");
+            player1.handCommit = cardPlay.zkp.input[1];
         } else {
-            require(!player2.hasDrawn, "already drew a card!");
+            player2.handCommit = cardPlay.zkp.input[1];
         }
-        uint256 seedCommit = (msg.sender == player1.addr)
-            ? player1.seedCommit
-            : player2.seedCommit;
-        uint256 oldHandCommit = (msg.sender == player1.addr)
-            ? player1.handCommit
-            : player2.handCommit;
-        require(cardDraw.zkp.input[0] == seedCommit, "wrong seed commit");
-        require(cardDraw.zkp.input[1] == oldHandCommit, "wrong hand commit");
-        require(cardDraw.zkp.input[3] == lastTurnTimestamp, "wrong timestamp");
-        require(
-            Verifier.verifyCardDrawProof(
-                cardDraw.zkp.a,
-                cardDraw.zkp.b,
-                cardDraw.zkp.c,
-                cardDraw.zkp.input
-            ),
-            "bad ZKP"
-        );
-        return true;
     }
 
     function executeMove(
@@ -203,7 +148,7 @@ library ZKChessActions {
         Piece storage piece = pieces[attack.pieceId];
         Piece storage attacked = pieces[attack.attackedId];
         // update attacked piece
-        uint8 dmg = defaultStats[piece.pieceType].atk;
+        uint8 dmg = piece.atk;
         if (dmg >= attacked.hp) {
             attacked.hp = 0;
             attacked.alive = false;
@@ -225,7 +170,7 @@ library ZKChessActions {
                 distance >= defaultStats[attacked.pieceType].atkMinRange &&
                 distance <= defaultStats[attacked.pieceType].atkMaxRange
             ) {
-                selfDmg += defaultStats[piece.pieceType].atk;
+                selfDmg += attacked.atk;
             }
         }
         if (defaultStats[piece.pieceType].kamikaze) {

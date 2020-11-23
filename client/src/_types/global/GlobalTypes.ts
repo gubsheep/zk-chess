@@ -225,6 +225,7 @@ export type PlayerMap = Map<string, Player>;
 
 export enum GameActionType {
   CARD_DRAW,
+  CARD_PLAY,
   SUMMON,
   MOVE,
   ATTACK,
@@ -245,6 +246,18 @@ export interface CardDrawAction extends GameAction {
 
 export function isCardDrawAction(action: GameAction): action is CardDrawAction {
   return action.actionType === GameActionType.CARD_DRAW;
+}
+
+export interface CardPlayAction extends GameAction {
+  actionType: GameActionType.CARD_PLAY;
+  player: EthAddress;
+  card: number;
+  pieceId: number;
+  myHand?: CardHand;
+}
+
+export function isCardPlayAction(action: GameAction): action is CardPlayAction {
+  return action.actionType === GameActionType.CARD_PLAY;
 }
 
 export interface SummonAction extends GameAction {

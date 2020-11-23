@@ -36,6 +36,7 @@ import {
   RawGameMetadata,
   RawCardPrototype,
   UnsubmittedCardDraw,
+  UnsubmittedCardPlay,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
 
@@ -210,6 +211,9 @@ class ContractsAPI extends EventEmitter {
       });
       this.gameContract.on(ContractEvent.DidCardDraw, (...args) => {
         this.emit(ContractsAPIEvent.DidCardDraw, ...args);
+      });
+      this.gameContract.on(ContractEvent.DidCardPlay, (...args) => {
+        this.emit(ContractsAPIEvent.DidCardPlay, ...args);
       });
       this.gameContract.on(ContractEvent.DidSummon, (...args) => {
         this.emit(ContractsAPIEvent.DidSummon, ...args);
@@ -477,6 +481,44 @@ class ContractsAPI extends EventEmitter {
           contract: this.gameContract,
           method: 'doCardDraw',
           args: [[action.turnNumber, action.sequenceNumber, await action.zkp]],
+          overrides,
+        }
+      );
+
+      if (tx.hash) {
+        this.onTxSubmit(action, tx.hash);
+      }
+      return tx.wait();
+    } catch (e) {
+      this.onTxSubmitFail(action, e);
+      throw e;
+    }
+  }
+
+  public async doCardPlay(
+    action: UnsubmittedCardPlay
+  ): Promise<providers.TransactionReceipt> {
+    if (!this.gameContract) {
+      throw new Error('no game contract set');
+    }
+    try {
+      const overrides: providers.TransactionRequest = {
+        gasPrice: 1000000000,
+        gasLimit: 2000000,
+      };
+      const tx: providers.TransactionResponse = await this.txRequestExecutor.makeRequest(
+        {
+          txIntentId: action.txIntentId,
+          contract: this.gameContract,
+          method: 'doCardPlay',
+          args: [
+            [
+              action.turnNumber,
+              action.sequenceNumber,
+              action.pieceId,
+              await action.zkp,
+            ],
+          ],
           overrides,
         }
       );

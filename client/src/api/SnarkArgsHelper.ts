@@ -1,5 +1,6 @@
 import {
   CardDrawArgs,
+  CardPlayArgs,
   ContractCallArgs,
   GhostAttackArgs,
   GhostMoveArgs,
@@ -59,6 +60,56 @@ class SnarkArgsHelper {
         snarkProof.proof,
         snarkProof.publicSignals
       ) as CardDrawArgs;
+      return ret;
+    } catch (e) {
+      console.error(e);
+      throw new Error('error calculating zkSNARK.');
+    }
+  }
+
+  async getPlayCardProof(
+    oldHand: CardHand,
+    playedCardIdx: number,
+    newSalt: string
+  ): Promise<CardPlayArgs> {
+    try {
+      const newCards = [...oldHand.cards];
+      newCards[playedCardIdx] = 0;
+      const input = {
+        a: oldHand.cards[0].toString(),
+        b: oldHand.cards[1].toString(),
+        c: oldHand.cards[2].toString(),
+        w: newCards[0].toString(),
+        x: newCards[1].toString(),
+        y: newCards[2].toString(),
+        salt1: oldHand.salt,
+        salt2: newSalt,
+        z: oldHand.cards[playedCardIdx].toString(),
+      };
+      /*
+      const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
+        input,
+        '/battleship/public/circuits/play/circuit.wasm',
+        '/battleship/public/play.zkey'
+      );
+      const ret = this.callArgsFromProofAndSignals(
+        snarkProof.proof,
+        snarkProof.publicSignals
+      ) as CardDrawArgs;
+      */
+      const ret = Promise.resolve([
+        ['0', '0'],
+        [
+          ['0', '0'],
+          ['0', '0'],
+        ],
+        ['0', '0'],
+        [
+          mimcHash(...oldHand.cards, oldHand.salt).toString(),
+          mimcHash(...newCards, newSalt).toString(),
+          oldHand.cards[playedCardIdx].toString(),
+        ],
+      ] as CardPlayArgs);
       return ret;
     } catch (e) {
       console.error(e);

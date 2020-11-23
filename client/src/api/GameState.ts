@@ -10,6 +10,7 @@ import {
   GameStatus,
   isAttackAction,
   isCardDrawAction,
+  isCardPlayAction,
   isEndTurnAction,
   isLocatable,
   isMoveAction,
@@ -28,6 +29,7 @@ import _ from 'lodash';
 import {LocalStorageManager} from './LocalStorageManager';
 import {STARTING_HAND_COMMIT} from '../utils/constants';
 import mimcHash from '../hash/mimc';
+import {address} from '../utils/CheckedTypeUtils';
 
 export class GameState {
   gameAddress: EthAddress;
@@ -140,7 +142,6 @@ export class GameState {
         mvRange: defaultsForPiece.mvRange,
         atkMinRange: defaultsForPiece.atkMinRange,
         atkMaxRange: defaultsForPiece.atkMaxRange,
-        atk: defaultsForPiece.atk,
         kamikaze: defaultsForPiece.kamikaze,
       };
       if (isZKPiece(piece)) {
@@ -252,6 +253,23 @@ export class GameState {
 
       if (action.player === gameState.myAddress && action.hand) {
         gameState.myHand = action.hand;
+      }
+    } else if (isCardPlayAction(action)) {
+      const card = gameState.cardPrototypes[action.card];
+      for (const piece of gameState.pieces) {
+        if (piece.id === action.pieceId) {
+          piece.hp += card.heal;
+          piece.atk += card.atkBuff;
+          piece.hp = Math.max(piece.hp - card.damage, 0);
+          if (piece.hp === 0) {
+            piece.alive = false;
+          }
+          gameState.pieceById.set(piece.id, piece);
+        }
+      }
+
+      if (action.player === gameState.myAddress && action.myHand) {
+        gameState.myHand = action.myHand;
       }
     } else if (isSummonAction(action)) {
       const [piece, cost] = this.defaultPiece(
