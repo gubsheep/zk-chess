@@ -54,6 +54,22 @@ export enum ContractsAPIEvent {
   TxConfirmed = 'TxConfirmed', // args: (txIntent: SubmittedTx)
 }
 
+export type CardDrawArgs = [
+  [string, string], // proofA
+  [
+    // proofB
+    [string, string],
+    [string, string]
+  ],
+  [string, string], // proofC
+  [
+    string, // seed commit
+    string, // new hand commit
+    string, // old hand commit
+    string // last turn timestamp
+  ]
+];
+
 export type GhostSummonArgs = [
   [string, string], // proofA
   [
@@ -264,6 +280,7 @@ export type RawObjective = {
 export enum EthTxType {
   CREATE_GAME = 'CREATE_GAME',
   JOIN_GAME = 'JOIN_GAME',
+  CARD_DRAW = 'CARD_DRAW',
   SUMMON = 'SUMMON',
   MOVE = 'MOVE',
   ATTACK = 'ATTACK',
@@ -296,6 +313,21 @@ export type UnsubmittedJoin = TxIntent & {
 };
 
 export type SubmittedJoin = UnsubmittedJoin & SubmittedTx;
+
+export type UnsubmittedCardDraw = TxIntent & {
+  type: EthTxType.CARD_DRAW;
+  turnNumber: number;
+  sequenceNumber: number;
+  cardId: number;
+  atIndex: 0 | 1 | 2;
+  zkp: Promise<CardDrawArgs>;
+};
+
+export function isCardDraw(
+  txIntent: TxIntent
+): txIntent is UnsubmittedCardDraw {
+  return txIntent.type === EthTxType.CARD_DRAW;
+}
 
 export type UnsubmittedSummon = TxIntent & {
   type: EthTxType.SUMMON;

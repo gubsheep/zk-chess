@@ -27,6 +27,7 @@ import {
 import _ from 'lodash';
 import {LocalStorageManager} from './LocalStorageManager';
 import {STARTING_HAND_COMMIT} from '../utils/constants';
+import mimcHash from '../hash/mimc';
 
 export class GameState {
   gameAddress: EthAddress;
@@ -43,9 +44,8 @@ export class GameState {
   player2Mana: number;
   player1HasDrawn: boolean;
   player2HasDrawn: boolean;
-  player1HandCommit: string;
-  player2HandCommit: string;
   myHand: CardHand;
+  drawnCard: number | null;
 
   pieces: Piece[];
   objectives: Objective[];
@@ -77,8 +77,6 @@ export class GameState {
     this.player2Mana = contractData.player2Mana;
     this.player1HasDrawn = contractData.player1HasDrawn;
     this.player2HasDrawn = contractData.player2HasDrawn;
-    this.player1HandCommit = contractData.player1HandCommit;
-    this.player2HandCommit = contractData.player2HandCommit;
     this.cardPrototypes = contractData.cardPrototypes;
     this.objectives = contractData.objectives;
     this.defaults = contractData.defaults;
@@ -90,8 +88,9 @@ export class GameState {
     // throws if can't find commitment
     const handCommit =
       this.myAddress === this.player1.address
-        ? this.player1HandCommit
-        : this.player2HandCommit;
+        ? contractData.player1HandCommit
+        : contractData.player2HandCommit;
+    console.log(`received hand commit ${handCommit}`);
     if (handCommit === STARTING_HAND_COMMIT) {
       this.myHand = {
         cards: [0, 0, 0],
@@ -103,6 +102,29 @@ export class GameState {
         this.myAddress,
         this.gameAddress
       );
+    }
+
+    const isMyTurn =
+      (this.myAddress === this.player1.address &&
+        this.gameStatus === GameStatus.P1_TO_MOVE) ||
+      (this.myAddress === this.player2.address &&
+        this.gameStatus === GameStatus.P2_TO_MOVE);
+
+    this.drawnCard = null;
+    // if it's my turn and i haven't drawn, draw a card
+    if (isMyTurn) {
+      if (
+        this.myAddress === this.player1.address
+          ? !this.player1HasDrawn
+          : !this.player2HasDrawn
+      ) {
+        const mySeed = LocalStorageManager.getSeed(
+          this.myAddress,
+          this.gameAddress
+        );
+        this.drawnCard =
+          mimcHash(mySeed, this.lastTurnTimestamp).mod(6).toJSNumber() + 1;
+      }
     }
 
     this.pieces = [];
@@ -141,14 +163,9 @@ export class GameState {
       this.pieces.push(piece);
       this.pieceById.set(piece.id, piece);
     }
-    if (this.myAddress === this.player1.address) {
-      if (this.gameStatus === GameStatus.P2_TO_MOVE) {
-        this.gameActions = this.gameActions.slice(0, this.sequenceNumber);
-      }
-    } else if (this.myAddress === this.player2.address) {
-      if (this.gameStatus === GameStatus.P1_TO_MOVE) {
-        this.gameActions = this.gameActions.slice(0, this.sequenceNumber);
-      }
+    // if it's not my turn, just listen to contract state and flush stale actions
+    if (!isMyTurn) {
+      this.gameActions = this.gameActions.slice(0, this.sequenceNumber);
     }
   }
 
@@ -179,14 +196,13 @@ export class GameState {
       nCols: this.nCols,
       myAddress: this.myAddress,
       myHand: this.myHand,
+      drawnCard: this.drawnCard,
       player1: this.player1,
       player2: this.player2,
       player1Mana: this.player1Mana,
       player2Mana: this.player2Mana,
       player1HasDrawn: this.player1HasDrawn,
       player2HasDrawn: this.player2HasDrawn,
-      player1HandCommit: this.player1HandCommit,
-      player2HandCommit: this.player2HandCommit,
       pieces: this.pieces,
       cardPrototypes: this.cardPrototypes,
       objectives: this.objectives,
@@ -207,11 +223,24 @@ export class GameState {
     return state;
   }
 
+  public getStateAtSequence(sequenceNumber: number): ChessGame {
+    const state = this.getGameState();
+    if (sequenceNumber <= state.sequenceNumber) return state;
+    for (let i = state.sequenceNumber; i < sequenceNumber; i += 1) {
+      this.applyAction(state, this.gameActions[i]);
+    }
+    return state;
+  }
+
   public getActions(): (GameAction | undefined)[] {
     return this.gameActions;
   }
 
-  public applyAction(gameState: ChessGame, action: GameAction): ChessGame {
+  public applyAction(
+    gameState: ChessGame,
+    action: GameAction | undefined
+  ): ChessGame {
+    if (!action) return gameState;
     // modifies gameState
     if (isCardDrawAction(action)) {
       if (action.player === gameState.player1.address) {
@@ -221,9 +250,9 @@ export class GameState {
       }
 
       if (action.player === gameState.myAddress && action.hand) {
+        gameState.myHand = action.hand;
       }
-    }
-    if (isSummonAction(action)) {
+    } else if (isSummonAction(action)) {
       const [piece, cost] = this.defaultPiece(
         action.pieceId,
         action.pieceType,
@@ -366,8 +395,6 @@ export class GameState {
       state1.player2Mana !== state2.player2Mana ||
       state1.player1HasDrawn !== state2.player1HasDrawn ||
       state1.player2HasDrawn !== state2.player2HasDrawn ||
-      state1.player1HandCommit !== state2.player1HandCommit ||
-      state1.player2HandCommit !== state2.player2HandCommit ||
       state1.sequenceNumber !== state2.sequenceNumber ||
       state1.turnNumber !== state2.turnNumber
     ) {

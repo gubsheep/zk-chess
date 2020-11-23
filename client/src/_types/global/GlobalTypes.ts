@@ -186,9 +186,8 @@ export type ChessGame = {
   player2Mana: number;
   player1HasDrawn: boolean;
   player2HasDrawn: boolean;
-  player1HandCommit: string;
-  player2HandCommit: string;
   myHand: CardHand;
+  drawnCard: number | null;
 
   pieces: Piece[];
   objectives: Objective[];

@@ -73,33 +73,30 @@ export class LocalStorageManager {
     return [location, salt];
   }
 
-  public static saveSeedCommitment(
+  public static saveSeed(
     seed: string,
     account: EthAddress,
     contract: EthAddress
   ): void {
-    localStorage.setItem(`SEED_COMMIT_${account}_${contract}`, seed);
+    localStorage.setItem(`SEED_${account}_${contract}`, seed);
   }
 
-  public static getSeedCommitment(
-    account: EthAddress,
-    contract: EthAddress
-  ): string {
-    const seed = localStorage.getItem(`SEED_COMMIT_${account}_${contract}`);
+  public static getSeed(account: EthAddress, contract: EthAddress): string {
+    const seed = localStorage.getItem(`SEED_${account}_${contract}`);
     if (!seed) throw new Error('seed not found');
     return seed;
   }
 
   public static saveHandCommitment(
     commit: string,
-    hand: [number, number, number],
+    cardIds: [number, number, number],
     salt: string,
     account: EthAddress,
     contract: EthAddress
   ): void {
     localStorage.setItem(
       `HAND_COMMIT_${account}_${contract}_${commit}`,
-      JSON.stringify([hand[0], hand[1], hand[2], salt])
+      JSON.stringify([cardIds[0], cardIds[1], cardIds[2], salt])
     );
 
     let commitments: string[] = [];
@@ -125,7 +122,6 @@ export class LocalStorageManager {
     const commitmentDataStr = localStorage.getItem(
       `HAND_COMMIT_${account}_${contract}_${commit}`
     );
-    console.log(account, contract, commit);
     if (!commitmentDataStr) throw new Error('commitment not found');
     const commitData = JSON.parse(commitmentDataStr) as [
       number,

@@ -21,7 +21,7 @@ contract ZKChessGame is Initializable {
     Objective[] public objectives;
     uint8[] public pieceIds;
     mapping(uint8 => Piece) public pieces;
-    CardPrototype[] public cards;
+    CardPrototype[7] public cards;
 
     mapping(PieceType => PieceDefaultStats) public defaultStats;
 

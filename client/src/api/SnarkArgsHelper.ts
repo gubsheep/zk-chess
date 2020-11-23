@@ -1,15 +1,17 @@
 import {
+  CardDrawArgs,
   ContractCallArgs,
   GhostAttackArgs,
   GhostMoveArgs,
   GhostSummonArgs,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import {
+  CardHand,
   SnarkJSProof,
   SnarkJSProofAndSignals,
 } from '../_types/global/GlobalTypes';
 import {BigInteger} from 'big-integer';
-import {modPBigInt} from '../hash/mimc';
+import mimcHash, {modPBigInt} from '../hash/mimc';
 
 class SnarkArgsHelper {
   // private constructor() {}
@@ -21,6 +23,64 @@ class SnarkArgsHelper {
   static create(): SnarkArgsHelper {
     const snarkArgsHelper = new SnarkArgsHelper();
     return snarkArgsHelper;
+  }
+
+  async getDrawCardProof(
+    oldHand: CardHand,
+    drawnCard: number,
+    newSalt: string,
+    atHandIndex: number,
+    seed: string,
+    lastTurnTimestamp: number
+  ): Promise<CardDrawArgs> {
+    try {
+      const newCards = [...oldHand.cards];
+      newCards[atHandIndex] = drawnCard;
+      const input = {
+        a: oldHand.cards[0].toString(),
+        b: oldHand.cards[1].toString(),
+        c: oldHand.cards[2].toString(),
+        d: drawnCard.toString(),
+        w: newCards[0].toString(),
+        x: newCards[1].toString(),
+        y: newCards[2].toString(),
+        z: oldHand.cards[atHandIndex].toString(),
+        seed: seed.toString(),
+        salt1: oldHand.salt,
+        salt2: newSalt,
+        stateHash: lastTurnTimestamp.toString(),
+      };
+      /*
+      const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
+        input,
+        '/battleship/public/circuits/draw/circuit.wasm',
+        '/battleship/public/draw.zkey'
+      );
+      const ret = this.callArgsFromProofAndSignals(
+        snarkProof.proof,
+        snarkProof.publicSignals
+      ) as CardDrawArgs;
+      */
+      const ret = Promise.resolve([
+        ['0', '0'], // proofA
+        [
+          // proofB
+          ['0', '0'],
+          ['0', '0'],
+        ],
+        ['0', '0'], // proofC
+        [
+          mimcHash(seed).toString(), // seed commit
+          mimcHash(...newCards, newSalt).toString(), // new hand commit
+          mimcHash(...oldHand.cards, oldHand.salt).toString(), // old hand commit
+          lastTurnTimestamp.toString(), // last turn timestamp
+        ],
+      ] as CardDrawArgs);
+      return ret;
+    } catch (e) {
+      console.error(e);
+      throw new Error('error calculating zkSNARK.');
+    }
   }
 
   async getSummonProof(

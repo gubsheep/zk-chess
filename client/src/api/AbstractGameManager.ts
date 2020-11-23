@@ -36,6 +36,7 @@ export default interface AbstractGameManager extends EventEmitter {
   createGame(gameId: string): Promise<void>;
   joinGame(): Promise<void>;
 
+  drawCard(atHandIndex: number): Promise<void>;
   summonPiece(pieceType: PieceType, at: BoardLocation): Promise<void>;
   attack(pieceId: number, attackedId: number): Promise<void>;
   movePiece(pieceId: number, to: BoardLocation): Promise<void>;
