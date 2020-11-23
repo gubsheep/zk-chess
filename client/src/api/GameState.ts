@@ -352,6 +352,16 @@ export class GameState {
       }
     }
     gameState.sequenceNumber = action.sequenceNumber + 1;
+    const mothership1 = gameState.pieceById.get(1);
+    const mothership2 = gameState.pieceById.get(2);
+    if (
+      (mothership1 && !mothership1.alive) ||
+      (mothership2 && !mothership2.alive)
+    ) {
+      if (gameState.gameStatus !== GameStatus.WAITING_FOR_PLAYERS) {
+        gameState.gameStatus = GameStatus.COMPLETE;
+      }
+    }
     return gameState;
   }
 
