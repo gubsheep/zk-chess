@@ -14,6 +14,7 @@ import { ShipManager } from '../app/Pixi/Ships/ShipManager';
 import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
 import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
 import { GameOver } from '../app/Pixi/UI/GameOver';
+import { GameInitUI } from '../app/Pixi/GameInitUI/GameInitUI';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -30,7 +31,8 @@ export enum GameZIndex {
   UI,
   Shop,
   GameOver,
-  MAX = GameOver,
+  GameInit,
+  MAX = GameInit,
 }
 
 // this guy should only have to think about game objects and how they interact
@@ -119,15 +121,7 @@ export class PixiManager {
     this.layers[obj.layer].addChild(obj.object);
   }
 
-  private setup() {
-    const cache = PIXI.utils.TextureCache;
-    this.fontLoader = getFontLoader(cache[FONT]);
-
-    this.renderer.backgroundColor = 0x061639; // TODO set fallback color
-
-    // set up background
-    this.addObject(new Background(this));
-
+  initGame() {
     // set up grid
     // this is definitely a bad way of doing it, but whatever TODO fix
     this.gameBoard = new GameBoard(this);
@@ -140,6 +134,21 @@ export class PixiManager {
     this.addObject(new StagedShip(this));
     this.addObject(new Shop(this));
     this.addObject(new GameOver(this));
+  }
+
+  private initUI() {
+    this.addObject(new GameInitUI(this));
+  }
+
+  private setup() {
+    const cache = PIXI.utils.TextureCache;
+    this.fontLoader = getFontLoader(cache[FONT]);
+    this.renderer.backgroundColor = 0x061639; // TODO set fallback color
+
+    // set up background
+    this.addObject(new Background(this));
+
+    this.initUI();
 
     // initialize loop
     this.loop();
