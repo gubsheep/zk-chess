@@ -111,6 +111,15 @@ export class PixiObject {
     if (y !== undefined) this.object.y = y;
   }
 
+  setScale({ x, y }: Partial<CanvasCoords>): void {
+    if (x !== undefined) this.object.scale.x = x;
+    if (y !== undefined) this.object.scale.y = y;
+  }
+
+  setRotation(rot: number): void {
+    this.object.rotation = rot;
+  }
+
   getPosition(): CanvasCoords {
     return { x: this.object.x, y: this.object.y };
   }

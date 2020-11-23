@@ -7,6 +7,12 @@ export enum PlayerColor {
   Blue = 'BLUE',
 }
 
+export enum PlayerType {
+  Player1 = 'Player1',
+  Player2 = 'Player2',
+  Spectator = 'Spectator',
+}
+
 export enum LineAlignment {
   Inner = 0,
   Middle = 0.5,

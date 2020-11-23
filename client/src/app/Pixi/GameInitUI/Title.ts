@@ -9,6 +9,7 @@ export class Title extends PixiObject {
 
     const cache = PIXI.utils.TextureCache;
     const title = new PIXI.Sprite(cache[UI.TITLE]);
+    title.x = Math.floor(-title.width / 2);
 
     this.object.addChild(title);
 
@@ -17,6 +18,18 @@ export class Title extends PixiObject {
 
   positionSelf() {
     const { width, height } = this.manager.renderer;
-    this.setPosition({ x: 0.5 * (width - this.object.width), y: 20 });
+    this.setPosition({
+      x: Math.floor(0.5 * width),
+      y: Math.floor(20),
+    });
+  }
+
+  loop() {
+    super.loop();
+
+    this.setRotation(0.2 * Math.sin(this.lifetime / 15));
+
+    const scale = 1 + 0.1 * Math.sin(this.lifetime / 20);
+    this.setScale({ x: scale, y: scale });
   }
 }
