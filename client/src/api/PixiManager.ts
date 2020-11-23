@@ -5,7 +5,6 @@ import { ResourceBars } from '../app/Pixi/UI/ResourceBars';
 import { Shop } from '../app/Pixi/UI/Shop';
 import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
 import { MouseManager } from '../app/Pixi/MouseManager';
-import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
 import { ObjectiveManager } from '../app/Pixi/Objectives/ObjectiveManager';
 import { Background } from '../app/Pixi/Utils/Background';
@@ -16,10 +15,10 @@ import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
 import { GameOver } from '../app/Pixi/UI/GameOver';
 import { GameInitUI } from '../app/Pixi/GameInitUI/GameInitUI';
 import { TableNumber } from '../app/Pixi/UI/TableNumber';
+import { LandingPageManager } from '../app/Pixi/LandingPageManager';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
-  gameManager: AbstractGameManager;
 };
 
 export enum GameZIndex {
@@ -60,8 +59,10 @@ export class PixiManager {
   shipManager: ShipManager;
   objectiveManager: ObjectiveManager;
 
+  landingManager: LandingPageManager;
+
   private constructor(props: InitProps) {
-    const { canvas, gameManager } = props;
+    const { canvas } = props;
     this.canvas = canvas;
     const { width, height } = canvas;
 
@@ -97,8 +98,10 @@ export class PixiManager {
     this.objectiveManager = new ObjectiveManager(this);
     this.addObject(this.objectiveManager);
 
+
     this.mouseManager = new MouseManager(this);
-    this.api = new GameAPI(this, gameManager);
+    // this.api = new GameAPI(this, gameManager);
+    this.landingManager = new LandingPageManager(this);
 
     autoBind(this);
 

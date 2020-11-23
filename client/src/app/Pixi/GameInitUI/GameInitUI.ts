@@ -1,8 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../../api/PixiManager';
-import { PlayerType } from '../@PixiTypes';
 import { PixiObject } from '../PixiObject';
-import { UI } from '../Utils/TextureLoader';
+import { CreateTable } from './CreateTable';
 import { PlayerButtons } from './PlayerButtons';
 import { SetSail } from './SetSail';
 import { Title } from './Title';
@@ -17,6 +16,7 @@ export class GameInitUI extends PixiObject {
     this.addChild(this.playerButtons);
     this.addChild(new Title(manager));
     this.addChild(new SetSail(manager, this.initGame));
+    this.addChild(new CreateTable(manager));
   }
 
   private initGame() {

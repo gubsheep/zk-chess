@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { Player } from '../../../_types/global/GlobalTypes';
 import { PlayerType } from '../@PixiTypes';
+import { InitState } from '../LandingPageManager';
 import { PixiObject, Wrapper } from '../PixiObject';
 import { UI } from '../Utils/TextureLoader';
 
@@ -40,6 +41,10 @@ class PlayerButton extends PixiObject {
 
   loop() {
     super.loop();
+
+    this.setActive(
+      this.manager.landingManager.initState > InitState.CREATE_TABLE
+    );
 
     if (this.parent.selected === this.type) {
       this.sprite.rotation = 0.2 * Math.sin(this.lifetime / 15);

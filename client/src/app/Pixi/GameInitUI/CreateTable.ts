@@ -4,18 +4,16 @@ import { InitState } from '../LandingPageManager';
 import { PixiObject } from '../PixiObject';
 import { UI } from '../Utils/TextureLoader';
 
-export class SetSail extends PixiObject {
-  initGame: () => void;
+export class CreateTable extends PixiObject {
   hover: boolean;
 
   title: PIXI.Sprite;
-  constructor(manager: PixiManager, initGame: () => void) {
+  constructor(manager: PixiManager) {
     super(manager);
-    this.initGame = initGame;
     this.hover = false;
 
     const cache = PIXI.utils.TextureCache;
-    this.title = new PIXI.Sprite(cache[UI.SETSAIL]);
+    this.title = new PIXI.Sprite(cache[UI.CREATE]);
     this.title.pivot.x = Math.floor(this.title.width / 2);
     this.title.pivot.y = Math.floor(this.title.height / 2);
 
@@ -40,13 +38,13 @@ export class SetSail extends PixiObject {
   positionSelf() {
     const { width, height } = this.manager.renderer;
     this.setPosition({
-      x: Math.floor(width - this.object.width + 10),
-      y: Math.floor(height / 2),
+      x: Math.floor(0.5 * width),
+      y: Math.floor(0.5 * height),
     });
   }
 
   private onClick() {
-    this.initGame();
+    this.manager.landingManager.createTable();
   }
   private onMouseOver() {
     this.hover = true;
@@ -58,7 +56,7 @@ export class SetSail extends PixiObject {
   loop() {
     super.loop();
     this.setActive(
-      this.manager.landingManager.initState > InitState.CREATE_TABLE
+      this.manager.landingManager.initState <= InitState.CREATE_TABLE
     );
 
     if (this.hover) {
