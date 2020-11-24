@@ -267,6 +267,12 @@ export class GameState {
           gameState.pieceById.set(piece.id, piece);
         }
       }
+      if (action.player === gameState.player1.address) {
+        // TODO bad that this is hardcoded. should be pulled from contract
+        gameState.player1Mana -= 2;
+      } else {
+        gameState.player2Mana -= 2;
+      }
 
       if (action.player === gameState.myAddress && action.myHand) {
         gameState.myHand = action.myHand;

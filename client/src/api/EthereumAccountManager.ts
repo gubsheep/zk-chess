@@ -1,10 +1,10 @@
 import * as stringify from 'json-stable-stringify';
-import { JsonRpcProvider, TransactionReceipt } from '@ethersproject/providers';
-import { providers, Contract, Wallet, utils, ContractInterface } from 'ethers';
-import { EthAddress } from '../_types/global/GlobalTypes';
-import { address } from '../utils/CheckedTypeUtils';
-import { EventEmitter } from 'events';
-import { XDAI_CHAIN_ID } from '../utils/constants';
+import {JsonRpcProvider, TransactionReceipt} from '@ethersproject/providers';
+import {providers, Contract, Wallet, utils, ContractInterface} from 'ethers';
+import {EthAddress} from '../_types/global/GlobalTypes';
+import {address} from '../utils/CheckedTypeUtils';
+import {EventEmitter} from 'events';
+import {XDAI_CHAIN_ID} from '../utils/constants';
 
 const isProd = process.env.NODE_ENV === 'production';
 // const isProd = true;
@@ -88,7 +88,7 @@ class EthereumAccountManager extends EventEmitter {
 
   public async loadGameContract(contractAddress: string): Promise<Contract> {
     const contractABI = (
-      await fetch('/battleship/public/contracts/ZKChessGame.json').then((x) =>
+      await fetch('/bote/public/contracts/ZKChessGame.json').then((x) =>
         x.json()
       )
     ).abi;
@@ -97,9 +97,9 @@ class EthereumAccountManager extends EventEmitter {
 
   public async loadFactoryContract(): Promise<Contract> {
     const contractABI = (
-      await fetch(
-        '/battleship/public/contracts/ZKChessGameFactory.json'
-      ).then((x) => x.json())
+      await fetch('/bote/public/contracts/ZKChessGameFactory.json').then((x) =>
+        x.json()
+      )
     ).abi;
 
     const contractAddress = isProd

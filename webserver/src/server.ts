@@ -27,7 +27,7 @@ const httpServer = http.createServer(app);
 const main = async () => {
   app.use(express.static('../client/dist'));
 
-  app.get('/battleship/api/:tableId', async (req: Request, res: Response) => {
+  app.get('/bote/api/:tableId', async (req: Request, res: Response) => {
     const data = (
       await db.collection('battleship').doc(req.params.tableId).get()
     ).data() as tableData;
@@ -35,7 +35,7 @@ const main = async () => {
   });
 
   app.post(
-    '/battleship/api/setGameId/:tableId',
+    '/bote/api/setGameId/:tableId',
     async (req: Request, res: Response) => {
       try {
         const gameId = req.body.gameId;
@@ -50,7 +50,7 @@ const main = async () => {
     }
   );
 
-  app.get('/battleship/*', (_: Request, res: Response) => {
+  app.get('/bote/*', (_: Request, res: Response) => {
     res.sendFile(path.resolve('../client/dist/index.html'));
   });
 

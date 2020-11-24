@@ -6,7 +6,7 @@ import Homepage from './Homepage';
 
 export default function App() {
   return (
-    <Router basename='/battleship'>
+    <Router basename='/bote'>
       <Switch>
         <Route path='/:tableId' component={Game} />
         <Route path='/' component={Homepage} />

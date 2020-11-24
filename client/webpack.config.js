@@ -16,7 +16,7 @@ module.exports = {
   entry: './src/index.tsx',
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: 'battleship/bundle.min.js',
+    filename: 'bote/bundle.min.js',
     publicPath: '/',
   },
 
@@ -75,7 +75,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './index.html',
     }),
-    new CopyPlugin([{from: 'public', to: 'battleship/public'}]),
+    new CopyPlugin([{from: 'public', to: 'bote/public'}]),
   ],
 
   // When importing a module whose path matches one of the following, just
