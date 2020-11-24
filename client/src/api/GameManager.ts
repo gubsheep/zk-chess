@@ -679,7 +679,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     unsubmittedAttack.col = attacked.location[0];
     unsubmittedAttack.attackedId = attackedId;
     unsubmittedAttack.sequenceNumber = gameState.sequenceNumber;
-    console.log(unsubmittedAttack);
     if (isZKPiece(attacker)) {
       if (!isKnown(attacker)) throw new Error('attacker location not found');
       unsubmittedAttack.isZk = true;

@@ -92,7 +92,6 @@ export class GameState {
       this.myAddress === this.player1.address
         ? contractData.player1HandCommit
         : contractData.player2HandCommit;
-    console.log(`received hand commit ${handCommit}`);
     if (handCommit === STARTING_HAND_COMMIT) {
       this.myHand = {
         cards: [0, 0, 0],
@@ -352,6 +351,16 @@ export class GameState {
       }
     }
     gameState.sequenceNumber = action.sequenceNumber + 1;
+    const mothership1 = gameState.pieceById.get(1);
+    const mothership2 = gameState.pieceById.get(2);
+    if (
+      (mothership1 && !mothership1.alive) ||
+      (mothership2 && !mothership2.alive)
+    ) {
+      if (gameState.gameStatus !== GameStatus.WAITING_FOR_PLAYERS) {
+        gameState.gameStatus = GameStatus.COMPLETE;
+      }
+    }
     return gameState;
   }
 
