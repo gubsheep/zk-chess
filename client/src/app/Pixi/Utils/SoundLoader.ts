@@ -15,7 +15,7 @@ export const loadSound = (callbackFn: () => void): void => {
   console.log('loading sounds');
 
   pixiSound.add('foo', bgm);
-  pixiSound.play('foo');
+  // pixiSound.play('foo');
 
   // const loader = PIXI.Loader.shared;
   // for (const str of sounds) {
