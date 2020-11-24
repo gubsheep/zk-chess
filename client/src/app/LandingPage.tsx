@@ -1,28 +1,26 @@
-import React, {ChangeEvent, useEffect, useRef} from 'react';
-import {useState} from 'react';
-import {Wallet} from 'ethers';
+import React, { ChangeEvent, useEffect, useRef } from 'react';
+import { useState } from 'react';
+import { Wallet } from 'ethers';
 import AbstractGameManager, {
   GameManagerEvent,
 } from '../api/AbstractGameManager';
 import EthereumAccountManager from '../api/EthereumAccountManager';
 import GameManager from '../api/GameManager';
-import {ContractEvent} from '../_types/darkforest/api/ContractsAPITypes';
-import {EthAddress, GameStatus} from '../_types/global/GlobalTypes';
-import {useParams} from 'react-router-dom';
+import { ContractEvent } from '../_types/darkforest/api/ContractsAPITypes';
+import { EthAddress, GameStatus } from '../_types/global/GlobalTypes';
+import { useParams } from 'react-router-dom';
 import Game from './Game';
 import styled from 'styled-components';
-import {address} from '../utils/CheckedTypeUtils';
+import { address } from '../utils/CheckedTypeUtils';
 import {
   getGameIdForTable,
   isAddressWhitelisted,
   setGameIdForTable,
   submitWhitelistKey,
 } from '../api/UtilityServerAPI';
-import {isBrave} from '../utils/Utils';
+import { isBrave } from '../utils/Utils';
 
 enum InitState {
-  NONE,
-  DISPLAY_LOGIN_OPTIONS,
   DISPLAY_ACCOUNTS,
   ASK_WHITELIST_KEY,
   FETCHING_ETH_DATA,
@@ -31,7 +29,6 @@ enum InitState {
   GAME_SELECTED,
   WAITING_FOR_PLAYERS,
   COMPLETE,
-  TERMINATED,
 }
 
 const Aa = styled.a`
@@ -41,7 +38,7 @@ const Aa = styled.a`
 `;
 
 export function LandingPage() {
-  const {tableId} = useParams<{tableId: string}>();
+  const { tableId } = useParams<{ tableId: string }>();
 
   let gameManagerRef = useRef<AbstractGameManager | null>();
   const [knownAddrs, setKnownAddrs] = useState<EthAddress[]>([]);
@@ -274,7 +271,7 @@ export function LandingPage() {
       </div>
     );
   } else if (initState === InitState.COMPLETE && gameManagerRef.current) {
-    return <Game gameManager={gameManagerRef.current} />;
+    return <Game /*gameManager={gameManagerRef.current} */ />;
   }
   return <div></div>;
 }

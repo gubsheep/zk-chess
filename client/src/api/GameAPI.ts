@@ -25,6 +25,13 @@ import {
 } from '../app/Pixi/Utils/PixiUtils';
 import { playerShader } from '../app/Pixi/Utils/Shaders';
 import { TransactionManager } from '../app/PixiAppComponents/TransactionList';
+import { setGameIdForTable } from './UtilityServerAPI';
+
+export enum InitState {
+  NotJoined,
+  WaitingForPlayers,
+  GameStarted,
+}
 
 export class GameAPI {
   private pixiManager: PixiManager;
@@ -36,6 +43,8 @@ export class GameAPI {
 
   gameState: ChessGame;
 
+  didJoin: boolean = false;
+
   constructor(pixiManager: PixiManager, gameManager: AbstractGameManager) {
     this.pixiManager = pixiManager;
     this.gameManager = gameManager;
@@ -45,16 +54,22 @@ export class GameAPI {
 
     autoBind(this);
 
-    this.gameManager.addListener(
-      GameManagerEvent.StateAdvanced,
-      this.stateAdvanced
-    );
-    this.gameManager.addListener(
-      GameManagerEvent.StateRewinded,
-      this.stateAdvanced
-    );
+    const gm = this.gameManager;
+
+    gm.addListener(GameManagerEvent.StateAdvanced, this.stateAdvanced);
+    gm.addListener(GameManagerEvent.StateRewinded, this.stateAdvanced);
+    gm.addListener(GameManagerEvent.GameStart, this.stateAdvanced);
+    gm.addListener(GameManagerEvent.CreatedGame, this.stateAdvanced);
+
+    gm.addListener(GameManagerEvent.TxReverted, this.error);
+    gm.addListener(GameManagerEvent.TxSubmitFailed, this.error);
 
     TransactionManager.initialize(gameManager);
+  }
+
+  private error() {
+    console.error('tx failed');
+    this.stateAdvanced();
   }
 
   // event listeners
@@ -102,6 +117,19 @@ export class GameAPI {
   }
 
   // callable
+  async newGame(): Promise<void> {
+    const newGameId = Math.floor(Math.random() * 1000000).toString();
+    await this.gameManager.createGame(newGameId);
+    await setGameIdForTable(this.pixiManager.tableId, newGameId);
+    await this.gameManager.setGame(newGameId);
+    this.stateAdvanced();
+  }
+
+  joinGame(): void {
+    this.gameManager.joinGame();
+    this.didJoin = true;
+  }
+
   endTurn(): void {
     this.gameManager.endTurn();
     this.syncGameState();
@@ -192,6 +220,20 @@ export class GameAPI {
   }
 
   // getters
+  getInitState(): InitState {
+    const { myAddress, player1, player2, gameStatus } = this.gameState;
+
+    if (gameStatus !== GameStatus.WAITING_FOR_PLAYERS)
+      return InitState.GameStarted;
+
+    if (
+      player1.address !== myAddress &&
+      player2.address !== myAddress &&
+      !this.didJoin
+    )
+      return InitState.NotJoined;
+    else return InitState.WaitingForPlayers;
+  }
 
   canBuy(type: PieceType): boolean {
     return this.getStats(type).cost <= this.getGold();
@@ -201,8 +243,8 @@ export class GameAPI {
     return this.gameState.defaults[type];
   }
 
-  getMyMothership(): Ship {
-    return this.myMothership;
+  getMyMothership(): Ship | null {
+    return this.myMothership || null;
   }
 
   isMyTurn(): boolean {
@@ -217,6 +259,17 @@ export class GameAPI {
     return status === GameStatus.P1_TO_MOVE
       ? PlayerColor.Red
       : PlayerColor.Blue;
+  }
+
+  gameAbandoned(): number | null {
+    const { lastTurnTimestamp, gameStatus } = this.gameState;
+    const secElapsed = Date.now() / 1000 - lastTurnTimestamp;
+    const minutes = secElapsed / 60;
+
+    if (minutes > 10 && gameStatus !== GameStatus.WAITING_FOR_PLAYERS)
+      return minutes;
+
+    return null;
   }
 
   gameOver(): boolean {
@@ -285,6 +338,7 @@ export class GameAPI {
   }
 
   getHealth(): number {
+    if (this.getInitState() !== InitState.GameStarted) return 0;
     return this.myMothership.pieceData.hp;
   }
 

@@ -194,6 +194,11 @@ export class ResourceBars extends PixiObject {
   constructor(manager: PixiManager) {
     super(manager, GameZIndex.UI);
 
+    if (manager.spectator) {
+      this.setActive(false);
+      return;
+    }
+
     const goldBar = new GoldBar(manager);
     const hpBar = new HPBar(manager);
 

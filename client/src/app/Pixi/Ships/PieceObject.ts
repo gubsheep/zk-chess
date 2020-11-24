@@ -96,7 +96,7 @@ export class PieceObject extends PixiObject {
       api,
     } = this.manager;
 
-    if (this.pieceData.id === api.getMyMothership().pieceData.id) {
+    if (this.pieceData.id === api.getMyMothership()?.pieceData.id) {
       return clickState === ClickState.Deploying;
     } else {
       return selectedShip?.pieceData.id === this.pieceData.id;
@@ -131,6 +131,11 @@ export class PieceObject extends PixiObject {
     } else {
       if (this.hoverable) this.outlineSprite.setAlpha(this.hover ? 0.5 : 0);
     }
+
+    // look, don't ask
+    const { showZk } = this.manager.mouseManager;
+    if (this.isZk() && !showZk) this.outlineSprite.setAlpha(0);
+    else if (!this.isZk && showZk) this.outlineSprite.setAlpha(0);
   }
 
   onMouseOver() {

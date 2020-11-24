@@ -32,6 +32,17 @@ export const ICONS = {
   BOMB: imgUri('icons/bomb.png'),
 };
 
+export const UI = {
+  BOAT: imgUri('ui/boat.png'),
+  P1: imgUri('ui/p1text.png'),
+  P2: imgUri('ui/p2text.png'),
+  SETSAIL: imgUri('ui/setsail.png'),
+  SPECTATE: imgUri('ui/spectate.png'),
+  TITLE: imgUri('ui/title.png'),
+  CREATE: imgUri('ui/create.png'),
+  JOIN: imgUri('ui/join.png'),
+};
+
 const textures = [
   FONT,
   BG_IMAGE,
@@ -41,6 +52,7 @@ const textures = [
   ...Object.values(ICONS),
   BUBBLE_CLOSED,
   BUBBLE_OPEN,
+  ...Object.values(UI),
 ];
 
 export const loadTextures = (callbackFn: () => void): void => {

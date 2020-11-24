@@ -1,14 +1,16 @@
+import { last } from 'lodash';
 import * as PIXI from 'pixi.js';
+import { InitState } from '../../../api/GameAPI';
 import { GameZIndex, PixiManager } from '../../../api/PixiManager';
 import { PixiObject, Wrapper } from '../PixiObject';
 import { CHAR_H, LINE_SPACING } from '../Utils/FontLoader';
 import { TextObject } from '../Utils/TextObject';
 import { NewGame } from './NewGame';
 
-const GAMEOVER_W = 160;
+const GAMEOVER_W = 200;
 const GAMEOVER_H = 80;
 
-export class GameOver extends PixiObject {
+export class Abandoned extends PixiObject {
   constructor(manager: PixiManager) {
     super(manager, GameZIndex.GameOver);
 
@@ -18,16 +20,27 @@ export class GameOver extends PixiObject {
     modalBg.drawRoundedRect(0, 0, GAMEOVER_W, GAMEOVER_H, 2);
     modalBg.endFill();
 
-    const { api } = manager;
-
     const text = new Wrapper(manager, new PIXI.Container());
-    const gameover = new TextObject(manager, 'Game Over!');
-    const winner = new TextObject(manager, `Winner: ${api.getWinner() || ''}`);
-    const newgame = new NewGame(manager);
-    winner.setPosition({ y: 2 * (CHAR_H + LINE_SPACING) });
-    newgame.setPosition({ y: 4 * (CHAR_H + LINE_SPACING), x: 0 });
 
-    text.addChild(gameover, winner, newgame);
+    // seconds
+    const minutes = this.manager.api.gameAbandoned();
+
+    // show that table has been abandoned after 10 min passed
+    if (minutes === null) {
+      // if (minutes < 10) {
+      this.setActive(false);
+      return;
+    }
+
+    const gameover = new TextObject(
+      manager,
+      'Table abandoned ' + Math.floor(minutes || 0) + 'min ago.'
+    );
+
+    const newgame = new NewGame(manager, () => window.location.reload());
+    newgame.setPosition({ y: 2 * (CHAR_H + LINE_SPACING), x: 0 });
+
+    text.addChild(gameover, newgame);
 
     text.setPosition({ x: 5, y: 5 });
     this.object.addChild(modalBg);
@@ -47,7 +60,6 @@ export class GameOver extends PixiObject {
   loop() {
     super.loop();
     const { api } = this.manager;
-    // this.object.visible = true;
-    this.object.visible = api.gameOver();
+    this.setActive(api.getInitState() === InitState.GameStarted);
   }
 }

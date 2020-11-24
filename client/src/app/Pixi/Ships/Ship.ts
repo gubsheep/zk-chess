@@ -103,7 +103,7 @@ export class Ship extends PieceObject {
   onClick() {
     const { api, mouseManager } = this.manager;
     if (api.isMyTurn()) {
-      if (this.pieceData.id === api.getMyMothership().pieceData.id) {
+      if (this.pieceData.id === api.getMyMothership()?.pieceData.id) {
         const gold = api.getGold();
         if (gold == 0) return;
         mouseManager.buyShip(Math.min(gold, 5));

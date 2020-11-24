@@ -1,14 +1,15 @@
 import React from 'react';
 
 import {BrowserRouter as Router, Switch, Route} from 'react-router-dom';
-import {LandingPage} from './LandingPage';
+import Game from './Game';
+import Homepage from './Homepage';
 
 export default function App() {
   return (
     <Router basename='/battleship'>
       <Switch>
-        <Route path='/:tableId' component={LandingPage} />
-        <Route path='/' component={LandingPage} />
+        <Route path='/:tableId' component={Game} />
+        <Route path='/' component={Homepage} />
       </Switch>
     </Router>
   );

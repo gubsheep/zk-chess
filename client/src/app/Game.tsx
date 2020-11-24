@@ -1,5 +1,5 @@
 import React from 'react';
-import AbstractGameManager from '../api/AbstractGameManager';
+import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import PixiApp from './PixiApp';
 
@@ -8,14 +8,12 @@ const StyledGame = styled.div`
   height: 100%;
 `;
 
-export default function Game({
-  gameManager,
-}: {
-  gameManager: AbstractGameManager;
-}) {
+export default function Game() {
+  const { tableId } = useParams<{ tableId: string }>();
+
   return (
     <StyledGame>
-      <PixiApp gameManager={gameManager} />
+      <PixiApp tableId={tableId}/>
     </StyledGame>
   );
 }

@@ -5,19 +5,27 @@ import { ResourceBars } from '../app/Pixi/UI/ResourceBars';
 import { Shop } from '../app/Pixi/UI/Shop';
 import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
 import { MouseManager } from '../app/Pixi/MouseManager';
-import AbstractGameManager from './AbstractGameManager';
 import { GameAPI } from './GameAPI';
 import { ObjectiveManager } from '../app/Pixi/Objectives/ObjectiveManager';
 import { Background } from '../app/Pixi/Utils/Background';
 import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
 import { ShipManager } from '../app/Pixi/Ships/ShipManager';
 import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
-import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
 import { GameOver } from '../app/Pixi/UI/GameOver';
+import { GameInitUI } from '../app/Pixi/GameInitUI/GameInitUI';
+import { TableNumber } from '../app/Pixi/UI/TableNumber';
+import { LandingPageManager } from '../app/Pixi/LandingPageManager';
+import { PlayerName } from '../app/Pixi/@PixiTypes';
+import GameManager from './GameManager';
+import { getGameIdForTable, setGameIdForTable } from './UtilityServerAPI';
+import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
+import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
+import { Abandoned } from '../app/Pixi/UI/Abandoned';
+import { InitOverlaySpec } from '../app/Pixi/UI/InitOverlaySpec';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
-  gameManager: AbstractGameManager;
+  tableId: string;
 };
 
 export enum GameZIndex {
@@ -30,7 +38,8 @@ export enum GameZIndex {
   UI,
   Shop,
   GameOver,
-  MAX = GameOver,
+  GameInit,
+  MAX = GameInit,
 }
 
 // this guy should only have to think about game objects and how they interact
@@ -57,9 +66,17 @@ export class PixiManager {
   shipManager: ShipManager;
   objectiveManager: ObjectiveManager;
 
+  landingManager: LandingPageManager;
+
+  tableId: string;
+
+  spectator: boolean = false;
+  playerName: PlayerName;
+
   private constructor(props: InitProps) {
-    const { canvas, gameManager } = props;
+    const { canvas, tableId } = props;
     this.canvas = canvas;
+    this.tableId = tableId;
     const { width, height } = canvas;
 
     // set up app
@@ -95,7 +112,7 @@ export class PixiManager {
     this.addObject(this.objectiveManager);
 
     this.mouseManager = new MouseManager(this);
-    this.api = new GameAPI(this, gameManager);
+    this.landingManager = new LandingPageManager(this, tableId);
 
     autoBind(this);
 
@@ -119,27 +136,82 @@ export class PixiManager {
     this.layers[obj.layer].addChild(obj.object);
   }
 
+  async initGame(player: PlayerName) {
+    if (player === PlayerName.Spectator) this.spectator = true;
+
+    this.playerName = player;
+
+    const gameManager = await GameManager.create();
+    const gameId = await getGameIdForTable(this.tableId);
+
+    if (!gameId) {
+      console.log('creating table');
+      const newGameId = Math.floor(Math.random() * 1000000).toString();
+      await gameManager.createGame(newGameId);
+      await setGameIdForTable(this.tableId, newGameId);
+      await gameManager.setGame(newGameId);
+    }
+
+    const trueId = await getGameIdForTable(this.tableId);
+
+    if (trueId) {
+      await gameManager.setGame(trueId);
+      this.api = new GameAPI(this, gameManager);
+
+      this.gameBoard = new GameBoard(this);
+      this.addObject(this.gameBoard);
+
+      this.addObject(new InitOverlay(this));
+      this.addObject(new InitOverlaySpec(this));
+
+      this.api.syncShips();
+      this.api.syncObjectives();
+
+      this.addObject(new ResourceBars(this));
+      this.addObject(new StagedShip(this));
+      this.addObject(new Shop(this));
+      this.addObject(new GameOver(this));
+      this.addObject(new Abandoned(this));
+
+      this.pollGameId();
+    } else {
+      console.error('could not get game id');
+    }
+  }
+
+  // this probably sucks but whatever
+  private pollGameId() {
+    const check = async () => {
+      const oldId = await getGameIdForTable(this.tableId);
+
+      setTimeout(async () => {
+        const newId = await getGameIdForTable(this.tableId);
+        console.log('old id is: ', oldId);
+        console.log('new id is: ', newId);
+
+        if (newId !== oldId && oldId !== null && this.api.gameAbandoned())
+          window.location.reload();
+        else check();
+      }, 5000);
+    };
+
+    check();
+  }
+
+  private initUI() {
+    this.addObject(new GameInitUI(this));
+  }
+
   private setup() {
     const cache = PIXI.utils.TextureCache;
     this.fontLoader = getFontLoader(cache[FONT]);
-
     this.renderer.backgroundColor = 0x061639; // TODO set fallback color
 
     // set up background
     this.addObject(new Background(this));
+    this.addObject(new TableNumber(this));
 
-    // set up grid
-    // this is definitely a bad way of doing it, but whatever TODO fix
-    this.gameBoard = new GameBoard(this);
-    this.addObject(this.gameBoard);
-
-    this.api.syncShips();
-    this.api.syncObjectives();
-
-    this.addObject(new ResourceBars(this));
-    this.addObject(new StagedShip(this));
-    this.addObject(new Shop(this));
-    this.addObject(new GameOver(this));
+    this.initUI();
 
     // initialize loop
     this.loop();
