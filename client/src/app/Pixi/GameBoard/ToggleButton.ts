@@ -23,6 +23,11 @@ class ToggleText extends LinkObject {
     this.syncText();
     this.manager.mouseManager.setClickState(ClickState.None);
   }
+
+  loop() {
+    super.loop();
+    this.syncText();
+  }
 }
 export class ToggleButton extends GameBoardObject {
   text: LinkObject;

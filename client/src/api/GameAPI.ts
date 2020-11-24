@@ -266,7 +266,7 @@ export class GameAPI {
     const secElapsed = Date.now() / 1000 - lastTurnTimestamp;
     const minutes = secElapsed / 60;
 
-    if (minutes > 0.2 && gameStatus !== GameStatus.WAITING_FOR_PLAYERS)
+    if (minutes > 10 && gameStatus !== GameStatus.WAITING_FOR_PLAYERS)
       return minutes;
 
     return null;
