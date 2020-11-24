@@ -17,6 +17,8 @@ const StyledControls = styled.div`
   color: white;
 `;
 
+const channel = new BroadcastChannel('ls-channel');
+
 export function useStoredState(key: StoredKey) {
   const hook = useState<boolean>(true);
   const [val, setVal] = hook;
@@ -31,7 +33,11 @@ export function useStoredState(key: StoredKey) {
 
   // update
   useEffect(() => {
+    console.log('effect fired');
     localStorage.setItem(lsKey, val.toString());
+
+    console.log('posting message', { key, value: val });
+    channel.postMessage({ key, value: val });
   }, [val]);
 
   return hook;
