@@ -31,6 +31,7 @@ import {
   setSoundVolume,
 } from '../app/Pixi/Utils/SoundLoader';
 import { GameManagerEvent } from './AbstractGameManager';
+import { sessionId } from '../app/PixiAppComponents/Controls';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -271,7 +272,7 @@ export class PixiManager {
   }
 
   private setup() {
-    new BroadcastChannel('ls-channel').onmessage = (ev) => {
+    new BroadcastChannel(sessionId()).onmessage = (ev) => {
       console.log(ev);
       this.handleAudio(ev.data);
     };

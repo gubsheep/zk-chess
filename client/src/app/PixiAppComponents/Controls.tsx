@@ -18,7 +18,14 @@ const StyledControls = styled.div`
   color: white;
 `;
 
-const channel = new BroadcastChannel('ls-channel');
+export const sessionId: () => string = (() => {
+  const id = 'ls-channel' + Date.now() + '-' + Math.random();
+  return () => {
+    return id;
+  };
+})();
+
+const channel = new BroadcastChannel(sessionId());
 
 export function useStoredState(key: StoredKey) {
   const hook = useState<boolean>(false);
@@ -28,6 +35,7 @@ export function useStoredState(key: StoredKey) {
 
   // init
   useLayoutEffect(() => {
+    console.log('firing init effect!');
     const stored = localStorage.getItem(lsKey);
     if (stored) setVal(stored === 'true' ? true : false);
     else setVal(true);
@@ -47,13 +55,14 @@ export function Controls() {
   const [sound, setSound] = useStoredState(StoredKey.Sound);
 
   useBeforeunload(() => {
-    for (const key in Object.keys(StoredKey)) {
+    console.log('unloading!');
+    for (const key in StoredKey) {
+      console.log(key);
       const lsKey = `storedstate-item-${key}`;
       let val = music;
       if (key === StoredKey.Sound) val = sound;
       localStorage.setItem(lsKey, val.toString());
     }
-    return;
   });
 
   return (
