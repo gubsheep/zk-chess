@@ -8,8 +8,8 @@ export class NewGame extends LinkObject {
     this.handler = handler;
   }
 
-  onClick() {
-    this.manager.api.newGame();
-    this.handler();
+  async onClick() {
+    await this.manager.api.newGame();
+    await this.handler();
   }
 }

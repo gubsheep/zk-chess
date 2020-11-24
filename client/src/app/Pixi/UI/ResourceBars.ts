@@ -50,11 +50,6 @@ class ResourceBar extends PixiObject {
   ) {
     super(manager, GameZIndex.UI);
 
-    if (manager.spectator) {
-      this.setActive(false);
-      return;
-    }
-
     const container = this.object;
 
     const labelObj = new TextObject(manager, label);
@@ -198,6 +193,11 @@ export class ResourceBars extends PixiObject {
   goldBar: GoldBar;
   constructor(manager: PixiManager) {
     super(manager, GameZIndex.UI);
+
+    if (manager.spectator) {
+      this.setActive(false);
+      return;
+    }
 
     const goldBar = new GoldBar(manager);
     const hpBar = new HPBar(manager);

@@ -262,11 +262,12 @@ export class GameAPI {
   }
 
   gameAbandoned(): number | null {
-    const { lastTurnTimestamp } = this.gameState;
+    const { lastTurnTimestamp, gameStatus } = this.gameState;
     const secElapsed = Date.now() / 1000 - lastTurnTimestamp;
     const minutes = secElapsed / 60;
 
-    if (minutes > 10) return minutes;
+    if (minutes > 0.2 && gameStatus !== GameStatus.WAITING_FOR_PLAYERS)
+      return minutes;
 
     return null;
   }

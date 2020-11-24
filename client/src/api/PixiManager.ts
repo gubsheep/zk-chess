@@ -181,15 +181,21 @@ export class PixiManager {
 
   // this probably sucks but whatever
   private pollGameId() {
-    setInterval(async () => {
-      const newId = await getGameIdForTable(this.tableId);
-      if (
-        newId !== this.tableId &&
-        this.tableId !== null &&
-        this.api.gameAbandoned()
-      )
-        window.location.reload();
-    }, 5000);
+    const check = async () => {
+      const oldId = await getGameIdForTable(this.tableId);
+
+      setTimeout(async () => {
+        const newId = await getGameIdForTable(this.tableId);
+        console.log('old id is: ', oldId);
+        console.log('new id is: ', newId);
+
+        if (newId !== oldId && oldId !== null && this.api.gameAbandoned())
+          window.location.reload();
+        else check();
+      }, 5000);
+    };
+
+    check();
   }
 
   private initUI() {
