@@ -88,10 +88,13 @@ export class GameState {
     this.lastTurnTimestamp = contractData.lastTurnTimestamp;
 
     // throws if can't find commitment
-    const handCommit =
-      this.myAddress === this.player1.address
-        ? contractData.player1HandCommit
-        : contractData.player2HandCommit;
+    let handCommit = STARTING_HAND_COMMIT;
+    if (this.myAddress === this.player1.address) {
+      handCommit = contractData.player1HandCommit;
+    } else if (this.myAddress === this.player2.address) {
+      handCommit = contractData.player2HandCommit;
+    }
+
     if (handCommit === STARTING_HAND_COMMIT) {
       this.myHand = {
         cards: [0, 0, 0],

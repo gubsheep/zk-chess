@@ -197,7 +197,12 @@ export class PixiManager {
       try {
         await gameManager.setGame(trueId);
       } catch (e) {
-        await this.initGame(player, true);
+        if (this.spectator) {
+          alert("can't spectate game that doesn't exist yet!");
+          window.location.reload();
+        } else {
+          await this.initGame(player, true);
+        }
         return;
       }
       console.log('setting true id in gameManager');

@@ -62,7 +62,11 @@ export class LocalStorageManager {
     const commitmentDataStr = localStorage.getItem(
       `LOC_COMMIT_${account}_${contract}_${commit}`
     );
-    if (!commitmentDataStr) throw new Error('commitment not found');
+    if (!commitmentDataStr) {
+      // TODO: BAD! duct tape fix for multiple people logging in on same acc for workshop
+      console.error('commitment not found');
+      return [[0, 0], '0'];
+    }
     const commitData = JSON.parse(commitmentDataStr) as [
       number,
       number,
@@ -83,7 +87,11 @@ export class LocalStorageManager {
 
   public static getSeed(account: EthAddress, contract: EthAddress): string {
     const seed = localStorage.getItem(`SEED_${account}_${contract}`);
-    if (!seed) throw new Error('seed not found');
+    if (!seed) {
+      // TODO: BAD! duct tape fix for multiple people logging in on same acc for workshop
+      console.error('seed not found');
+      return '0';
+    }
     return seed;
   }
 
@@ -122,7 +130,14 @@ export class LocalStorageManager {
     const commitmentDataStr = localStorage.getItem(
       `HAND_COMMIT_${account}_${contract}_${commit}`
     );
-    if (!commitmentDataStr) throw new Error('commitment not found');
+    if (!commitmentDataStr) {
+      // TODO: BAD! duct tape fix for multiple people logging in on same acc for workshop
+      console.error('commitment not found');
+      return {
+        cards: [0, 0, 0],
+        salt: '0',
+      };
+    }
     const commitData = JSON.parse(commitmentDataStr) as [
       number,
       number,
