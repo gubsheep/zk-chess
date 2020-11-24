@@ -55,6 +55,8 @@ export class BoardRect extends PixiObject {
       selectedShip?.isZk() &&
       compareBoardCoords(selectedShip.getCoords(), this.idx);
 
+    const spellTarget = clickState === ClickState.Casting && !!shipAt;
+
     const spell =
       clickState === ClickState.Casting &&
       compareBoardCoords(stagedSpellTarget, this.idx);
@@ -89,6 +91,8 @@ export class BoardRect extends PixiObject {
     if (selected) {
       fill = DARK_BLUE;
     } else if (spell) {
+      fill = DARKER_RED;
+    } else if (spellTarget) {
       fill = RED;
     } else if (deploy) {
       fill = RED;

@@ -126,7 +126,16 @@ export class PieceObject extends PixiObject {
       }
     }
 
-    if (this.isSelected()) {
+    const { clickState, stagedSpellTarget } = this.manager.mouseManager;
+
+    const spellShip = stagedSpellTarget && api.shipAt(stagedSpellTarget);
+
+    if (
+      (clickState === ClickState.Casting &&
+        spellShip &&
+        spellShip.pieceData.id === this.pieceData.id) ||
+      this.isSelected()
+    ) {
       this.outlineSprite.setAlpha(1);
     } else {
       if (this.hoverable) this.outlineSprite.setAlpha(this.hover ? 0.5 : 0);

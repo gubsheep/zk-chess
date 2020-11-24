@@ -151,12 +151,23 @@ export class Ship extends PieceObject {
         );
         if (attack || movAtk) this.setHoverable(true);
       }
+    } else if (clickState === ClickState.Casting) {
+      this.setHoverable(true);
     }
 
     if (this.isSelected()) {
       this.setMaskEnabled(false);
     } else {
-      this.setMaskEnabled(!this.hoverable || !this.hover);
+      if (clickState === ClickState.Casting) {
+        const { clickState, stagedSpellTarget } = this.manager.mouseManager;
+
+        const spellShip = stagedSpellTarget && api.shipAt(stagedSpellTarget);
+        if (spellShip && spellShip.pieceData.id === this.pieceData.id)
+          this.setMaskEnabled(false);
+        else this.setMaskEnabled(!this.hoverable || !this.hover);
+      } else {
+        this.setMaskEnabled(!this.hoverable || !this.hover);
+      }
     }
 
     // bob
