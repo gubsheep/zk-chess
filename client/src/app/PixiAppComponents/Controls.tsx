@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import styled from 'styled-components';
 
 export enum StoredKey {
@@ -20,19 +20,19 @@ const StyledControls = styled.div`
 const channel = new BroadcastChannel('ls-channel');
 
 export function useStoredState(key: StoredKey) {
-  const hook = useState<boolean>(true);
+  const hook = useState<boolean>(false);
   const [val, setVal] = hook;
 
   const lsKey = `storedstate-item-${key}`;
 
   // init
-  useEffect(() => {
+  useLayoutEffect(() => {
     const stored = localStorage.getItem(lsKey);
     if (stored) setVal(stored === 'true' ? true : false);
   }, [key]);
 
   // update
-  useEffect(() => {
+  useLayoutEffect(() => {
     console.log('effect fired');
     localStorage.setItem(lsKey, val.toString());
 

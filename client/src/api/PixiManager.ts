@@ -143,19 +143,32 @@ export class PixiManager {
   async initGame(player: PlayerName, force = false) {
     if (player === PlayerName.Spectator) this.spectator = true;
 
+    console.log('initing game as player ', player);
+    console.log('init force is ', force);
+
     this.playerName = player;
 
     const gameManager = await GameManager.create();
+
     const gameId = await getGameIdForTable(this.tableId);
+    console.log('got the game id', gameId);
+
+    // if (!gameId && this.spectator) {
+    //   alert('no players at this table!');
+
+    //   return;
+    // }
 
     try {
-      if (!gameId || force) {
+      if ((!gameId || force) && !this.spectator) {
         console.log('creating table');
         const newGameId = Math.floor(Math.random() * 1000000).toString();
+        console.log('made this game id');
 
         await new Promise(async (resolve) => {
           gameManager.createGame(newGameId);
           gameManager.on(GameManagerEvent.CreatedGame, (gameId) => {
+            console.log('heard back from the contract with a new game');
             console.log(gameId, newGameId);
             if (gameId === newGameId) {
               resolve();
@@ -163,40 +176,47 @@ export class PixiManager {
           });
         });
 
+        console.log('setting game id for table');
         await setGameIdForTable(this.tableId, newGameId);
 
+        console.log('setting game id in gm');
         await gameManager.setGame(newGameId);
       }
-
-      const trueId = await getGameIdForTable(this.tableId);
-
-      if (trueId) {
-        await gameManager.setGame(trueId);
-
-        this.api = new GameAPI(this, gameManager);
-
-        this.gameBoard = new GameBoard(this);
-        this.addObject(this.gameBoard);
-
-        this.addObject(new InitOverlay(this));
-        this.addObject(new InitOverlaySpec(this));
-
-        this.api.syncShips();
-        this.api.syncObjectives();
-
-        this.addObject(new ResourceBars(this));
-        this.addObject(new StagedShip(this));
-        this.addObject(new Shop(this));
-        this.addObject(new Cards(this));
-        this.addObject(new GameOver(this));
-        this.addObject(new Abandoned(this));
-
-        this.pollGameId();
-      } else {
-        console.error('could not get game id');
-      }
-    } catch {
+    } catch (e) {
+      console.error(e);
       this.initGame(player, true);
+    }
+
+    console.log('ok, the table should exist now');
+    const trueId = await getGameIdForTable(this.tableId);
+
+    console.log('got this id from the server', trueId);
+
+    if (trueId) {
+      await gameManager.setGame(trueId);
+      console.log('setting true id in gameManager');
+
+      this.api = new GameAPI(this, gameManager);
+
+      this.gameBoard = new GameBoard(this);
+      this.addObject(this.gameBoard);
+
+      this.addObject(new InitOverlay(this));
+      this.addObject(new InitOverlaySpec(this));
+
+      this.api.syncShips();
+      this.api.syncObjectives();
+
+      this.addObject(new ResourceBars(this));
+      this.addObject(new StagedShip(this));
+      this.addObject(new Shop(this));
+      this.addObject(new Cards(this));
+      this.addObject(new GameOver(this));
+      this.addObject(new Abandoned(this));
+
+      this.pollGameId();
+    } else {
+      console.error('could not get game id');
     }
   }
 
@@ -232,7 +252,6 @@ export class PixiManager {
       }
     } else if (key === 'Sound') {
     }
-
   }
 
   private setup() {
