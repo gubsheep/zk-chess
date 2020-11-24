@@ -11,9 +11,13 @@ const StyledGame = styled.div`
 export default function Game() {
   const { tableId } = useParams<{ tableId: string }>();
 
+  console.log(
+    'Colors and styles shamelessly copied from https://www.lexaloffle.com/pico-8.php. Thanks, Lexaloffle!'
+  );
+
   return (
     <StyledGame>
-      <PixiApp tableId={tableId}/>
+      <PixiApp tableId={tableId} />
     </StyledGame>
   );
 }

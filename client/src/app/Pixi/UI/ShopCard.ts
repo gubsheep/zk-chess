@@ -11,8 +11,8 @@ import {
   SPRITE_W,
 } from '../Utils/TextureLoader';
 
-export const CARD_W = 40;
-export const CARD_H = 40;
+export const CARD_W = 38;
+export const CARD_H = 38;
 
 export class ShopCard extends PixiObject {
   type: PieceType;

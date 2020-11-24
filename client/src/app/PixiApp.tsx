@@ -39,10 +39,6 @@ export default function PixiApp({ tableId }: { tableId: string }) {
     height: `${scale * height}px`,
   };
 
-  console.log(
-    'Colors and styles shamelessly copied from https://www.lexaloffle.com/pico-8.php. Thanks, Lexaloffle!'
-  );
-
   const tabHook = useState<TabState>(TabState.Transactions);
 
   return (

@@ -48,6 +48,7 @@ export class StagedShip extends PixiObject {
     } else if (clickState === ClickState.Acting) {
       if (moveStaged)
         this.sprite.setType(selectedShip ? selectedShip.getType() : null);
+      else this.sprite.setType(null);
     } else {
       // none
       this.sprite.setType(null);

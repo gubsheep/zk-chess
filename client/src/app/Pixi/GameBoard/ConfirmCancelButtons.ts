@@ -25,8 +25,13 @@ export class ConfirmCancelButtons extends GameBoardObject {
     this.moveSub = new MoveSubButton(manager);
     this.atkSub = new StrikeButton(manager);
     const cancel = new CancelButton(manager);
+    const offset = cancel.object.width + 15;
 
-    cancel.setPosition({ x: 0, y: CHAR_H + LINE_SPACING });
+    // cancel.setPosition({ x: 0, y: CHAR_H + LINE_SPACING });
+
+    [this.confirm, this.moveSub, this.atkSub].map((el) => {
+      el.setPosition({ y: 0, x: -offset });
+    });
 
     this.addChild(cancel, this.confirm, this.atkSub, this.moveSub);
   }

@@ -323,7 +323,7 @@ export class MouseManager {
       deployType,
     } = this;
 
-    if (this.showZk && clickState === ClickState.None) return;
+    if (this.showZk) return;
     // if (ship.id === selectedShip?.id) {
     //   this.setSelected(null);
     //   return;
