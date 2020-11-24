@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { useBeforeunload } from 'react-beforeunload';
 import styled from 'styled-components';
 
 export enum StoredKey {
@@ -34,9 +35,6 @@ export function useStoredState(key: StoredKey) {
 
   // update
   useLayoutEffect(() => {
-    console.log('effect fired');
-    localStorage.setItem(lsKey, val.toString());
-
     console.log('posting message', { key, value: val });
     channel.postMessage({ key, value: val });
   }, [val]);
@@ -47,6 +45,16 @@ export function useStoredState(key: StoredKey) {
 export function Controls() {
   const [music, setMusic] = useStoredState(StoredKey.Music);
   const [sound, setSound] = useStoredState(StoredKey.Sound);
+
+  useBeforeunload(() => {
+    for (const key in Object.keys(StoredKey)) {
+      const lsKey = `storedstate-item-${key}`;
+      let val = music;
+      if (key === StoredKey.Sound) val = sound;
+      localStorage.setItem(lsKey, val.toString());
+    }
+    return;
+  });
 
   return (
     <StyledControls>
