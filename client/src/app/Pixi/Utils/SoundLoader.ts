@@ -18,13 +18,13 @@ export const setAllVolume = (volume: number) => {
   }
 };
 
-// @ts-ignore
-window['sounds'] = sounds;
-
 export const loadSound = (callbackFn: () => void): void => {
   console.log('loading sounds');
 
-  const bgmSound = pixiSound.Sound.from({ url: bgm, volume: 1 });
+  let vol = 1;
+  if (localStorage.getItem('storedstate-item-Music') === 'false') vol = 0;
+
+  const bgmSound = pixiSound.Sound.from({ url: bgm, volume: vol });
   sounds.push(bgmSound);
   bgmSound.play();
 
