@@ -32,6 +32,7 @@ import {
 } from '../app/Pixi/Utils/SoundLoader';
 import { GameManagerEvent } from './AbstractGameManager';
 import { sessionId } from '../app/PixiAppComponents/Controls';
+import { YourTurn } from '../app/Pixi/UI/YourTurn';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -82,6 +83,8 @@ export class PixiManager {
 
   spectator: boolean = false;
   playerName: PlayerName;
+
+  yourTurn: YourTurn;
 
   private constructor(props: InitProps) {
     const { canvas, tableId } = props;
@@ -231,6 +234,9 @@ export class PixiManager {
       this.addObject(new Cards(this));
       this.addObject(new GameOver(this));
       this.addObject(new Abandoned(this));
+
+      this.yourTurn = new YourTurn(this);
+      this.addObject(this.yourTurn);
 
       this.pollGameId();
     } else {
