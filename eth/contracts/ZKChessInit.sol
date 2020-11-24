@@ -15,7 +15,7 @@ library ZKChessInit {
             mvRange: 0,
             atkMinRange: 0,
             atkMaxRange: 2,
-            hp: 15,
+            hp: 16,
             atk: 2,
             isZk: false,
             cost: 100,

@@ -53,8 +53,8 @@ class SnarkArgsHelper {
       };
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
-        '/battleship/public/circuits/draw/circuit.wasm',
-        '/battleship/public/draw.zkey'
+        '/bote/public/circuits/draw/circuit.wasm',
+        '/bote/public/draw.zkey'
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
@@ -88,8 +88,8 @@ class SnarkArgsHelper {
       };
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
-        '/battleship/public/circuits/play/circuit.wasm',
-        '/battleship/public/play.zkey'
+        '/bote/public/circuits/play/circuit.wasm',
+        '/bote/public/play.zkey'
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
@@ -126,8 +126,8 @@ class SnarkArgsHelper {
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
-        '/battleship/public/circuits/dist1/circuit.wasm',
-        '/battleship/public/dist1.zkey'
+        '/bote/public/circuits/dist1/circuit.wasm',
+        '/bote/public/dist1.zkey'
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,
@@ -166,8 +166,8 @@ class SnarkArgsHelper {
 
       const snarkProof: SnarkJSProofAndSignals = await window.snarkjs.groth16.fullProve(
         input,
-        '/battleship/public/circuits/dist2/circuit.wasm',
-        '/battleship/public/dist2.zkey'
+        '/bote/public/circuits/dist2/circuit.wasm',
+        '/bote/public/dist2.zkey'
       );
       const ret = this.callArgsFromProofAndSignals(
         snarkProof.proof,

@@ -53,7 +53,7 @@ export const getGameIdForTable = async (
 ): Promise<string | null> => {
   try {
     const {gameId} = await fetch(
-      `${WEBSERVER_URL}/battleship/api/${tableId}`
+      `${WEBSERVER_URL}/bote/api/${tableId}`
     ).then((x) => x.json());
     return gameId;
   } catch (e) {
@@ -68,7 +68,7 @@ export const setGameIdForTable = async (
 ): Promise<boolean> => {
   try {
     const {success} = await fetch(
-      `${WEBSERVER_URL}/battleship/api/setGameId/${tableId}`,
+      `${WEBSERVER_URL}/bote/api/setGameId/${tableId}`,
       {
         method: 'POST',
         body: JSON.stringify({
