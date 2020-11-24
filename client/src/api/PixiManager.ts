@@ -172,9 +172,24 @@ export class PixiManager {
       this.addObject(new Shop(this));
       this.addObject(new GameOver(this));
       this.addObject(new Abandoned(this));
+
+      this.pollGameId();
     } else {
       console.error('could not get game id');
     }
+  }
+
+  // this probably sucks but whatever
+  private pollGameId() {
+    setInterval(async () => {
+      const newId = await getGameIdForTable(this.tableId);
+      if (
+        newId !== this.tableId &&
+        this.tableId !== null &&
+        this.api.gameAbandoned()
+      )
+        window.location.reload();
+    }, 5000);
   }
 
   private initUI() {

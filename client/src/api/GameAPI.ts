@@ -58,8 +58,8 @@ export class GameAPI {
 
     gm.addListener(GameManagerEvent.StateAdvanced, this.stateAdvanced);
     gm.addListener(GameManagerEvent.StateRewinded, this.stateAdvanced);
-    gm.addListener(GameManagerEvent.CreatedGame, this.stateAdvanced);
     gm.addListener(GameManagerEvent.GameStart, this.stateAdvanced);
+    gm.addListener(GameManagerEvent.CreatedGame, this.stateAdvanced);
 
     gm.addListener(GameManagerEvent.TxReverted, this.error);
     gm.addListener(GameManagerEvent.TxSubmitFailed, this.error);
@@ -259,6 +259,16 @@ export class GameAPI {
     return status === GameStatus.P1_TO_MOVE
       ? PlayerColor.Red
       : PlayerColor.Blue;
+  }
+
+  gameAbandoned(): number | null {
+    const { lastTurnTimestamp } = this.gameState;
+    const secElapsed = Date.now() / 1000 - lastTurnTimestamp;
+    const minutes = secElapsed / 60;
+
+    if (minutes > 10) return minutes;
+
+    return null;
   }
 
   gameOver(): boolean {

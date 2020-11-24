@@ -236,7 +236,7 @@ export function TransactionList() {
       {txList.length === 0 && (
         <p>Make a move for transactions to be displayed here!</p>
       )}
-      {txList.map((d: DisplayedTx) => (
+      {txList.reverse().map((d: DisplayedTx) => (
         <Tx tx={d} key={d.tx.txIntentId} />
       ))}
     </StyledTxTable>

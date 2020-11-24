@@ -23,22 +23,21 @@ export class Abandoned extends PixiObject {
     const text = new Wrapper(manager, new PIXI.Container());
 
     // seconds
-    const { lastTurnTimestamp } = this.manager.api.gameState;
-    const secElapsed = Date.now() / 1000 - lastTurnTimestamp;
-    const minutes = secElapsed / 60;
+    const minutes = this.manager.api.gameAbandoned();
 
     // show that table has been abandoned after 10 min passed
-    if (minutes < 10) {
+    if (minutes === null) {
+      // if (minutes < 10) {
       this.setActive(false);
       return;
     }
 
     const gameover = new TextObject(
       manager,
-      'Table abandoned ' + Math.floor(minutes) + 'min ago.'
+      'Table abandoned ' + Math.floor(minutes || 0) + 'min ago.'
     );
 
-    const newgame = new NewGame(manager);
+    const newgame = new NewGame(manager, () => window.location.reload());
     newgame.setPosition({ y: 2 * (CHAR_H + LINE_SPACING), x: 0 });
 
     text.addChild(gameover, newgame);
