@@ -249,6 +249,7 @@ export class GameState {
       } else {
         gameState.player2HasDrawn = true;
       }
+      gameState.drawnCard = null;
 
       if (action.player === gameState.myAddress && action.hand) {
         gameState.myHand = action.hand;
