@@ -196,14 +196,31 @@ function Tx({ tx: d }: { tx: DisplayedTx }) {
 export function TransactionList() {
   const [txList, setTxList] = useState<TxList>([]);
 
-  // this is probably horrible but whatever
-  useEffect(() => {
-    if (!TransactionManager.instance) return;
+  const [txManager, setTxManager] = useState<TransactionManager | null>(null);
 
-    console.log('effect fired');
-    const txm = TransactionManager.instance;
+  // this is horrible but whatever, we gotta ship lmao
+  useEffect(() => {
+    if (txManager) return;
+
+    const intervalId = setInterval(() => {
+      if (TransactionManager.instance) {
+        console.log('setting manager');
+        setTxManager(TransactionManager.instance);
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [txManager]);
+
+  useEffect(() => {
+    if (!txManager) return;
+
+    const txm = txManager;
 
     const update = (list: TxList) => {
+      console.log('updating tx lsit');
       setTxList(_.cloneDeep(list));
     };
 
@@ -212,7 +229,7 @@ export function TransactionList() {
     return () => {
       txm.removeAllListeners(TxManagerEvent.ListUpdated);
     };
-  }, [TransactionManager.instance]);
+  }, [txManager]);
 
   return (
     <StyledTxTable>

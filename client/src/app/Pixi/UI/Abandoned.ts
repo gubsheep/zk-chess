@@ -27,7 +27,8 @@ export class Abandoned extends PixiObject {
     const secElapsed = Date.now() / 1000 - lastTurnTimestamp;
     const minutes = secElapsed / 60;
 
-    if (minutes < -1) {
+    // show that table has been abandoned after 10 min passed
+    if (minutes < 10) {
       this.setActive(false);
       return;
     }

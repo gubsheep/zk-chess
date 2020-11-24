@@ -21,6 +21,7 @@ import { getGameIdForTable, setGameIdForTable } from './UtilityServerAPI';
 import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
 import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
 import { Abandoned } from '../app/Pixi/UI/Abandoned';
+import { InitOverlaySpec } from '../app/Pixi/UI/InitOverlaySpec';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -145,7 +146,10 @@ export class PixiManager {
 
     if (!gameId) {
       console.log('creating table');
-      await this.api.newGame();
+      const newGameId = Math.floor(Math.random() * 1000000).toString();
+      await gameManager.createGame(newGameId);
+      await setGameIdForTable(this.tableId, newGameId);
+      await gameManager.setGame(newGameId);
     }
 
     const trueId = await getGameIdForTable(this.tableId);
@@ -158,6 +162,7 @@ export class PixiManager {
       this.addObject(this.gameBoard);
 
       this.addObject(new InitOverlay(this));
+      this.addObject(new InitOverlaySpec(this));
 
       this.api.syncShips();
       this.api.syncObjectives();
