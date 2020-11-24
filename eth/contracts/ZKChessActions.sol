@@ -103,9 +103,9 @@ library ZKChessActions {
             piece.hp -= card.damage;
         }
         if (msg.sender == player1.addr) {
-            player1.mana -= 3;
+            player1.mana -= cardPlayCost;
         } else {
-            player2.mana -= 3;
+            player2.mana -= cardPlayCost;
         }
         if (msg.sender == player1.addr) {
             player1.handCommit = cardPlay.zkp.input[1];
