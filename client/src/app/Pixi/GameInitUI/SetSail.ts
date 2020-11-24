@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { PixiObject } from '../PixiObject';
+import { playSFX, SFX } from '../Utils/SoundLoader';
 import { UI } from '../Utils/TextureLoader';
 
 export class SetSail extends PixiObject {
@@ -45,6 +46,7 @@ export class SetSail extends PixiObject {
   }
 
   private onClick() {
+    playSFX(SFX.MenuInit);
     this.initGame();
   }
   private onMouseOver() {

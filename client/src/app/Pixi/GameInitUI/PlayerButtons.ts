@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
 import { PlayerName } from '../@PixiTypes';
 import { PixiObject, Wrapper } from '../PixiObject';
+import { playSFX, SFX } from '../Utils/SoundLoader';
 import { UI } from '../Utils/TextureLoader';
 
 const cache = PIXI.utils.TextureCache;
@@ -80,7 +81,10 @@ export class PlayerButtons extends PixiObject {
   }
 
   setSelected(type: PlayerName) {
-    this.selected = type;
+    if (type !== this.selected) {
+      this.selected = type;
+      playSFX(SFX.MenuHover);
+    }
   }
 
   positionSelf() {

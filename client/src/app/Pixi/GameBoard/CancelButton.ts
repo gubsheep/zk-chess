@@ -8,6 +8,7 @@ export class CancelButton extends LinkObject {
     super(manager, 'Cancel', TextAlign.Right);
   }
   onClick() {
+    super.onClick();
     this.manager.mouseManager.cancel();
   }
   isEnabled() {

@@ -1,30 +1,36 @@
 import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
-import {PixiObject} from '../app/Pixi/PixiObject';
-import {ResourceBars} from '../app/Pixi/UI/ResourceBars';
-import {Shop} from '../app/Pixi/UI/Shop/Shop';
-import {GameBoard} from '../app/Pixi/GameBoard/GameBoard';
-import {MouseManager} from '../app/Pixi/MouseManager';
-import {GameAPI} from './GameAPI';
-import {ObjectiveManager} from '../app/Pixi/Objectives/ObjectiveManager';
-import {Background} from '../app/Pixi/Utils/Background';
-import {FontLoader, getFontLoader} from '../app/Pixi/Utils/FontLoader';
-import {ShipManager} from '../app/Pixi/Ships/ShipManager';
-import {loadTextures, FONT} from '../app/Pixi/Utils/TextureLoader';
-import {GameOver} from '../app/Pixi/UI/GameOver';
-import {PlayerName} from '../app/Pixi/@PixiTypes';
+import { PixiObject } from '../app/Pixi/PixiObject';
+import { ResourceBars } from '../app/Pixi/UI/ResourceBars';
+import { Shop } from '../app/Pixi/UI/Shop/Shop';
+import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
+import { MouseManager } from '../app/Pixi/MouseManager';
+import { GameAPI } from './GameAPI';
+import { ObjectiveManager } from '../app/Pixi/Objectives/ObjectiveManager';
+import { Background } from '../app/Pixi/Utils/Background';
+import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
+import { ShipManager } from '../app/Pixi/Ships/ShipManager';
+import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
+import { GameOver } from '../app/Pixi/UI/GameOver';
+import { PlayerName } from '../app/Pixi/@PixiTypes';
 import GameManager from './GameManager';
-import {getGameIdForTable, setGameIdForTable} from './UtilityServerAPI';
-import {StagedShip} from '../app/Pixi/GameBoard/StagedShip';
-import {GameInitUI} from '../app/Pixi/GameInitUI/GameInitUI';
-import {LandingPageManager} from '../app/Pixi/LandingPageManager';
-import {Abandoned} from '../app/Pixi/UI/Abandoned';
-import {InitOverlay} from '../app/Pixi/UI/InitOverlay';
-import {InitOverlaySpec} from '../app/Pixi/UI/InitOverlaySpec';
-import {TableNumber} from '../app/Pixi/UI/TableNumber';
-import {Cards} from '../app/Pixi/UI/Cards/Cards';
-import {loadSound, setAllVolume} from '../app/Pixi/Utils/SoundLoader';
-import {GameManagerEvent} from './AbstractGameManager';
+import { getGameIdForTable, setGameIdForTable } from './UtilityServerAPI';
+import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
+import { GameInitUI } from '../app/Pixi/GameInitUI/GameInitUI';
+import { LandingPageManager } from '../app/Pixi/LandingPageManager';
+import { Abandoned } from '../app/Pixi/UI/Abandoned';
+import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
+import { InitOverlaySpec } from '../app/Pixi/UI/InitOverlaySpec';
+import { TableNumber } from '../app/Pixi/UI/TableNumber';
+import { Cards } from '../app/Pixi/UI/Cards/Cards';
+import {
+  DEFAULT_MUSIC_VOLUME,
+  DEFAULT_SOUND_VOLUME,
+  loadSound,
+  setMusicVolume,
+  setSoundVolume,
+} from '../app/Pixi/Utils/SoundLoader';
+import { GameManagerEvent } from './AbstractGameManager';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -77,10 +83,10 @@ export class PixiManager {
   playerName: PlayerName;
 
   private constructor(props: InitProps) {
-    const {canvas, tableId} = props;
+    const { canvas, tableId } = props;
     this.canvas = canvas;
     this.tableId = tableId;
-    const {width, height} = canvas;
+    const { width, height } = canvas;
 
     // set up app
     let renderer = new PIXI.Renderer({
@@ -252,16 +258,15 @@ export class PixiManager {
     this.addObject(new GameInitUI(this));
   }
 
-  private handleAudio({key, value}: {key: string; value: boolean}) {
+  private handleAudio({ key, value }: { key: string; value: boolean }) {
     console.log('audio being handled');
 
     if (key === 'Music') {
-      if (value) {
-        setAllVolume(1);
-      } else {
-        setAllVolume(0);
-      }
+      if (value) setMusicVolume(DEFAULT_MUSIC_VOLUME);
+      else setMusicVolume(0);
     } else if (key === 'Sound') {
+      if (value) setSoundVolume(DEFAULT_SOUND_VOLUME);
+      else setSoundVolume(0);
     }
   }
 

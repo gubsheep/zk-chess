@@ -12,6 +12,7 @@ class EndTurnText extends LinkObject {
   }
 
   onClick() {
+    super.onClick();
     this.manager.mouseManager.endTurn();
   }
 

@@ -19,6 +19,7 @@ class ToggleText extends LinkObject {
     this.manager.mouseManager.setShowZk(this.showZk);
   }
   onClick() {
+    super.onClick();
     this.showZk = !this.showZk;
     this.syncText();
     this.manager.mouseManager.setClickState(ClickState.None);

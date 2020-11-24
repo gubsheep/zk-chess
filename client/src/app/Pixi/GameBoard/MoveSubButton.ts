@@ -7,6 +7,7 @@ export class MoveSubButton extends LinkObject {
     super(manager, 'Move Sub', TextAlign.Right);
   }
   onClick() {
+    super.onClick();
     this.manager.mouseManager.moveSub();
   }
   isEnabled() {

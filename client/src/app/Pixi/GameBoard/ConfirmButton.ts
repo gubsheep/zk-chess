@@ -7,6 +7,7 @@ export class ConfirmButton extends LinkObject {
     super(manager, 'Confirm', TextAlign.Right);
   }
   onClick() {
+    super.onClick();
     this.manager.mouseManager.confirm();
   }
   isEnabled() {

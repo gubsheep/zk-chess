@@ -9,6 +9,7 @@ export class NewGame extends LinkObject {
   }
 
   async onClick() {
+    super.onClick();
     await this.manager.api.newGame();
     await this.handler();
   }
