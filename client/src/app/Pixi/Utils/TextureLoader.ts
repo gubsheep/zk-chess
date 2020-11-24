@@ -9,17 +9,26 @@ export const BASELINE_ICONS = -1;
 
 export const SPRITE_W = 32;
 
-export const BG_IMAGE = imgUri('backgroundsmall.png');
 export const FONT = imgUri('font.png');
 export const OBJECTIVE = imgUri('oilrig.png');
 export const WATERLINE = imgUri('waterline.png');
 export const SHIPS = [
-  imgUri('00_mothership.png'),
-  imgUri('01_cruiser.png'),
-  imgUri('02_frigate.png'),
-  imgUri('03_corvette.png'),
-  imgUri('04_submarine.png'),
-  imgUri('05_warship.png'),
+  imgUri('boats/00_mothership.png'),
+  imgUri('boats/01_cruiser.png'),
+  imgUri('boats/02_frigate.png'),
+  imgUri('boats/03_corvette.png'),
+  imgUri('boats/04_submarine.png'),
+  imgUri('boats/05_warship.png'),
+];
+
+export const CARDS = [
+  imgUri('cards/c00_empty.png'),
+  imgUri('cards/c01_atk_s.png'),
+  imgUri('cards/c02_atk_l.png'),
+  imgUri('cards/c03_dmg_s.png'),
+  imgUri('cards/c04_dmg_l.png'),
+  imgUri('cards/c05_hp_s.png'),
+  imgUri('cards/c06_hp_l.png'),
 ];
 
 export const BUBBLE_CLOSED = imgUri('bubble_closed.png');
@@ -45,7 +54,6 @@ export const UI = {
 
 const textures = [
   FONT,
-  BG_IMAGE,
   OBJECTIVE,
   WATERLINE,
   ...SHIPS,
@@ -53,6 +61,7 @@ const textures = [
   BUBBLE_CLOSED,
   BUBBLE_OPEN,
   ...Object.values(UI),
+  ...CARDS,
 ];
 
 export const loadTextures = (callbackFn: () => void): void => {

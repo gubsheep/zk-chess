@@ -1,17 +1,22 @@
-import { InitState } from '../../../api/GameAPI';
-import { PixiManager, GameZIndex } from '../../../api/PixiManager';
-import { PieceType } from '../../../_types/global/GlobalTypes';
-import { PixiObject } from '../PixiObject';
+import { InitState } from '../../../../api/GameAPI';
+import { PixiManager, GameZIndex } from '../../../../api/PixiManager';
+import { PieceType } from '../../../../_types/global/GlobalTypes';
+import { PixiObject } from '../../PixiObject';
 import { CARD_H, CARD_W } from './ShopCard';
 import { ShopItem } from './ShopItem';
 
 const NUM_SHIPS = 5;
 
-const CARD_MARGIN = 4;
+export const CARD_MARGIN = 2;
 
 export class Shop extends PixiObject {
   constructor(manager: PixiManager) {
     super(manager, GameZIndex.Shop);
+
+    if (manager.spectator) {
+      this.setActive(false);
+      return;
+    }
 
     let idx = 0;
     for (
@@ -20,7 +25,14 @@ export class Shop extends PixiObject {
       type++
     ) {
       const shopEntry = new ShopItem(manager, type);
-      shopEntry.setPosition({ x: idx * (CARD_W + CARD_MARGIN), y: 0 });
+      if (idx <= 1) {
+        shopEntry.setPosition({ x: idx * (CARD_W + CARD_MARGIN), y: 0 });
+      } else {
+        shopEntry.setPosition({
+          x: (idx - 2) * (CARD_W + CARD_MARGIN),
+          y: CARD_MARGIN + CARD_H,
+        });
+      }
       this.addChild(shopEntry);
       idx++;
     }
@@ -30,8 +42,8 @@ export class Shop extends PixiObject {
 
   positionSelf() {
     const { width, height } = this.manager.renderer;
-    const shopX = 0.5 * (width - this.getWidth());
-    this.setPosition({ x: shopX, y: height - CARD_H - 4 });
+    const shopX = 4;
+    this.setPosition({ x: shopX, y: height - 2 * (CARD_H + CARD_MARGIN) });
   }
 
   getWidth() {

@@ -39,6 +39,7 @@ export class BoardRect extends PixiObject {
         attackIdxs,
         attackStaged,
         selectedShip,
+        stagedSpellTarget,
       },
       api,
     } = this.manager;
@@ -53,6 +54,10 @@ export class BoardRect extends PixiObject {
     const isZk =
       selectedShip?.isZk() &&
       compareBoardCoords(selectedShip.getCoords(), this.idx);
+
+    const spell =
+      clickState === ClickState.Casting &&
+      compareBoardCoords(stagedSpellTarget, this.idx);
 
     const deploy =
       clickState === ClickState.Deploying && idxsIncludes(deployIdxs, this.idx);
@@ -83,6 +88,8 @@ export class BoardRect extends PixiObject {
 
     if (selected) {
       fill = DARK_BLUE;
+    } else if (spell) {
+      fill = RED;
     } else if (deploy) {
       fill = RED;
     } else if (target) {

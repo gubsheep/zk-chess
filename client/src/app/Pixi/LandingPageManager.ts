@@ -41,8 +41,9 @@ export class LandingPageManager {
   }
 
   async initGame(player: PlayerName) {
-    let acc = this.p1;
+    console.log(player);
 
+    let acc = this.p1;
     if (player === PlayerName.Bob) acc = this.p2;
     else if (player === PlayerName.Spectator) acc = this.spec;
 

@@ -1,9 +1,8 @@
 import * as PIXI from 'pixi.js';
-import { PixiManager } from '../../../api/PixiManager';
-import { PieceType } from '../../../_types/global/GlobalTypes';
-import { PixiObject } from '../PixiObject';
-import { pieceNames } from '../Utils/PixiUtils';
-import { CARD_W } from './ShopCard';
+import { PixiManager } from '../../../../api/PixiManager';
+import { PieceType } from '../../../../_types/global/GlobalTypes';
+import { PixiObject } from '../../PixiObject';
+import { pieceNames } from '../../Utils/PixiUtils';
 
 const MODAL_W = 80;
 const MODAL_H = 60;
@@ -42,7 +41,7 @@ export class ShopModal extends PixiObject {
 
     this.object.addChild(modalBg, shopText);
 
-    this.setPosition({ x: -0.5 * (MODAL_W - CARD_W), y: -MODAL_H - 4 });
+    this.setPosition({ x: 0, y: -(MODAL_H + 4) });
   }
 
   setHover(hover: boolean): void {

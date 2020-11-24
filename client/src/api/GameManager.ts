@@ -1,4 +1,4 @@
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 import {
   BoardLocation,
   ChessGame,
@@ -24,7 +24,7 @@ import ContractsAPI from './ContractsAPI';
 import SnarkHelper from './SnarkArgsHelper';
 import _ from 'lodash';
 
-import AbstractGameManager, {GameManagerEvent} from './AbstractGameManager';
+import AbstractGameManager, { GameManagerEvent } from './AbstractGameManager';
 
 import {
   ContractsAPIEvent,
@@ -46,13 +46,13 @@ import {
   UnsubmittedEndTurn,
   UnsubmittedJoin,
 } from '../_types/darkforest/api/ContractsAPITypes';
-import {address} from '../utils/CheckedTypeUtils';
-import {findPath, getRandomTxIntentId, taxiDist} from '../utils/Utils';
+import { address } from '../utils/CheckedTypeUtils';
+import { findPath, getRandomTxIntentId, taxiDist } from '../utils/Utils';
 import bigInt from 'big-integer';
 import mimcHash from '../hash/mimc';
-import {LOCATION_ID_UB} from '../utils/constants';
-import {GameState} from './GameState';
-import {LocalStorageManager} from './LocalStorageManager';
+import { LOCATION_ID_UB } from '../utils/constants';
+import { GameState } from './GameState';
+import { LocalStorageManager } from './LocalStorageManager';
 
 class GameManager extends EventEmitter implements AbstractGameManager {
   private readonly account: EthAddress | null;
@@ -369,6 +369,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   }
 
   async setGame(gameId: string): Promise<void> {
+    console.log('setting game: ', gameId);
     await this.contractsAPI.setGame(gameId);
     const contractGameState = await this.contractsAPI.getGameState();
     LocalStorageManager.addGame(
@@ -401,7 +402,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
 
   joinGame(): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
-    const {myAddress, gameAddress} = this.gameState.getGameState();
+    const { myAddress, gameAddress } = this.gameState.getGameState();
     let seed = bigInt.randBetween(bigInt(0), LOCATION_ID_UB).toString();
     try {
       seed = LocalStorageManager.getSeed(myAddress, gameAddress);
@@ -425,7 +426,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
   drawCard(atHandIndex: 0 | 1 | 2): Promise<void> {
     if (!this.gameState) throw new Error('no game set');
     const gameState = this.gameState.getLatestState();
-    const {drawnCard} = gameState;
+    const { drawnCard } = gameState;
     if (!drawnCard) throw new Error("can't draw card");
     if (atHandIndex > 2) throw new Error('invalid index');
     const newCards: [number, number, number] = [...gameState.myHand.cards];

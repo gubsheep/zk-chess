@@ -2,7 +2,7 @@ import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
 import { PixiObject } from '../app/Pixi/PixiObject';
 import { ResourceBars } from '../app/Pixi/UI/ResourceBars';
-import { Shop } from '../app/Pixi/UI/Shop';
+import { Shop } from '../app/Pixi/UI/Shop/Shop';
 import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
 import { MouseManager } from '../app/Pixi/MouseManager';
 import { GameAPI } from './GameAPI';
@@ -12,16 +12,17 @@ import { FontLoader, getFontLoader } from '../app/Pixi/Utils/FontLoader';
 import { ShipManager } from '../app/Pixi/Ships/ShipManager';
 import { loadTextures, FONT } from '../app/Pixi/Utils/TextureLoader';
 import { GameOver } from '../app/Pixi/UI/GameOver';
-import { GameInitUI } from '../app/Pixi/GameInitUI/GameInitUI';
-import { TableNumber } from '../app/Pixi/UI/TableNumber';
-import { LandingPageManager } from '../app/Pixi/LandingPageManager';
 import { PlayerName } from '../app/Pixi/@PixiTypes';
 import GameManager from './GameManager';
 import { getGameIdForTable, setGameIdForTable } from './UtilityServerAPI';
-import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
 import { StagedShip } from '../app/Pixi/GameBoard/StagedShip';
+import { GameInitUI } from '../app/Pixi/GameInitUI/GameInitUI';
+import { LandingPageManager } from '../app/Pixi/LandingPageManager';
 import { Abandoned } from '../app/Pixi/UI/Abandoned';
+import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
 import { InitOverlaySpec } from '../app/Pixi/UI/InitOverlaySpec';
+import { TableNumber } from '../app/Pixi/UI/TableNumber';
+import { Cards } from '../app/Pixi/UI/Cards/Cards';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -136,7 +137,7 @@ export class PixiManager {
     this.layers[obj.layer].addChild(obj.object);
   }
 
-  async initGame(player: PlayerName) {
+  async initGame(player: PlayerName, force = false) {
     if (player === PlayerName.Spectator) this.spectator = true;
 
     this.playerName = player;
@@ -144,18 +145,24 @@ export class PixiManager {
     const gameManager = await GameManager.create();
     const gameId = await getGameIdForTable(this.tableId);
 
-    if (!gameId) {
+    if (!gameId || force) {
       console.log('creating table');
       const newGameId = Math.floor(Math.random() * 1000000).toString();
       await gameManager.createGame(newGameId);
       await setGameIdForTable(this.tableId, newGameId);
+
       await gameManager.setGame(newGameId);
     }
 
     const trueId = await getGameIdForTable(this.tableId);
 
     if (trueId) {
-      await gameManager.setGame(trueId);
+      try {
+        await gameManager.setGame(trueId);
+      } catch {
+        this.initGame(player, true);
+      }
+
       this.api = new GameAPI(this, gameManager);
 
       this.gameBoard = new GameBoard(this);
@@ -170,6 +177,7 @@ export class PixiManager {
       this.addObject(new ResourceBars(this));
       this.addObject(new StagedShip(this));
       this.addObject(new Shop(this));
+      this.addObject(new Cards(this));
       this.addObject(new GameOver(this));
       this.addObject(new Abandoned(this));
 
@@ -186,8 +194,6 @@ export class PixiManager {
 
       setTimeout(async () => {
         const newId = await getGameIdForTable(this.tableId);
-        console.log('old id is: ', oldId);
-        console.log('new id is: ', newId);
 
         if (newId !== oldId && oldId !== null && this.api.gameAbandoned())
           window.location.reload();

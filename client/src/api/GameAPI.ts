@@ -439,4 +439,15 @@ export class GameAPI {
   private amPlayer1(): boolean {
     return this.getMyColor() === PlayerColor.Red;
   }
+
+  // drawing cards
+  draw(idx: number) {
+    this.gameManager.drawCard(idx);
+    this.syncGameState();
+  }
+
+  cast(pieceId: number, idx: number) {
+    this.gameManager.playCard(pieceId, idx);
+    this.syncGameState();
+  }
 }

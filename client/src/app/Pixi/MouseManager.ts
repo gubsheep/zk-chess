@@ -11,6 +11,9 @@ export enum ClickState {
   None,
   Deploying,
   Acting,
+
+  Casting,
+  Drawing,
 }
 
 export class MouseManager {
@@ -36,6 +39,9 @@ export class MouseManager {
   moveStaged: BoardCoords | null = null;
   attackStaged: BoardCoords | null = null;
 
+  stagedSpellIdx: number | null = null;
+  stagedSpellTarget: BoardCoords | null = null;
+
   constructor(manager: PixiManager) {
     this.manager = manager;
   }
@@ -46,6 +52,9 @@ export class MouseManager {
     this.deployStaged = null;
     this.attackStaged = null;
     this.moveStaged = null;
+
+    this.stagedSpellIdx = null;
+    this.stagedSpellTarget = null;
   }
 
   private clearSelected() {
@@ -92,6 +101,8 @@ export class MouseManager {
       clickState,
       moveStaged,
       attackStaged,
+      stagedSpellIdx,
+      stagedSpellTarget,
       manager: { api },
     } = this;
 
@@ -109,6 +120,13 @@ export class MouseManager {
         api.move(selectedShip, moveStaged);
       } else if (selectedShip && attackStaged) {
         api.attack(selectedShip, attackStaged);
+      }
+    } else if (clickState === ClickState.Casting) {
+      console.log(stagedSpellIdx, stagedSpellTarget);
+      if (stagedSpellTarget && stagedSpellIdx !== null) {
+        const shipAt = api.shipAt(stagedSpellTarget);
+        console.log('casting', shipAt);
+        shipAt && api.cast(shipAt.pieceData.id, stagedSpellIdx);
       }
     }
 
@@ -323,11 +341,13 @@ export class MouseManager {
       deployType,
     } = this;
 
-    if (this.showZk && clickState === ClickState.None) return;
-    // if (ship.id === selectedShip?.id) {
-    //   this.setSelected(null);
-    //   return;
-    // }
+    if (this.showZk) return;
+
+    // first, try to target using a spell
+    if (clickState === ClickState.Casting) {
+      this.stagedSpellTarget = ship.getCoords();
+      return;
+    }
 
     const deployingSub =
       clickState === ClickState.Deploying &&
@@ -376,5 +396,19 @@ export class MouseManager {
 
     const coords = sub.getCoords();
     if (coords) this.cellClicked(coords);
+  }
+
+  // card drawing
+
+  drawCard() {
+    this.setClickState(ClickState.Drawing);
+  }
+
+  cast(idx: number) {
+    console.log('casting');
+
+    // this is disgusting b/c setClickSate rests stagedSpellIdx, but don't question it ok
+    this.setClickState(ClickState.Casting);
+    this.stagedSpellIdx = idx;
   }
 }

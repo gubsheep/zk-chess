@@ -13,6 +13,16 @@ export enum PlayerName {
   Spectator = 'Spectator',
 }
 
+export enum CardType {
+  EMPTY_00,
+  ATK_S_01,
+  ATK_L_02,
+  DMG_S_03,
+  DMG_L_04,
+  HP_S_05,
+  HP_L_06,
+}
+
 export enum LineAlignment {
   Inner = 0,
   Middle = 0.5,
