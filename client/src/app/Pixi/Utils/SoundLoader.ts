@@ -18,6 +18,10 @@ export const setAllVolume = (volume: number) => {
   }
 };
 
+export const playSound = (sound: string): void => {
+  
+}
+
 export const loadSound = (callbackFn: () => void): void => {
   console.log('loading sounds');
 
