@@ -29,6 +29,7 @@ export function useStoredState(key: StoredKey) {
   useLayoutEffect(() => {
     const stored = localStorage.getItem(lsKey);
     if (stored) setVal(stored === 'true' ? true : false);
+    else setVal(true);
   }, [key]);
 
   // update
