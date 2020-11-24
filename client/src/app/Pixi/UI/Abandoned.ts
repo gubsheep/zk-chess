@@ -14,6 +14,11 @@ export class Abandoned extends PixiObject {
   constructor(manager: PixiManager) {
     super(manager, GameZIndex.GameOver);
 
+    if (this.manager.spectator) {
+      this.setActive(false);
+      return;
+    }
+
     const modalBg = new PIXI.Graphics();
     modalBg.beginFill(0x333388, 0.8);
     modalBg.lineStyle(1, 0x99ccff, 1);
