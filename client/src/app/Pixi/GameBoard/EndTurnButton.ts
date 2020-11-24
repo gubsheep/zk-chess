@@ -31,7 +31,7 @@ export class EndTurnButton extends GameBoardObject {
 
   positionGrid(gridW: number, _gridH: number) {
     this.setPosition({
-      y: -CHAR_H - 6,
+      y: -CHAR_H - 4,
       x: gridW - 2,
     });
   }

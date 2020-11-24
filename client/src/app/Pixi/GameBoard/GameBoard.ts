@@ -52,7 +52,7 @@ export class GameBoard extends PixiObject {
     const gridH = this.grid.getHeight();
 
     const x = Math.floor((gameW - gridW) / 2);
-    const y = 34;
+    const y = 37;
 
     this.setPosition({ x, y });
 

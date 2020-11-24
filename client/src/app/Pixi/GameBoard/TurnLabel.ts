@@ -35,7 +35,7 @@ export class TurnLabel extends GameBoardObject {
   positionGrid(gridW: number, _gridH: number) {
     this.setPosition({
       x: Math.floor(0.5 * gridW),
-      y: -CHAR_H - 6,
+      y: -CHAR_H - 4,
     });
   }
 }

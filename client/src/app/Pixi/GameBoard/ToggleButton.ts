@@ -42,7 +42,7 @@ export class ToggleButton extends GameBoardObject {
 
   positionGrid(_gridW: number, gridH: number) {
     this.setPosition({
-      y: gridH + 2,
+      y: gridH + 1,
       x: 0,
     });
   }

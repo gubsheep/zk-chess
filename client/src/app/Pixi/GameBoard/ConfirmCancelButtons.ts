@@ -50,7 +50,7 @@ export class ConfirmCancelButtons extends GameBoardObject {
 
   positionGrid(gridW: number, gridH: number) {
     this.setPosition({
-      y: gridH + 2,
+      y: gridH + 1,
       x: gridW - 2,
     });
   }
