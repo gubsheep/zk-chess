@@ -6,7 +6,7 @@ const PATH = 'public/assets/audio/';
 
 const audUri = (file: string) => PATH + file;
 
-const bgm = audUri('botefite.mp3');
+const bgm = audUri('botefite.m4a');
 
 const soundUris = [bgm];
 
@@ -24,7 +24,7 @@ export const loadSound = (callbackFn: () => void): void => {
   let vol = 1;
   if (localStorage.getItem('storedstate-item-Music') === 'false') vol = 0;
 
-  const bgmSound = pixiSound.Sound.from({ url: bgm, volume: vol });
+  const bgmSound = pixiSound.Sound.from({ url: bgm, volume: vol, loop: true });
   sounds.push(bgmSound);
   bgmSound.play();
 
