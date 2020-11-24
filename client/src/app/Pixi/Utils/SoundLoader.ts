@@ -17,6 +17,7 @@ export enum SFX {
   Deploy = 'Deploy',
   Impact = 'Impact',
   Powerup = 'Powerup',
+  YourTurn = 'YourTurn',
 }
 
 const sfxURLs: Record<SFX, string> = {
@@ -26,6 +27,7 @@ const sfxURLs: Record<SFX, string> = {
   Deploy: audUri('deployship.wav'),
   Impact: audUri('impact.wav'),
   Powerup: audUri('powerup.wav'),
+  YourTurn: audUri('yourturn.wav'),
 };
 
 let sfxObjs: Record<SFX, pixiSound.Sound> = {} as Record<SFX, pixiSound.Sound>;
@@ -48,6 +50,11 @@ export const setSoundVolume = (volume: number) => {
 
 export const playSFX = (sound: SFX): void => {
   sfxObjs[sound].play();
+
+  if (sound === SFX.Impact)
+    setTimeout(() => {
+      sfxObjs[sound].play();
+    }, 120);
 };
 
 export const DEFAULT_SOUND_VOLUME = 0.5;

@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { GameZIndex, PixiManager } from '../../../api/PixiManager';
 import { PixiObject, Wrapper } from '../PixiObject';
+import { playSFX, SFX } from '../Utils/SoundLoader';
 import { TextAlign, TextObject } from '../Utils/TextObject';
 
 const YOURTURN_W = 160;
@@ -11,7 +12,7 @@ export class YourTurn extends PixiObject {
   constructor(manager: PixiManager) {
     super(manager, GameZIndex.GameOver);
 
-    this.lastPinged = -100;
+    this.lastPinged = -Infinity;
 
     const modalBg = new PIXI.Graphics();
     modalBg.beginFill(0x333388, 0.8);
@@ -43,6 +44,7 @@ export class YourTurn extends PixiObject {
     this.lastPinged = this.lifetime;
     this.setAlpha(1);
     this.object.visible = true;
+    playSFX(SFX.YourTurn);
   }
 
   loop() {

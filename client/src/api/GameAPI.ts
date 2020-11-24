@@ -29,6 +29,7 @@ import { setGameIdForTable } from './UtilityServerAPI';
 import { difference } from 'lodash';
 import _ from 'lodash';
 import Game from '../app/Game';
+import { playSFX, SFX } from '../app/Pixi/Utils/SoundLoader';
 
 export enum InitState {
   NotJoined,
@@ -372,12 +373,12 @@ export class GameAPI {
   }
 
   /* diffing engine */
-  private diff(oldState: ChessGame) {
-    const newState = this.gameState;
-    this.diffTurn(oldState);
+  private diff(oldState: ChessGame, newState: ChessGame) {
+    this.diffTurn(oldState, newState);
+    this.diffPieces(oldState, newState);
   }
 
-  private diffTurn(oldState: ChessGame) {
+  private diffTurn(oldState: ChessGame, _newState: ChessGame) {
     const newState = this.gameState;
     if (
       oldState.gameStatus !== newState.gameStatus &&
@@ -390,6 +391,56 @@ export class GameAPI {
     }
   }
 
+  private diffPieces(oldState: ChessGame, newState: ChessGame) {
+    const oldIds = oldState.pieces.map((piece) => piece.id);
+    const newIds = newState.pieces.map((piece) => piece.id);
+
+    for (const id of newIds) {
+      const oldPiece = oldState.pieceById.get(id);
+      const newPiece = newState.pieceById.get(id);
+
+      // check if a new piece has been deployed
+      if (!oldIds.includes(id)) {
+        const ship = this.pixiManager.shipManager.getPieceWithId(id);
+        if (ship) ship.pingDeploy();
+        continue;
+      }
+
+      // check if a piece was destroyed
+      if (oldPiece && oldPiece.alive && newPiece && !newPiece.alive) {
+        const ship = this.pixiManager.shipManager.getPieceWithId(id);
+        if (ship) ship.pingDestroy();
+        continue;
+      }
+
+      // check if a piece was damaged
+      if (
+        oldPiece &&
+        newPiece &&
+        oldPiece.alive &&
+        newPiece.alive &&
+        oldPiece.hp > newPiece.hp
+      ) {
+        const ship = this.pixiManager.shipManager.getPieceWithId(id);
+        if (ship) ship.pingDamage();
+        continue;
+      }
+
+      // check if a piece was buffed
+      if (
+        oldPiece &&
+        newPiece &&
+        oldPiece.alive &&
+        newPiece.alive &&
+        (oldPiece.hp < newPiece.hp || oldPiece.atk < newPiece.atk)
+      ) {
+        const ship = this.pixiManager.shipManager.getPieceWithId(id);
+        if (ship) ship.pingBuff();
+        continue;
+      }
+    }
+  }
+
   /* private utils */
   private syncGameState(): void {
     const oldState = _.cloneDeep(this.gameState);
@@ -398,7 +449,7 @@ export class GameAPI {
     this.syncShips();
     this.syncObjectives();
 
-    this.diff(oldState);
+    this.diff(oldState, _.clone(this.gameManager.getLatestGameState()));
   }
 
   private canMove(
@@ -467,6 +518,7 @@ export class GameAPI {
 
   // drawing cards
   draw(idx: number) {
+    playSFX(SFX.BtnClick);
     this.gameManager.drawCard(idx);
     this.syncGameState();
   }
