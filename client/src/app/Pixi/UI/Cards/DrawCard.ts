@@ -11,7 +11,7 @@ export class DrawCard extends PixiObject {
   constructor(manager: PixiManager) {
     super(manager);
 
-    this.item = new SpellItem(manager, -1, 0);
+    this.item = new SpellItem(manager, -1, 0, true);
 
     this.addChild(this.item);
 

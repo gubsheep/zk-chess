@@ -3,7 +3,13 @@ import { PixiManager } from '../../../../api/PixiManager';
 import { CardType, LineAlignment } from '../../@PixiTypes';
 import { ClickState } from '../../MouseManager';
 import { PixiObject, Wrapper } from '../../PixiObject';
-import { CARDS, SPRITE_W } from '../../Utils/TextureLoader';
+import { CHAR_W } from '../../Utils/FontLoader';
+import {
+  BASELINE_ICONS,
+  CARDS,
+  getCoinSprite,
+  SPRITE_W,
+} from '../../Utils/TextureLoader';
 import { CARD_W, CARD_H } from './ShopCard';
 import { SpellSprite } from './SpellSprite';
 
@@ -19,6 +25,8 @@ export class SpellCard extends PixiObject {
   sprite: SpellSprite;
 
   idx: number;
+
+  textContainer: PIXI.Container;
 
   constructor(manager: PixiManager, idx: number, type: CardType) {
     super(manager);
@@ -49,24 +57,27 @@ export class SpellCard extends PixiObject {
     this.outline = outline;
 
     this.sprite = new SpellSprite(manager, type);
-    this.sprite.setPosition({
-      x: 0.5 * (CARD_W - SPRITE_W),
-      y: 0.5 * (CARD_H - SPRITE_W),
-    });
 
     this.addChild(this.bg);
     this.object.addChild(this.bgOverlay, this.outline);
 
+    const textContainer = new PIXI.Container();
+    const text = manager.fontLoader(`2`, 0xffffff).object;
+    const goldIcon = getCoinSprite();
+    goldIcon.position.set(CHAR_W + 2, BASELINE_ICONS);
+    textContainer.addChild(text, goldIcon);
+
+    this.sprite.setPosition({
+      x: 0.5 * (CARD_W - SPRITE_W),
+      y: 0.5 * (CARD_H - SPRITE_W),
+      // y: CARD_H - SPRITE_W + 1,
+    });
+    textContainer.position.set(CARD_W - textContainer.width - 3, 3);
+
+    this.textContainer = textContainer;
+
     this.addChild(this.sprite);
-
-    const hitArea = new PIXI.Rectangle(0, 0, CARD_W, CARD_H);
-    this.setInteractive({ hitArea, click: this.onClick });
-  }
-
-  private onClick() {
-    if (this.idx === -1) return;
-    this.manager.api.draw(this.idx);
-    this.manager.mouseManager.setClickState(ClickState.None);
+    this.object.addChild(textContainer);
   }
 
   setHover(hover: boolean): void {
@@ -85,16 +96,23 @@ export class SpellCard extends PixiObject {
   loop() {
     super.loop();
 
-    const { clickState } = this.manager.mouseManager;
+    const { clickState, stagedSpellIdx } = this.manager.mouseManager;
 
     this.bg.setAlpha(this.type === CardType.EMPTY_00 ? 0.6 : 1);
     this.sprite.setAlpha(this.type === CardType.EMPTY_00 ? 0.8 : 1);
+
+    this.textContainer.visible = this.type !== CardType.EMPTY_00;
 
     if (clickState === ClickState.Drawing) {
       this.bgOverlay.visible = this.hover;
     } else {
       this.bgOverlay.visible = this.hover && this.type !== CardType.EMPTY_00;
     }
-    this.outline.visible = this.showOutline;
+
+    if (clickState === ClickState.Casting) {
+      this.outline.visible = this.idx === stagedSpellIdx;
+    } else {
+      this.outline.visible = this.showOutline;
+    }
   }
 }

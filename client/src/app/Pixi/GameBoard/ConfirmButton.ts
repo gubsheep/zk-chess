@@ -12,11 +12,18 @@ export class ConfirmButton extends LinkObject {
   isEnabled() {
     const {
       api,
-      mouseManager: { selectedShip, moveStaged, attackStaged, deployStaged },
+      mouseManager: {
+        selectedShip,
+        moveStaged,
+        attackStaged,
+        deployStaged,
+        stagedSpellTarget,
+      },
     } = this.manager;
+
     if (!api.isMyTurn) return false;
     if (selectedShip?.isZk()) return true;
-    else if (moveStaged || attackStaged || deployStaged) {
+    else if (moveStaged || attackStaged || deployStaged || stagedSpellTarget) {
       return true;
     }
 

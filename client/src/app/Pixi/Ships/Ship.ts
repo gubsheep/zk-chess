@@ -101,8 +101,17 @@ export class Ship extends PieceObject {
   }
 
   onClick() {
-    const { api, mouseManager } = this.manager;
+    const {
+      api,
+      mouseManager,
+      mouseManager: { clickState },
+    } = this.manager;
+
     if (api.isMyTurn()) {
+      if (clickState === ClickState.Casting) {
+        mouseManager.shipClicked(this);
+        return;
+      }
       if (this.pieceData.id === api.getMyMothership()?.pieceData.id) {
         const gold = api.getGold();
         if (gold == 0) return;

@@ -5,7 +5,11 @@ import { LineAlignment } from '../../@PixiTypes';
 import { PixiObject } from '../../PixiObject';
 import { ShipSprite } from '../../Ships/ShipSprite';
 import { CHAR_W } from '../../Utils/FontLoader';
-import { getCoinSprite, BASELINE_ICONS, SPRITE_W } from '../../Utils/TextureLoader';
+import {
+  getCoinSprite,
+  BASELINE_ICONS,
+  SPRITE_W,
+} from '../../Utils/TextureLoader';
 
 export const CARD_W = 38;
 export const CARD_H = 38;
@@ -14,6 +18,7 @@ export class ShopCard extends PixiObject {
   type: PieceType;
   hover: boolean;
   bgOverlay: PIXI.DisplayObject;
+  sprite: ShipSprite;
 
   constructor(manager: PixiManager, type: PieceType) {
     super(manager);
@@ -33,6 +38,7 @@ export class ShopCard extends PixiObject {
     this.bgOverlay = bgOverlay;
 
     const sprite = new ShipSprite(manager, type, manager.api.getMyColor());
+    this.sprite = sprite;
     const data = this.manager.api.getStats(type);
 
     const textContainer = new PIXI.Container();
@@ -59,5 +65,7 @@ export class ShopCard extends PixiObject {
   loop() {
     super.loop();
     this.bgOverlay.visible = this.hover;
+
+    this.sprite.setColor(this.manager.api.getMyColor());
   }
 }

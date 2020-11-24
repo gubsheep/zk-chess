@@ -445,4 +445,9 @@ export class GameAPI {
     this.gameManager.drawCard(idx);
     this.syncGameState();
   }
+
+  cast(pieceId: number, idx: number) {
+    this.gameManager.playCard(pieceId, idx);
+    this.syncGameState();
+  }
 }

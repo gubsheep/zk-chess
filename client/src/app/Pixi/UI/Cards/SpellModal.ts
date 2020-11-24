@@ -41,7 +41,7 @@ export class SpellModal extends PixiObject {
     this.object.addChild(modalBg);
     this.addChild(this.shopText);
 
-    this.setPosition({ x: -(CARDMODAL_W - CARD_W), y: -(CARDMODAL_H + 4) });
+    this.setPosition({ x: -(CARDMODAL_W - CARD_W), y: -(CARDMODAL_H + 6) });
 
     this.syncText();
   }
