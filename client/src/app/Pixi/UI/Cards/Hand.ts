@@ -12,9 +12,9 @@ export class Hand extends PixiObject {
   constructor(manager: PixiManager) {
     super(manager);
 
-    this.e0 = new SpellItem(manager, 1);
-    this.e1 = new SpellItem(manager, 3);
-    this.e2 = new SpellItem(manager, 5);
+    this.e0 = new SpellItem(manager, 0, 1);
+    this.e1 = new SpellItem(manager, 1, 3);
+    this.e2 = new SpellItem(manager, 2, 5);
 
     const w = CARD_W + CARD_MARGIN;
 

@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../../api/PixiManager';
 import { CardType } from '../../@PixiTypes';
+import { ClickState } from '../../MouseManager';
 import { PixiObject } from '../../PixiObject';
 import { CARD_W, CARD_H } from '../Shop/ShopCard';
 import { SpellCard } from '../Shop/SpellCard';
@@ -15,12 +16,12 @@ export class SpellItem extends PixiObject {
 
   overrideHover: boolean;
 
-  constructor(manager: PixiManager, type: CardType) {
+  constructor(manager: PixiManager, idx: number, type: CardType) {
     super(manager);
 
     this.type = type;
 
-    this.card = new SpellCard(manager, type);
+    this.card = new SpellCard(manager, idx, type);
     this.modal = new SpellModal(manager, type);
     this.addChild(this.card, this.modal);
 
@@ -60,7 +61,17 @@ export class SpellItem extends PixiObject {
   loop() {
     super.loop();
 
-    this.card.setHover(this.hovering || this.overrideHover);
-    this.modal.setHover(this.hovering);
+    const { clickState } = this.manager.mouseManager;
+
+    if (this.overrideHover) {
+      // also is the draw one
+      this.card.setHover(true);
+      this.modal.setHover(false);
+    } else {
+      this.card.setHover(this.hovering);
+      this.modal.setHover(this.hovering);
+    }
+
+    this.card.setOutline(clickState === ClickState.Drawing);
   }
 }

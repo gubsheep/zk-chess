@@ -386,4 +386,5 @@ export class MouseManager {
   drawCard() {
     this.setClickState(ClickState.Drawing);
   }
+
 }
