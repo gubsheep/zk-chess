@@ -11,6 +11,9 @@ export enum ClickState {
   None,
   Deploying,
   Acting,
+
+  Casting,
+  Drawing,
 }
 
 export class MouseManager {
@@ -376,5 +379,11 @@ export class MouseManager {
 
     const coords = sub.getCoords();
     if (coords) this.cellClicked(coords);
+  }
+
+  // card drawing
+
+  drawCard() {
+    this.setClickState(ClickState.Drawing);
   }
 }

@@ -41,9 +41,9 @@ class PlayerButton extends PixiObject {
     super.loop();
 
     if (this.parent.selected === this.type) {
-      this.sprite.rotation = 0.2 * Math.sin(this.lifetime / 15);
+      this.sprite.rotation = 0.2 * Math.sin(this.lifetime / 16.74);
 
-      const scale = 1 + 0.1 * Math.sin(this.lifetime / 20);
+      const scale = 1 + 0.1 * Math.sin(this.lifetime / 23.24);
       this.sprite.scale.set(scale, scale);
       this.boat.visible = true;
     } else {

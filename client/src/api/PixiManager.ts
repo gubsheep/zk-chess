@@ -2,7 +2,7 @@ import autoBind from 'auto-bind';
 import * as PIXI from 'pixi.js';
 import { PixiObject } from '../app/Pixi/PixiObject';
 import { ResourceBars } from '../app/Pixi/UI/ResourceBars';
-import { Shop } from '../app/Pixi/UI/Shop';
+import { Shop } from '../app/Pixi/UI/Shop/Shop';
 import { GameBoard } from '../app/Pixi/GameBoard/GameBoard';
 import { MouseManager } from '../app/Pixi/MouseManager';
 import { GameAPI } from './GameAPI';
@@ -22,6 +22,7 @@ import { Abandoned } from '../app/Pixi/UI/Abandoned';
 import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
 import { InitOverlaySpec } from '../app/Pixi/UI/InitOverlaySpec';
 import { TableNumber } from '../app/Pixi/UI/TableNumber';
+import { Cards } from '../app/Pixi/UI/Cards/Cards';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -161,6 +162,7 @@ export class PixiManager {
       } catch {
         this.initGame(player, true);
       }
+
       this.api = new GameAPI(this, gameManager);
 
       this.gameBoard = new GameBoard(this);
@@ -175,6 +177,7 @@ export class PixiManager {
       this.addObject(new ResourceBars(this));
       this.addObject(new StagedShip(this));
       this.addObject(new Shop(this));
+      this.addObject(new Cards(this));
       this.addObject(new GameOver(this));
       this.addObject(new Abandoned(this));
 

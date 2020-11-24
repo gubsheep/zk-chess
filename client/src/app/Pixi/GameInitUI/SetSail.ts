@@ -58,9 +58,9 @@ export class SetSail extends PixiObject {
     super.loop();
 
     if (this.hover) {
-      this.title.rotation = 0.2 * Math.sin(this.lifetime / 15);
+      this.title.rotation = 0.2 * Math.sin(this.lifetime / 13.37);
 
-      const scale = 1 + 0.1 * Math.sin(this.lifetime / 20);
+      const scale = 1 + 0.1 * Math.sin(this.lifetime / 18.9);
       this.title.scale.set(scale, scale);
     } else {
       this.title.rotation = 0;
