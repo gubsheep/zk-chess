@@ -92,7 +92,6 @@ export class GameState {
       this.myAddress === this.player1.address
         ? contractData.player1HandCommit
         : contractData.player2HandCommit;
-    console.log(`received hand commit ${handCommit}`);
     if (handCommit === STARTING_HAND_COMMIT) {
       this.myHand = {
         cards: [0, 0, 0],
