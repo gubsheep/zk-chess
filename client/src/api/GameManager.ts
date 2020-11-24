@@ -385,7 +385,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     }, 5000);
   }
 
-  createGame(gameId: string): Promise<void> {
+  async createGame(gameId: string): Promise<void> {
+    console.log('calling gm creategame');
     const unsubmittedCreateGame: UnsubmittedCreateGame = {
       txIntentId: getRandomTxIntentId(),
       gameId,
@@ -397,6 +398,8 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     } catch (e) {
       console.error(e);
     }
+
+    console.log('returning from gm creategame');
     return Promise.resolve();
   }
 

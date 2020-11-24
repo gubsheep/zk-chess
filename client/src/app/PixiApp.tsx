@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PixiManager } from '../api/PixiManager';
+import { Controls } from './PixiAppComponents/Controls';
 import {
   StyledPixiApp,
   GameWrapper,
@@ -79,7 +80,7 @@ export default function PixiApp({ tableId }: { tableId: string }) {
         <Toolbar>
           <Tab hook={tabHook} id={TabState.Transactions} />
           <Tab hook={tabHook} id={TabState.Help} />
-          <Tab hook={tabHook} id={TabState.PieceList} />
+          {/* <Tab hook={tabHook} id={TabState.PieceList} /> */}
         </Toolbar>
       </GameWrapper>
       <TextBody hook={tabHook} />

@@ -23,7 +23,8 @@ import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
 import { InitOverlaySpec } from '../app/Pixi/UI/InitOverlaySpec';
 import { TableNumber } from '../app/Pixi/UI/TableNumber';
 import { Cards } from '../app/Pixi/UI/Cards/Cards';
-import { loadSound } from '../app/Pixi/Utils/SoundLoader';
+import { loadSound, setAllVolume } from '../app/Pixi/Utils/SoundLoader';
+import { GameManagerEvent } from './AbstractGameManager';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -147,45 +148,55 @@ export class PixiManager {
     const gameManager = await GameManager.create();
     const gameId = await getGameIdForTable(this.tableId);
 
-    if (!gameId || force) {
-      console.log('creating table');
-      const newGameId = Math.floor(Math.random() * 1000000).toString();
-      await gameManager.createGame(newGameId);
-      await setGameIdForTable(this.tableId, newGameId);
+    try {
+      if (!gameId || force) {
+        console.log('creating table');
+        const newGameId = Math.floor(Math.random() * 1000000).toString();
 
-      await gameManager.setGame(newGameId);
-    }
+        await new Promise(async (resolve) => {
+          gameManager.createGame(newGameId);
+          gameManager.on(GameManagerEvent.CreatedGame, (gameId) => {
+            console.log(gameId, newGameId);
+            if (gameId === newGameId) {
+              resolve();
+            }
+          });
+        });
 
-    const trueId = await getGameIdForTable(this.tableId);
+        await setGameIdForTable(this.tableId, newGameId);
 
-    if (trueId) {
-      try {
-        await gameManager.setGame(trueId);
-      } catch {
-        this.initGame(player, true);
+        await gameManager.setGame(newGameId);
       }
 
-      this.api = new GameAPI(this, gameManager);
+      const trueId = await getGameIdForTable(this.tableId);
 
-      this.gameBoard = new GameBoard(this);
-      this.addObject(this.gameBoard);
+      if (trueId) {
+        await gameManager.setGame(trueId);
 
-      this.addObject(new InitOverlay(this));
-      this.addObject(new InitOverlaySpec(this));
+        this.api = new GameAPI(this, gameManager);
 
-      this.api.syncShips();
-      this.api.syncObjectives();
+        this.gameBoard = new GameBoard(this);
+        this.addObject(this.gameBoard);
 
-      this.addObject(new ResourceBars(this));
-      this.addObject(new StagedShip(this));
-      this.addObject(new Shop(this));
-      this.addObject(new Cards(this));
-      this.addObject(new GameOver(this));
-      this.addObject(new Abandoned(this));
+        this.addObject(new InitOverlay(this));
+        this.addObject(new InitOverlaySpec(this));
 
-      this.pollGameId();
-    } else {
-      console.error('could not get game id');
+        this.api.syncShips();
+        this.api.syncObjectives();
+
+        this.addObject(new ResourceBars(this));
+        this.addObject(new StagedShip(this));
+        this.addObject(new Shop(this));
+        this.addObject(new Cards(this));
+        this.addObject(new GameOver(this));
+        this.addObject(new Abandoned(this));
+
+        this.pollGameId();
+      } else {
+        console.error('could not get game id');
+      }
+    } catch {
+      this.initGame(player, true);
     }
   }
 
@@ -210,7 +221,26 @@ export class PixiManager {
     this.addObject(new GameInitUI(this));
   }
 
+  private handleAudio({ key, value }: { key: string; value: boolean }) {
+    console.log('audio being handled');
+
+    if (key === 'Music') {
+      if (value) {
+        setAllVolume(1);
+      } else {
+        setAllVolume(0);
+      }
+    } else if (key === 'Sound') {
+    }
+
+  }
+
   private setup() {
+    new BroadcastChannel('ls-channel').onmessage = (ev) => {
+      console.log(ev);
+      this.handleAudio(ev.data);
+    };
+
     const cache = PIXI.utils.TextureCache;
     this.fontLoader = getFontLoader(cache[FONT]);
     this.renderer.backgroundColor = 0x061639; // TODO set fallback color
