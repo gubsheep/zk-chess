@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { useBeforeunload } from 'react-beforeunload';
 import styled from 'styled-components';
 
 export enum StoredKey {
@@ -17,7 +18,14 @@ const StyledControls = styled.div`
   color: white;
 `;
 
-const channel = new BroadcastChannel('ls-channel');
+export const sessionId: () => string = (() => {
+  const id = 'ls-channel' + Date.now() + '-' + Math.random();
+  return () => {
+    return id;
+  };
+})();
+
+const channel = new BroadcastChannel(sessionId());
 
 export function useStoredState(key: StoredKey) {
   const hook = useState<boolean>(false);
@@ -27,15 +35,14 @@ export function useStoredState(key: StoredKey) {
 
   // init
   useLayoutEffect(() => {
+    console.log('firing init effect!');
     const stored = localStorage.getItem(lsKey);
     if (stored) setVal(stored === 'true' ? true : false);
+    else setVal(true);
   }, [key]);
 
   // update
   useLayoutEffect(() => {
-    console.log('effect fired');
-    localStorage.setItem(lsKey, val.toString());
-
     console.log('posting message', { key, value: val });
     channel.postMessage({ key, value: val });
   }, [val]);
@@ -46,6 +53,17 @@ export function useStoredState(key: StoredKey) {
 export function Controls() {
   const [music, setMusic] = useStoredState(StoredKey.Music);
   const [sound, setSound] = useStoredState(StoredKey.Sound);
+
+  useBeforeunload(() => {
+    console.log('unloading!');
+    for (const key in StoredKey) {
+      console.log(key);
+      const lsKey = `storedstate-item-${key}`;
+      let val = music;
+      if (key === StoredKey.Sound) val = sound;
+      localStorage.setItem(lsKey, val.toString());
+    }
+  });
 
   return (
     <StyledControls>

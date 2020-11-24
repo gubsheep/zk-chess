@@ -7,6 +7,7 @@ export class StrikeButton extends LinkObject {
     super(manager, 'Strike!', TextAlign.Right);
   }
   onClick() {
+    super.onClick();
     this.manager.mouseManager.attackSub();
   }
   isEnabled() {

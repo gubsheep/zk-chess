@@ -3,6 +3,7 @@ import { PixiManager } from '../../../../api/PixiManager';
 import { CardType } from '../../@PixiTypes';
 import { ClickState } from '../../MouseManager';
 import { PixiObject } from '../../PixiObject';
+import { playSFX, SFX } from '../../Utils/SoundLoader';
 import { CARD_W, CARD_H } from '../Shop/ShopCard';
 import { SpellCard } from '../Shop/SpellCard';
 import { SpellModal } from './SpellModal';
@@ -70,6 +71,7 @@ export class SpellItem extends PixiObject {
       // cast it
       this.manager.mouseManager.cast(this.idx);
     }
+    playSFX(SFX.BtnClick);
   }
 
   private onMouseOver() {

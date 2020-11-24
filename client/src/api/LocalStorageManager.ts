@@ -65,7 +65,7 @@ export class LocalStorageManager {
     if (!commitmentDataStr) {
       // TODO: BAD! duct tape fix for multiple people logging in on same acc for workshop
       console.error('commitment not found');
-      return [[0, 0], '0'];
+      return [[-1, -1], '0'];
     }
     const commitData = JSON.parse(commitmentDataStr) as [
       number,

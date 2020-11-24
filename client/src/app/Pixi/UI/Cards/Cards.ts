@@ -39,7 +39,7 @@ export class Cards extends PixiObject {
 
     this.msg = new TextObject(
       manager,
-      'Click a slot to replace',
+      'Click a slot below to replace',
       TextAlign.Right
     );
     this.msg.setPosition({

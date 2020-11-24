@@ -3,6 +3,7 @@ import { PixiManager } from '../../../../api/PixiManager';
 import { PieceType } from '../../../../_types/global/GlobalTypes';
 import { ClickState } from '../../MouseManager';
 import { PixiObject } from '../../PixiObject';
+import { playSFX, SFX } from '../../Utils/SoundLoader';
 import { ShopCard, CARD_W, CARD_H } from './ShopCard';
 import { ShopModal } from './ShopModal';
 
@@ -38,6 +39,7 @@ export class ShopItem extends PixiObject {
 
   private onClick() {
     if (!this.canBuy) return;
+    playSFX(SFX.BtnClick);
     this.manager.mouseManager.buyShip(this.type);
   }
 

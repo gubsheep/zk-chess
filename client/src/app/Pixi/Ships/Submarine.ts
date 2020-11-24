@@ -1,9 +1,13 @@
 import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../api/PixiManager';
-import { ZKPiece, isKnown } from '../../../_types/global/GlobalTypes';
+import {
+  ZKPiece,
+  isKnown,
+  isZKPiece,
+} from '../../../_types/global/GlobalTypes';
 import { CanvasCoords, PlayerColor } from '../@PixiTypes';
 import { PieceObject } from './PieceObject';
-import { boardCoordsFromLoc } from '../Utils/PixiUtils';
+import { boardCoordsFromLoc, compareBoardCoords } from '../Utils/PixiUtils';
 import { Bubble } from '../Utils/Bubble';
 
 export const SUB_X = 6;
@@ -19,7 +23,13 @@ export class Submarine extends PieceObject {
     this.bubble = new Bubble(manager);
     this.shipContainer.addChild(this.bubble);
 
-    if (isKnown(data)) {
+    console.log('adding a sub with data:', data);
+
+    if (isKnown(data) && isZKPiece(data)) {
+      if (data.location[0] === -1 && data.location[1] === -1) {
+        this.setActive(false);
+        return;
+      }
       this.setActive(true);
       this.setLocation(boardCoordsFromLoc(data.location));
     } else {

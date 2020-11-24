@@ -3,6 +3,7 @@ import { PixiManager } from '../../../api/PixiManager';
 import { CanvasCoords } from '../@PixiTypes';
 import { PixiObject } from '../PixiObject';
 import { CHAR_H } from './FontLoader';
+import { playSFX, SFX } from './SoundLoader';
 import { TextObject, TextAlign } from './TextObject';
 
 export class LinkObject extends PixiObject {
@@ -58,7 +59,7 @@ export class LinkObject extends PixiObject {
   }
 
   onClick(): void {
-    return;
+    playSFX(SFX.BtnClick);
   }
 
   private doClick() {

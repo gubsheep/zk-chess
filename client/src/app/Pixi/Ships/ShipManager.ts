@@ -2,6 +2,7 @@ import { PixiManager, GameZIndex } from '../../../api/PixiManager';
 import { BoardCoords } from '../@PixiTypes';
 import { PixiObject } from '../PixiObject';
 import { compareBoardCoords } from '../Utils/PixiUtils';
+import { PieceObject } from './PieceObject';
 import { Ship } from './Ship';
 import { Submarine } from './Submarine';
 
@@ -75,6 +76,17 @@ export class ShipManager extends PixiObject {
     this.flush(); // TODO debug this, seems broken
     this.ships = [];
     this.submarines = [];
+  }
+
+  getPieceWithId(id: number): PieceObject | null {
+    for (const ship of this.ships) {
+      if (ship.pieceData.id === id) return ship;
+    }
+    for (const sub of this.submarines) {
+      if (sub.pieceData.id === id) return sub;
+    }
+
+    return null;
   }
 
   // add all of this to the API level

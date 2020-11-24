@@ -13,6 +13,8 @@ import { ShipManager } from './ShipManager';
 import { ShipSprite } from './ShipSprite';
 import { OutlineSprite } from './OutlineSprite';
 import { ClickState } from '../MouseManager';
+import { FlashSprite, GREEN, RED, WHITE } from './FlashSprite';
+import { playSFX, SFX } from '../Utils/SoundLoader';
 
 export enum ShipState {
   Summoned,
@@ -26,6 +28,8 @@ export class PieceObject extends PixiObject {
 
   sprite: ShipSprite;
   outlineSprite: OutlineSprite;
+  flashSprite: FlashSprite;
+
   shipContainer: Wrapper; // just holds the sprite (so we can anchor icons to it)
   container: Wrapper; // holds info about masking, interactability, etc.
 
@@ -34,6 +38,8 @@ export class PieceObject extends PixiObject {
   hover: boolean;
   hoverable: boolean;
 
+  destroying: number | null;
+
   constructor(manager: PixiManager, data: Piece) {
     super(manager);
     this.shipManager = manager.shipManager;
@@ -41,6 +47,8 @@ export class PieceObject extends PixiObject {
 
     this.hover = false;
     this.hoverable = true;
+
+    this.destroying = null;
 
     const { owner } = data;
     const color = manager.api.getColor(owner);
@@ -51,9 +59,14 @@ export class PieceObject extends PixiObject {
       this.pieceData.pieceType,
       color
     );
+    this.flashSprite = new FlashSprite(
+      manager,
+      this.pieceData.pieceType,
+      color
+    );
 
     const shipContainer = new Wrapper(manager, new PIXI.Container());
-    shipContainer.addChild(this.outlineSprite, this.sprite);
+    shipContainer.addChild(this.outlineSprite, this.sprite, this.flashSprite);
     this.shipContainer = shipContainer;
 
     const container = new Wrapper(manager, new PIXI.Container());
@@ -61,6 +74,42 @@ export class PieceObject extends PixiObject {
     this.container = container;
 
     this.addChild(shipContainer);
+  }
+
+  private dontPing(): boolean {
+    return this.isZk() && !this.manager.api.ownedByMe(this);
+  }
+
+  pingDamage() {
+    console.log('pinging damage!');
+    if (this.dontPing()) return;
+    this.flashSprite.setFlashColor(RED);
+    this.flashSprite.flash();
+    playSFX(SFX.Impact);
+  }
+
+  pingBuff() {
+    console.log('pinging buff!');
+    if (this.dontPing()) return;
+    this.flashSprite.setFlashColor(GREEN);
+    this.flashSprite.flash();
+    playSFX(SFX.Powerup);
+  }
+
+  pingDeploy() {
+    if (this.dontPing()) return;
+    this.flashSprite.setFlashColor(WHITE);
+    this.flashSprite.flash();
+    playSFX(SFX.Deploy);
+  }
+
+  pingDestroy() {
+    console.log('pinging destroy!');
+    if (this.dontPing()) return;
+    this.destroying = 30;
+    this.flashSprite.setFlashColor(RED);
+    this.flashSprite.flash();
+    playSFX(SFX.Impact);
   }
 
   setHoverable(hoverable: boolean) {
@@ -113,7 +162,16 @@ export class PieceObject extends PixiObject {
 
   loop() {
     super.loop();
-    this.setActive(this.pieceData.alive);
+    this.setActive(this.pieceData.alive && this.destroying === null);
+
+    if (this.destroying !== null) {
+      console.log('destroying!');
+      this.destroying--;
+      if (this.destroying === 0) {
+        this.destroying = null;
+        this.setActive(false);
+      }
+    }
 
     const { api } = this.manager;
     if (this.getType() !== PieceType.Mothership_00) {

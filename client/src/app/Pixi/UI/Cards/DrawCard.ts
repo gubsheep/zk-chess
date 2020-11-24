@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import { PixiManager } from '../../../../api/PixiManager';
 import { ClickState } from '../../MouseManager';
 import { PixiObject } from '../../PixiObject';
+import { playSFX, SFX } from '../../Utils/SoundLoader';
 import { CARD_W, CARD_H } from '../Shop/ShopCard';
 import { SpellItem } from './SpellItem';
 
@@ -34,5 +35,6 @@ export class DrawCard extends PixiObject {
     if (drawnCard === null) return;
 
     this.manager.mouseManager.drawCard();
+    playSFX(SFX.BtnClick);
   }
 }

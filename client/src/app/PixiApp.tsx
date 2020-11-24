@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PixiManager } from '../api/PixiManager';
+import { isBrave } from '../utils/Utils';
 import { Controls } from './PixiAppComponents/Controls';
 import {
   StyledPixiApp,
@@ -42,9 +43,29 @@ export default function PixiApp({ tableId }: { tableId: string }) {
 
   const tabHook = useState<TabState>(TabState.Transactions);
 
+  const [brave, setBrave] = useState<boolean>(false);
+  (async () => {
+    setBrave(await isBrave());
+  })();
+
   return (
     <StyledPixiApp>
       <Controls></Controls>
+      {brave && (
+        <p
+          style={{
+            color: 'white',
+            position: 'absolute',
+            left: '0.5em',
+            top: '6em',
+            width: '14em',
+            zIndex: 5
+          }}
+        >
+          Looks like you're using Brave. Please make sure you turn off Brave
+          Shield, or the game may not work!
+        </p>
+      )}
       <GameWrapper>
         <TV>
           <div className='wrapper img'>

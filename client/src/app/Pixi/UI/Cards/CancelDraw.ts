@@ -8,6 +8,7 @@ export class CancelDraw extends LinkObject {
   }
 
   onClick() {
+    super.onClick();
     this.manager.mouseManager.cancel();
   }
 }

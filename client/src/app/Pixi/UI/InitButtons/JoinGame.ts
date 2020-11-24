@@ -7,6 +7,7 @@ export class JoinGame extends LinkObject {
   }
 
   onClick() {
+    super.onClick();
     this.manager.api.joinGame();
   }
 }
