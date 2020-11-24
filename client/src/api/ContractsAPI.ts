@@ -39,6 +39,7 @@ import {
   UnsubmittedCardPlay,
 } from '../_types/darkforest/api/ContractsAPITypes';
 import EthereumAccountManager from './EthereumAccountManager';
+import {resolveNestedPromises} from '../utils/Utils';
 
 type QueuedTxRequest = {
   txIntentId: string;
@@ -110,13 +111,11 @@ class TxExecutor extends EventEmitter {
       }
       // await this.popupConfirmationWindow(txRequest);
       try {
-        const res = await txRequest.contract[txRequest.method](
-          ...txRequest.args,
-          {
-            ...txRequest.overrides,
-            nonce: this.nonce,
-          }
-        );
+        const args = await resolveNestedPromises(txRequest.args);
+        const res = await txRequest.contract[txRequest.method](...args, {
+          ...txRequest.overrides,
+          nonce: this.nonce,
+        });
         this.nonce += 1;
         this.nonceLastUpdated = Date.now();
         this.emit(txRequest.txIntentId, res);
@@ -480,7 +479,7 @@ class ContractsAPI extends EventEmitter {
           txIntentId: action.txIntentId,
           contract: this.gameContract,
           method: 'doCardDraw',
-          args: [[action.turnNumber, action.sequenceNumber, await action.zkp]],
+          args: [[action.turnNumber, action.sequenceNumber, action.zkp]],
           overrides,
         }
       );
@@ -516,7 +515,7 @@ class ContractsAPI extends EventEmitter {
               action.turnNumber,
               action.sequenceNumber,
               action.pieceId,
-              await action.zkp,
+              action.zkp,
             ],
           ],
           overrides,
@@ -557,7 +556,7 @@ class ContractsAPI extends EventEmitter {
               action.pieceType,
               action.isZk ? 0 : action.row,
               action.isZk ? 0 : action.col,
-              await action.zkp,
+              action.zkp,
             ],
           ],
           overrides,
@@ -597,9 +596,7 @@ class ContractsAPI extends EventEmitter {
               action.pieceId,
               action.isZk ? [] : action.moveToRow,
               action.isZk ? [] : action.moveToCol,
-              // TODO: this is bad, because if an action is fired while this is awaiting
-              // then the later action will end up getting executed first
-              await action.zkp,
+              action.zkp,
             ],
           ],
           overrides,
@@ -638,7 +635,7 @@ class ContractsAPI extends EventEmitter {
               action.sequenceNumber,
               action.pieceId,
               action.attackedId,
-              await action.zkp,
+              action.zkp,
             ],
           ],
           overrides,

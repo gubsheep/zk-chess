@@ -5,7 +5,7 @@ import {
   isZKPiece,
   Locatable,
 } from '../_types/global/GlobalTypes';
-import { getAdjacentTiles } from './ChessUtils';
+import {getAdjacentTiles} from './ChessUtils';
 
 export const getRandomTxIntentId = () => {
   const hex = '0123456789abcdef';
@@ -156,4 +156,13 @@ export const findPath = (
     }
   }
   return path.reverse();
+};
+
+type NestedPromise = Promise<any> | NestedPromise[];
+
+export const resolveNestedPromises = (nested: NestedPromise): Promise<any> => {
+  if (Array.isArray(nested)) {
+    return Promise.all(nested.map((x) => resolveNestedPromises(x)));
+  }
+  return nested;
 };
