@@ -176,7 +176,12 @@ function Tx({ tx: d }: { tx: DisplayedTx }) {
         {d.state !== TxState.Init && d.state !== TxState.SubmitFail && (
           <>
             <span>
-              <a href={BLOCK_EXPLORER_URL + d.tx.txHash}>
+              <a
+                href={'#'}
+                onClick={() => {
+                  window.open(BLOCK_EXPLORER_URL + d.tx.txHash);
+                }}
+              >
                 <span className='gray'>View Transaction</span>{' '}
                 <span className='tx'>{d.tx.txHash.substring(0, 12)}</span>{' '}
                 <span className='gray'>on Block Explorer</span>

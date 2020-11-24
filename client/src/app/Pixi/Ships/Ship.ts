@@ -159,7 +159,7 @@ export class Ship extends PieceObject {
       this.setMaskEnabled(false);
     } else {
       if (clickState === ClickState.Casting) {
-        const { clickState, stagedSpellTarget } = this.manager.mouseManager;
+        const { stagedSpellTarget } = this.manager.mouseManager;
 
         const spellShip = stagedSpellTarget && api.shipAt(stagedSpellTarget);
         if (spellShip && spellShip.pieceData.id === this.pieceData.id)

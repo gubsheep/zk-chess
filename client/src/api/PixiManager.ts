@@ -23,6 +23,7 @@ import { InitOverlay } from '../app/Pixi/UI/InitOverlay';
 import { InitOverlaySpec } from '../app/Pixi/UI/InitOverlaySpec';
 import { TableNumber } from '../app/Pixi/UI/TableNumber';
 import { Cards } from '../app/Pixi/UI/Cards/Cards';
+import { loadSound } from '../app/Pixi/Utils/SoundLoader';
 
 type InitProps = {
   canvas: HTMLCanvasElement;
@@ -118,7 +119,8 @@ export class PixiManager {
     autoBind(this);
 
     // can't put `this.setup` directly or it won't bind `this`
-    loadTextures(() => this.setup());
+    // loadTextures(() => this.setup());
+    loadTextures(() => loadSound(() => this.setup()));
   }
 
   removeObject(obj: PixiObject) {
