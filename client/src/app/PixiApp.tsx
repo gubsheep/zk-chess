@@ -11,7 +11,6 @@ import {
   TabState,
   Tab,
   TextBody,
-  Controls,
 } from './PixiAppComponents/PixiAppComponents';
 
 export default function PixiApp({ tableId }: { tableId: string }) {
