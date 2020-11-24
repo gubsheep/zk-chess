@@ -13,12 +13,19 @@ export enum SFX {
   MenuInit = 'MenuInit',
 
   BtnClick = 'BtnClick',
+
+  Deploy = 'Deploy',
+  Impact = 'Impact',
+  Powerup = 'Powerup',
 }
 
 const sfxURLs: Record<SFX, string> = {
   MenuHover: audUri('menuhover.wav'),
   MenuInit: audUri('menuinit.wav'),
   BtnClick: audUri('btnclick.wav'),
+  Deploy: audUri('deployship.wav'),
+  Impact: audUri('impact.wav'),
+  Powerup: audUri('powerup.wav'),
 };
 
 let sfxObjs: Record<SFX, pixiSound.Sound> = {} as Record<SFX, pixiSound.Sound>;

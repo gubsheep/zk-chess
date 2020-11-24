@@ -6,6 +6,7 @@ import { compareBoardCoords, idxsIncludes } from './Utils/PixiUtils';
 import { Ship } from './Ships/Ship';
 import { Submarine } from './Ships/Submarine';
 import { InitState } from '../../api/GameAPI';
+import { playSFX, SFX } from './Utils/SoundLoader';
 
 export enum ClickState {
   None,
@@ -282,6 +283,7 @@ export class MouseManager {
 
     if (this.clickState === ClickState.Deploying) {
       if (idxsIncludes(this.deployIdxs, idx)) {
+        playSFX(SFX.BtnClick);
         this.deployStaged = idx;
       }
     } else if (this.clickState === ClickState.Acting) {
@@ -289,6 +291,7 @@ export class MouseManager {
       if (selectedShip && compareBoardCoords(idx, selectedShip.getCoords())) {
         this.moveStaged = null;
         this.attackStaged = null;
+        playSFX(SFX.BtnClick);
         return;
       }
 
@@ -302,6 +305,7 @@ export class MouseManager {
           if (idxsIncludes(this.attackIdxs, idx)) {
             this.attackStaged = idx;
             if (!this.canAttackFromStaged(idx)) this.moveStaged = null;
+            playSFX(SFX.BtnClick);
             return;
           }
           for (const movAtk of this.moveAttackIdxs) {
@@ -312,6 +316,7 @@ export class MouseManager {
               if (!this.canAttackFromStaged(movAtk.attack)) {
                 this.moveStaged = movAtk.move;
               }
+              playSFX(SFX.BtnClick);
               return;
             }
           }
@@ -319,12 +324,14 @@ export class MouseManager {
           // there is no enemy boat, but you clicked a move cell
           this.attackStaged = null;
           this.moveStaged = idx;
+          playSFX(SFX.BtnClick);
         }
       } else {
         // is zk
         if (idxsIncludes(this.moveIdxs, idx)) {
           this.attackStaged = null;
           this.moveStaged = idx;
+          playSFX(SFX.BtnClick);
         }
       }
     }
@@ -346,6 +353,7 @@ export class MouseManager {
     // first, try to target using a spell
     if (clickState === ClickState.Casting) {
       this.stagedSpellTarget = ship.getCoords();
+      playSFX(SFX.BtnClick);
       return;
     }
 
@@ -364,6 +372,7 @@ export class MouseManager {
 
       // initiate ship actions
       this.setSelected(ship);
+      playSFX(SFX.BtnClick);
       return;
     }
 
@@ -391,6 +400,7 @@ export class MouseManager {
       if (api.hasAttacked(sub)) return;
       // initiate ship actions
       this.setSelected(sub);
+      playSFX(SFX.BtnClick);
       return;
     }
 
