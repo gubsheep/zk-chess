@@ -26,6 +26,7 @@
     "lodash": "^4.17.15",
     "lz-string": "^1.4.4",
     "normalize.css": "^8.0.1",
+    "pixi-sound": "^3.0.5",
     "pixi.js": "^5.3.3",
     "react": "^16.9.0",
     "react-dom": "^16.12.0",

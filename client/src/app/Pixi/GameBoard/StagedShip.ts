@@ -35,7 +35,10 @@ export class StagedShip extends PixiObject {
         moveStaged,
         selectedShip,
       },
+      api,
     } = this.manager;
+
+    this.sprite.setColor(api.getMyColor());
 
     if (deployStaged) {
       this.setLocation(deployStaged);

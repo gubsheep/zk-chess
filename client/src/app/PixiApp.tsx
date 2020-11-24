@@ -10,6 +10,7 @@ import {
   TabState,
   Tab,
   TextBody,
+  Controls,
 } from './PixiAppComponents/PixiAppComponents';
 
 export default function PixiApp({ tableId }: { tableId: string }) {
@@ -43,6 +44,7 @@ export default function PixiApp({ tableId }: { tableId: string }) {
 
   return (
     <StyledPixiApp>
+      <Controls></Controls>
       <GameWrapper>
         <TV>
           <div className='wrapper img'>

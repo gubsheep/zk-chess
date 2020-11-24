@@ -16,7 +16,7 @@ export default function Game() {
   );
 
   return (
-    <StyledGame>
+    <StyledGame> 
       <PixiApp tableId={tableId} />
     </StyledGame>
   );

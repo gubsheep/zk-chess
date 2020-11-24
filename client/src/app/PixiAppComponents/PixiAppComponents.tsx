@@ -157,3 +157,29 @@ export function TextBody({ hook }: { hook: TabHook }) {
     </StyledTextBody>
   );
 }
+
+const StyledControls = styled.div`
+  background: red;
+  width: 30em;
+  height: 10em;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  z-index: 5;
+  color: white;
+`;
+
+export function Controls() {
+  return (
+    <StyledControls>
+      <div>
+        Music <input type={'checkbox'} />
+      </div>
+      <div>
+        Sound <input type={'checkbox'} />
+      </div>
+    </StyledControls>
+  );
+}

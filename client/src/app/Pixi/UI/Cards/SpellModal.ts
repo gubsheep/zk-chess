@@ -14,8 +14,8 @@ const spellDescs = [
   `Increase ATK by 2.`,
   `Deal 1 damage.`,
   `Deal 2 damage.`,
-  `Restore 1 HP.`,
-  `Restore 2 HP.`,
+  `Increase HP by 1.`,
+  `Increase HP by 2.`,
 ];
 
 export class SpellModal extends PixiObject {

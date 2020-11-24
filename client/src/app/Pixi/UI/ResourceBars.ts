@@ -202,7 +202,7 @@ export class ResourceBars extends PixiObject {
     const goldBar = new GoldBar(manager);
     const hpBar = new HPBar(manager);
 
-    goldBar.setPosition({ x: 0, y: 12 });
+    goldBar.setPosition({ x: 0, y: 11 });
 
     this.hpBar = hpBar;
     this.goldBar = goldBar;
