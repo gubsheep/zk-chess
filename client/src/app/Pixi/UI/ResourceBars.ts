@@ -166,7 +166,7 @@ export class GoldBar extends ResourceBar {
   }
 }
 
-const MAX_HEALTH = 20;
+const MAX_HEALTH = 16;
 
 export class HPBar extends ResourceBar {
   constructor(manager: PixiManager) {
