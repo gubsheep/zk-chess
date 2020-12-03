@@ -1,54 +1,43 @@
-const verifier_dist1_path = process.argv[2];
-const verifier_dist2_path = process.argv[3];
-const verifier_out_path = process.argv[4];
+const fs = require('fs')
 
-if (typeof verifier_out_path !== 'string') {
-    console.log("usage");
-    console.log("templater verifier_dist1_path verifier_dist2_path verifier_out_path")
+const verifierDist1Path = process.argv[2]
+const verifierDist2Path = process.argv[3]
+const verifierOutPath = process.argv[4]
+
+if (typeof verifierOutPath !== 'string') {
+    console.log('usage')
+    console.log('templater verifierDist1Path verifierDist2Path verifier_out_path')
     process.exit(1)
 }
 
-let verifier_dist1 = getVerifier(verifier_dist1_path);
-let verifier_dist2 = getVerifier(verifier_dist2_path);
+let finalsol = fs.readFileSync('Verifier.sol.template').toString()
+finalsol = finalsol.replace('{{dist1VerifyingKey}}', getVerifier(verifierDist1Path))
+finalsol = finalsol.replace('{{dist2VerifyingKey}}', getVerifier(verifierDist2Path))
 
-var fs = require('fs');
-const { exit } = require('process');
-var finalsol = fs.readFileSync("Verifier.sol.template").toString();
-
-//worst perf possible?
-finalsol = finalsol.replace("{{dist1VerifyingKey}}", verifier_dist1)
-finalsol = finalsol.replace("{{dist2VerifyingKey}}", verifier_dist2)
-
-console.log(verifier_out_path);
-fs.writeFile(verifier_out_path, finalsol, function (err) {
-    if (err) throw err;
-});
-
-
-
+fs.writeFile(verifierOutPath, finalsol, function (err) {
+    if (err) throw err
+})
 
 function getVerifier(path) {
-    var fs = require('fs');
 
-    //pulling all in memory right? ah well its small
-    const dist1 = fs.readFileSync(path).toString().split("\n");
-    let verifier = [];
+    var verifier = []
 
-    //accumulator would be nicer
-    for (line of dist1) {
-        if (line.includes("function verifyingKey()") || verifier.length > 0) {
-            verifier.push(line);
-            if (line.includes("}")) {
-                break;
+    // keeping the fn defintion I dont want, but simpler to implement
+    for (const line of fs.readFileSync(path).toString().split('\n')) {
+        if (line.includes('function verifyingKey()') || verifier.length > 0) {
+            verifier.push(line)
+            if (line.includes('}')) {
+                break
             }
         }
     }
 
-    //check for not empty...
+    if (verifier.length === 0) {
+        process.exit(1)
+    }
 
-    //dumb but well just ignore the first and last and add newlines back in
+    // get rid of fn wrapper
     verifier.pop()
-    verifier.shift();
-    return verifier.join('\n');
+    verifier.shift()
+    return verifier.join('\n')
 }
-

@@ -236,7 +236,7 @@ library Verifier {
         pure
         returns (VerifyingKey memory vk)
     {
-        {{dist1VerifyingKey}}
+{{dist1VerifyingKey}}
     }
 
     function dist2VerifyingKey()
@@ -244,7 +244,7 @@ library Verifier {
         pure
         returns (VerifyingKey memory vk)
     {
-        {{dist2VerifyingKey}}
+{{dist2VerifyingKey}}
     }
 
     function drawCardVerifyingKey()
