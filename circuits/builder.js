@@ -28,18 +28,18 @@ for (name of circuitsList.split(',')) {
   // doesnt catch yet
   // https://github.com/iden3/snarkjs/pull/75
   try {
-    execSync('circom circuit.circom --r1cs --wasm --sym', {
+    execSync('npx circom circuit.circom --r1cs --wasm --sym', {
       stdio: 'inherit',
     });
-    execSync('snarkjs r1cs info circuit.r1cs', { stdio: 'inherit' });
+    execSync('npx snarkjs r1cs info circuit.r1cs', { stdio: 'inherit' });
     execSync(
-      'snarkjs zkey new circuit.r1cs pot15_final.ptau circuit_' +
+      'npx snarkjs zkey new circuit.r1cs pot15_final.ptau circuit_' +
         name +
         '.zkey',
       { stdio: 'inherit' }
     );
     execSync(
-      'snarkjs zkey beacon circuit_' +
+      'npx snarkjs zkey beacon circuit_' +
         name +
         '.zkey circuit.zkey ' +
         process.env[name + '_beacon'] +
@@ -47,23 +47,29 @@ for (name of circuitsList.split(',')) {
       { stdio: 'inherit' }
     );
     execSync(
-      'snarkjs zkey export verificationkey circuit.zkey verification_key.json',
-      { stdio: 'inherit' }
-    );
-    execSync('snarkjs wtns calculate circuit.wasm input.json witness.wtns', {
-      stdio: 'inherit',
-    });
-    execSync(
-      'snarkjs groth16 prove circuit.zkey witness.wtns proof.json public.json',
+      'npx snarkjs zkey export verificationkey circuit.zkey verification_key.json',
       { stdio: 'inherit' }
     );
     execSync(
-      'snarkjs groth16 verify verification_key.json public.json proof.json',
+      'npx snarkjs wtns calculate circuit.wasm input.json witness.wtns',
+      {
+        stdio: 'inherit',
+      }
+    );
+    execSync(
+      'npx snarkjs groth16 prove circuit.zkey witness.wtns proof.json public.json',
       { stdio: 'inherit' }
     );
-    execSync('snarkjs zkey export solidityverifier circuit.zkey verifier.sol', {
-      stdio: 'inherit',
-    });
+    execSync(
+      'npx snarkjs groth16 verify verification_key.json public.json proof.json',
+      { stdio: 'inherit' }
+    );
+    execSync(
+      'npx snarkjs zkey export solidityverifier circuit.zkey verifier.sol',
+      {
+        stdio: 'inherit',
+      }
+    );
     fs.copyFileSync(
       'circuit.wasm',
       cwd + '/' + wasmOutPath + '/' + name + '/circuit.wasm'
