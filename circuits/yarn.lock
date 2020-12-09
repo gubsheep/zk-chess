@@ -239,10 +239,10 @@ circom@0.5.21:
     tmp-promise "^2.0.2"
     wasmbuilder "0.0.10"
 
-circom@^0.5.32:
-  version "0.5.34"
-  resolved "https://registry.yarnpkg.com/circom/-/circom-0.5.34.tgz#9dce7f21f63f308d5b9918a82b184770db19196c"
-  integrity sha512-cnD1HSl+G+1R9ao0W0WN/vhpN56qOYl8MCw26O2eoBhp8GvF9GvRIvhIOyugsUMfgvipQBxPuzpm3Oo58SUEsA==
+circom@^0.5.34:
+  version "0.5.35"
+  resolved "https://registry.yarnpkg.com/circom/-/circom-0.5.35.tgz#e59291f18996656c85e3f84a90bb653022b9f673"
+  integrity sha512-fUjYTyU75TrA54IPqHt+3VyRWVL82jdbiW68NC9CdtwVrXID+G2cED4XPlsVIKuGI8NFl1LzapELv6DRjS363w==
   dependencies:
     chai "^4.2.0"
     circom_runtime "0.1.9"
@@ -364,6 +364,11 @@ diff@4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.2.tgz#60f3aecb89d5fae520c11aa19efc2bb982aade7d"
   integrity sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
+
+dotenv@^8.2.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
+  integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
 
 ejs@^3.0.1:
   version "3.1.5"
@@ -1131,9 +1136,9 @@ wrappy@1:
   integrity sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
 
 y18n@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-4.0.0.tgz#95ef94f85ecc81d007c264e190a120f0a3c8566b"
-  integrity sha512-r9S/ZyXu/Xu9q1tYlpsLIsa3EeLXXk0VwlxqTcFRfg9EhMW+17kbt9G0NrgCmhGb5vT2hyhJZLfDGx+7+5Uj/w==
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-4.0.1.tgz#8db2b83c31c5d75099bb890b23f3094891e247d4"
+  integrity sha512-wNcy4NvjMYL8gogWWYAO7ZFWFfHcbdbE57tZO8e4cbpj8tfUcwrwqSl3ad8HxpYWCdXcJUCeKKZS62Av1affwQ==
 
 yargs-parser@13.1.2, yargs-parser@^13.1.2:
   version "13.1.2"
