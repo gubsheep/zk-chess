@@ -3,19 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "dependencies": {
-    "circomlib": "^0.2.4"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "circom": "^0.5.32",
+    "circomlib": "^0.2.4",
+    "dotenv": "^8.2.0",
+    "circom": "^0.5.34",
     "snarkjs": "^0.3.44"
   },
   "scripts": {
-    "dist1": "cd dist1 && circom circuit.circom --r1cs --wasm --sym && snarkjs r1cs info circuit.r1cs && snarkjs zkey new circuit.r1cs pot15_final.ptau circuit_dist1.zkey && snarkjs zkey beacon circuit_dist1.zkey circuit.zkey $npm_config_beacon 10 && snarkjs zkey export verificationkey circuit.zkey verification_key.json && snarkjs wtns calculate circuit.wasm input.json witness.wtns && snarkjs groth16 prove circuit.zkey witness.wtns proof.json public.json && snarkjs groth16 verify verification_key.json public.json proof.json && snarkjs zkey export solidityverifier circuit.zkey verifier.sol && cp circuit.wasm ../../client/public/circuits/dist1/ && cp ./circuit.zkey ../../client/public/dist1.zkey",
-    "dist2": "cd dist2 && circom circuit.circom --r1cs --wasm --sym && snarkjs r1cs info circuit.r1cs && snarkjs zkey new circuit.r1cs pot15_final.ptau circuit_dist2.zkey && snarkjs zkey beacon circuit_dist2.zkey circuit.zkey $npm_config_beacon 10 && snarkjs zkey export verificationkey circuit.zkey verification_key.json && snarkjs wtns calculate circuit.wasm input.json witness.wtns && snarkjs groth16 prove circuit.zkey witness.wtns proof.json public.json && snarkjs groth16 verify verification_key.json public.json proof.json && snarkjs zkey export solidityverifier circuit.zkey verifier.sol && cp circuit.wasm ../../client/public/circuits/dist2/ && cp ./circuit.zkey ../../client/public/dist2.zkey",
-    "draw": "cd draw && circom circuit.circom --r1cs --wasm --sym && snarkjs r1cs info circuit.r1cs && snarkjs zkey new circuit.r1cs pot15_final.ptau circuit_draw.zkey && snarkjs zkey beacon circuit_draw.zkey circuit.zkey $npm_config_beacon 10 && snarkjs zkey export verificationkey circuit.zkey verification_key.json && snarkjs wtns calculate circuit.wasm input.json witness.wtns && snarkjs groth16 prove circuit.zkey witness.wtns proof.json public.json && snarkjs groth16 verify verification_key.json public.json proof.json && snarkjs zkey export solidityverifier circuit.zkey verifier.sol && cp circuit.wasm ../../client/public/circuits/draw/ && cp ./circuit.zkey ../../client/public/draw.zkey",
-    "play": "cd play && circom circuit.circom --r1cs --wasm --sym && snarkjs r1cs info circuit.r1cs && snarkjs zkey new circuit.r1cs pot15_final.ptau circuit_play.zkey && snarkjs zkey beacon circuit_play.zkey circuit.zkey $npm_config_beacon 10 && snarkjs zkey export verificationkey circuit.zkey verification_key.json && snarkjs wtns calculate circuit.wasm input.json witness.wtns && snarkjs groth16 prove circuit.zkey witness.wtns proof.json public.json && snarkjs groth16 verify verification_key.json public.json proof.json && snarkjs zkey export solidityverifier circuit.zkey verifier.sol && cp circuit.wasm ../../client/public/circuits/play/ && cp ./circuit.zkey ../../client/public/play.zkey",
-    "templater": "node templater.js ./dist1/verifier.sol ./dist2/verifier.sol ./draw/verifier.sol ./play/verifier.sol ../eth/contracts/Verifier.sol",
-    "build": "npm run dist1 --beacon=$(grep dist1_beacon .env | cut -d '=' -f2) && npm run dist2 --beacon=$(grep dist2_beacon .env | cut -d '=' -f2) && npm run draw --beacon=$(grep draw_beacon .env | cut -d '=' -f2) && npm run play --beacon=$(grep play_beacon .env | cut -d '=' -f2) && npm run templater"
+    "dev": "node builder.js dist1,dist2,draw,play ../client/public/circuits ../client/public ../eth/contracts/Verifier.sol"
   }
 }
