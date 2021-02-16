@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "dependencies": {
-    "circomlib": "^0.2.4"
+  "dependencies": {},
+  "devDependencies": {
+    "circomlib": "^0.2.4",
+    "dotenv": "^8.2.0",
+    "circom": "^0.5.34",
+    "snarkjs": "^0.3.44"
+  },
+  "scripts": {
+    "dev": "node builder.js dist1,dist2,draw,play ../client/public/circuits ../client/public ../eth/contracts/Verifier.sol"
   }
 }

@@ -1,3 +1,14 @@
 node_modules
 .idea/*
 .DS_Store
+.env
+circuits/**/proof.json
+circuits/**/circuit.r1cs
+circuits/**/circuit.sym
+circuits/**/circuit.wasm
+circuits/**/circuit.zkey
+circuits/**/*.zkey
+circuits/**/public.json
+circuits/**/verification_key.json
+circuits/**/verifier.sol
+circuits/**/witness.wtns
